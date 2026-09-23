@@ -11,7 +11,7 @@
 </head>
 <body>
   <header class="site-header">
-    <jsp:include page="/top.jsp"/>
+    <jsp:include page="/inc/Top.jsp"/>
   </header>
 
   <main style="padding-top: 112px;">
@@ -78,7 +78,7 @@
   </main>
 
   <footer class="site-footer">
-  	<jsp:include page="/bottom.jsp"/>
+  	<jsp:include page="/inc/Bottom.jsp"/>
   </footer>
 </body>
 </html>
