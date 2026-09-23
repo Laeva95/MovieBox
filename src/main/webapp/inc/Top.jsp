@@ -12,8 +12,8 @@
       <div class="inner-container util-inner">
         <c:choose>
           <c:when test="${empty sessionScope.loginUser}">
-            <a href="${pageContext.request.contextPath}/member/login.jsp">로그인</a>
-            <a href="${pageContext.request.contextPath}/member/join.jsp">회원가입</a>
+            <a href="${pageContext.request.contextPath}/member/Login.jsp">로그인</a>
+            <a href="${pageContext.request.contextPath}/member/Join.jsp">회원가입</a>
           </c:when>
           <c:otherwise>
             <span><strong>${sessionScope.loginUser.name}</strong>님 환영합니다</span>
