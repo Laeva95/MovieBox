@@ -11,37 +11,7 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="util-bar">
-      <div class="inner-container util-inner">
-        <c:choose>
-          <c:when test="${empty sessionScope.loginUser}">
-            <a href="${pageContext.request.contextPath}/member/login.jsp">로그인</a>
-            <a href="${pageContext.request.contextPath}/member/join.jsp">회원가입</a>
-          </c:when>
-          <c:otherwise>
-            <span><strong>${sessionScope.loginUser.name}</strong>님 환영합니다</span>
-            <a href="${pageContext.request.contextPath}/member/logout.do">로그아웃</a>
-            <a href="${pageContext.request.contextPath}/member/myPage.jsp">마이페이지</a>
-          </c:otherwise>
-        </c:choose>
-        <a href="#">고객센터</a>
-      </div>
-    </div>
-    <div class="inner-container gnb-bar">
-      <div class="gnb-left">
-        <a href="${pageContext.request.contextPath}/" class="brand-logo">MOVIE<span class="logo-red">BOX</span></a>
-        <nav class="main-nav">
-          <a href="#">영화</a>
-          <a href="#">예매</a>
-          <a href="#">영화관</a>
-          <a href="#">이벤트</a>
-          <a href="#">리뷰</a>
-        </nav>
-      </div>
-      <div class="gnb-right">
-        <a href="#quick-booking" class="btn-quick-nav">빠른예매</a>
-      </div>
-    </div>
+    <jsp:include page="/top.jsp"/>
   </header>
 
   <main style="padding-top: 112px;">
@@ -108,9 +78,7 @@
   </main>
 
   <footer class="site-footer">
-    <div class="inner-container">
-      <p>&copy; Movie Box Cinema Corp. All rights reserved.</p>
-    </div>
+  	<jsp:include page="/bottom.jsp"/>
   </footer>
 </body>
 </html>
