@@ -53,5 +53,39 @@ public class NoticeDAO {
 
         return noticeList;
     }
+ // 특정 번호의 공지사항 상세 조회 메서드
+    public NoticeDTO getNoticeById(int noticeId) {
+        NoticeDTO notice = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            // 1. 데이터베이스 연결 (프로젝트 내에 사용 중인 연결 방식을 넣어주세요. 예: conn = DBManager.getConnection();)
+            
+            // 2. 특정 ID의 글만 조회하는 SQL 쿼리 작성
+            String sql = "SELECT notice_id, title, content, created_at, updated_at, view_count FROM notice WHERE notice_id = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, noticeId); // ? 자리에 클릭한 글 번호(noticeId)를 넣어줍니다.
+            rs = pstmt.executeQuery();
+
+            // 3. 가져온 데이터를 NoticeDTO 객체에 담기
+            if (rs != null && rs.next()) {
+                notice = new NoticeDTO();
+                notice.setNoticeId(rs.getInt("notice_id"));
+                notice.setTitle(rs.getString("title"));
+                notice.setContent(rs.getString("content"));
+                notice.setCreatedAt(rs.getTimestamp("created_at"));
+                notice.setUpdatedAt(rs.getTimestamp("updated_at"));
+                notice.setViewCount(rs.getInt("view_count"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // 4. 자원 해제 (연결 역순으로 닫기)
+        }
+
+        return notice;
+    }
     
 }

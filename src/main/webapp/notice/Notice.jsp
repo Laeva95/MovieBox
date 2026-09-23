@@ -179,7 +179,7 @@
                     <tr>
                         <td>3</td>
                         <td class="notice-title">
-                            <a href="#">주차장 이용 안내</a>
+                            <a href="detail?id=3">주차장 이용 안내</a>
                         </td>
                         <td>2026-09-23</td>
                         <td>0</td>
@@ -188,7 +188,7 @@
                     <tr>
                         <td>2</td>
                         <td class="notice-title">
-                            <a href="#">시스템 점검 안내</a>
+                            <a href="detail?id=2">시스템 점검 안내</a>
                         </td>
                         <td>2026-09-23</td>
                         <td>0</td>
@@ -197,7 +197,7 @@
                     <tr>
                         <td>1</td>
                         <td class="notice-title">
-                            <a href="#">추석 연휴 영화관 운영 안내</a>
+                            <a href="detail?id=1">추석 연휴 영화관 운영 안내</a>
                         </td>
                         <td>2026-09-23</td>
                         <td>0</td>

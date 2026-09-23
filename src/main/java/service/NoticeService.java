@@ -11,4 +11,9 @@ public class NoticeService {
     public List<NoticeDTO> getNoticeList() {
         return noticeDAO.getNoticeList();
     }
+    
+ // 특정 번호의 공지사항 상세 정보를 가져오는 메서드
+    public NoticeDTO getNoticeDetail(int noticeId) {
+        return noticeDAO.getNoticeById(noticeId);
+    }
 }
