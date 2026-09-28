@@ -10,73 +10,27 @@
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
+<%
+// request 객체의  "center" 키에 저장된 값을 가져옴
+String centerPage = (String) request.getAttribute("center");
+
+// 가져온 값이 null 이거나 ""공백 문자열 이라면 중앙 화면을 기본 Center.jsp 페이지를 저장
+if (centerPage == null || centerPage.trim().isEmpty()) {
+    centerPage = "/inc/Center.jsp";
+}
+
+// 현재 page 객체의 "center" 키에 중앙 화면 페이지 주소를 저장
+pageContext.setAttribute("center", centerPage);
+%>
+// Top.jsp 영역
   <header class="site-header">
     <jsp:include page="/inc/Top.jsp"/>
   </header>
-
-  <main style="padding-top: 112px;">
-    <section class="hero-section">
-      <div class="hero-overlay"></div>
-      <div class="inner-container hero-content">
-        <div class="badge-row">
-          <span class="badge-pill">IMAX 4DX 동시 개봉</span>
-          <span class="badge-pill badge-red">예매율 1위 42.8%</span>
-        </div>
-        <h1 class="hero-title">스텔라: 오딧세이</h1>
-        <p class="hero-desc">압도적 스케일의 서사시, 지금 극장에서 확인하세요.</p>
-        <div class="hero-actions">
-          <a href="#quick-booking" class="btn-primary-lg">예매하기</a>
-        </div>
-      </div>
-    </section>
-
-    <div class="inner-container quick-booking-container" id="quick-booking">
-      <div class="quick-booking-box">
-        <div class="qb-item">
-          <div class="qb-left">
-            <div class="qb-text"><span class="qb-label">영화 선택</span><span class="qb-value">스텔라: 오딧세이</span></div>
-          </div>
-        </div>
-        <div class="qb-item">
-          <div class="qb-left">
-            <div class="qb-text"><span class="qb-label">극장 선택</span><span class="qb-value">강남점</span></div>
-          </div>
-        </div>
-        <div class="qb-item">
-          <div class="qb-left">
-            <div class="qb-text"><span class="qb-label">날짜 선택</span><span class="qb-value">오늘</span></div>
-          </div>
-        </div>
-        <div class="qb-item">
-          <div class="qb-left">
-            <div class="qb-text"><span class="qb-label">시간 선택</span><span class="qb-value">19:40</span></div>
-          </div>
-        </div>
-        <div>
-          <button type="button" class="btn-select-seat">좌석 선택</button>
-        </div>
-      </div>
-    </div>
-
-    <section class="inner-container section-wrap" style="margin-bottom: 80px;">
-      <div class="section-head">
-        <h2 class="section-title">무비차트</h2>
-      </div>
-      <div class="movie-grid">
-        <div class="movie-card">
-          <div class="poster-area">
-            <img class="poster-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3axBl_9YdwjoM3JuqDhIBZM02qem_9WC1Vgg8DhGF-nl3Q0pzYe0H5Z5YRV_t8-7nyFlKPjacinav35mKiyYW9Z8y9lbw6qIw61U_vmI-Cm5PCHyFly0PolRwap3dO5RCOSecScTk5IJay_eojeEoFwLsxa6vw_gt4aDCpdyjTdx43R-nFGDTRhUedA7xF4z5GGr2WH2Nx8kKEdNRgKKfJWXgqH7XX5jvsLyKQRcVWH0dguy44zhI" alt="스텔라">
-            <div class="rank-overlay"><span class="rank-number">1</span></div>
-          </div>
-          <div class="card-info">
-            <h3 class="movie-card-title">스텔라: 오딧세이</h3>
-            <div class="card-meta-line"><span>예매율 42.8%</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
+  
+// center 영역
+  <jsp:include page="${center}"/>
+  
+// Bottom.jsp 영역
   <footer class="site-footer">
   	<jsp:include page="/inc/Bottom.jsp"/>
   </footer>
