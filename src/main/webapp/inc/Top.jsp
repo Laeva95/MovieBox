@@ -10,8 +10,8 @@
       </c:when>
       <c:otherwise>
         <span><strong>${sessionScope.name}</strong>님 환영합니다</span>
-        <a href="${pageContext.request.contextPath}/member/logout.do">로그아웃</a>
-        <a href="${pageContext.request.contextPath}/member/myPage.do">마이페이지</a>
+        <a href="${pageContext.request.contextPath}/member/Logout.do">로그아웃</a>
+        <a href="${pageContext.request.contextPath}/member/MyPage.do">마이페이지</a>
       </c:otherwise>
     </c:choose>
     <a href="#">고객센터</a>

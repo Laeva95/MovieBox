@@ -339,41 +339,98 @@
     }
 
 }
-  </style>
+/* =========================
+   회원가입 약관 영역
+   ========================= */
 
-  <header class="site-header">
-    <jsp:include page="/inc/Top.jsp"/>
-  </header>
+	.terms-box {
+	    width: 100%;
+	    box-sizing: border-box;
+	}
+	
+	.terms-content {
+	    margin-bottom: 20px;
+	    padding: 18px;
+	    border: 1px solid #ddd;
+	    border-radius: 6px;
+	    background-color: #fafafa;
+	}
+	
+	.terms-title {
+	    margin: 0 0 12px;
+	    font-size: 16px;
+	    font-weight: 600;
+	    color: #333;
+	}
+	
+	.terms-text {
+	    height: 130px;
+	    padding: 14px;
+	    box-sizing: border-box;
+	
+	    overflow-y: auto;
+	
+	    border: 1px solid #e2e2e2;
+	    background-color: #fff;
+	
+	    font-size: 13px;
+	    line-height: 1.7;
+	    color: #666;
+	}
+	
+	.terms-text p {
+	    margin: 0 0 12px;
+	}
+	
+	.terms-text p:last-child {
+	    margin-bottom: 0;
+	}
+	
+	.terms-label {
+	    display: flex;
+	    align-items: center;
+	    gap: 8px;
+	
+	    margin-top: 18px;
+	
+	    font-size: 14px;
+	    color: #333;
+	    cursor: pointer;
+	}
+	
+	.terms-label input[type="checkbox"] {
+	    width: 16px;
+	    height: 16px;
+	    margin: 0;
+	
+	    cursor: pointer;
+	}
+	
+	.terms-label span {
+	    line-height: 1.5;
+	    color: #fff;
+	}
+ </style>
 
-	<main class="join-page">
-
+<main class="join-page">
     <div class="join-container">
-
         <!-- 제목 -->
         <div class="join-header">
             <h1>회원가입</h1>
             <p>MovieBox의 다양한 서비스를 이용해보세요.</p>
         </div>
-
-
         <!-- 회원가입 카드 -->
         <div class="join-card">
-        <form method="post" action="${pageContext.request.contextPath}/member/joinPro.me">
-
+        <form method="post" action="${pageContext.request.contextPath}/member/JoinPro.do">
             <!-- 기본 정보 -->
             <section class="form-section">
-
                 <h2 class="section-label">기본 정보</h2>
-
                 <!-- 아이디 -->
                 <div class="form-group">
-
                     <label class="form-label" for="memberId">
                         아이디<span class="required">*</span>
                     </label>
-
                     <div class="input-with-button">
-
                         <input
                             type="text"
                             id="memberId"
@@ -383,7 +440,6 @@
                             maxlength="12"
                             required
                         >
-
                         <button type="button" class="btn-check">
                             중복 확인
                         </button>
@@ -413,8 +469,11 @@
                         maxlength="20"
                         required
                     >
-
+              		<p class="form-help">
+                        영문, 숫자를 포함하여 4~12자로 입력해주세요.
+                    </p>
                 </div>
+  
 
 
                 <!-- 비밀번호 확인 -->
@@ -432,6 +491,9 @@
                         placeholder="비밀번호를 다시 입력해주세요"
                         required
                     >
+                    <p class="form-help">
+                        비밀번호와 동일한 값을 입력해주세요
+                    </p>
 
                 </div>
 
@@ -469,7 +531,7 @@
                     <div class="form-group">
 
                         <label class="form-label" for="age">
-                            나이
+                            나이<span class="required">*</span>
                         </label>
 
                         <input
@@ -480,6 +542,7 @@
                             placeholder="나이를 입력해주세요"
                             min="1"
                             max="150"
+                            required
                         >
 
                     </div>
@@ -489,13 +552,14 @@
                     <div class="form-group">
 
                         <label class="form-label" for="gender">
-                            성별
+                            성별<span class="required">*</span>
                         </label>
 
                         <select
                             id="gender"
                             name="gender"
                             class="form-select"
+                            required
                         >
                             <option value="">선택해주세요</option>
                             <option value="남">남성</option>
@@ -511,7 +575,7 @@
                 <div class="form-group">
 
                     <label class="form-label" for="email">
-                        이메일
+                        이메일<span class="required">*</span>
                     </label>
 
                     <input
@@ -521,6 +585,7 @@
                         class="form-input"
                         placeholder="example@email.com"
                         maxlength="100"
+                        required
                     >
 
                 </div>
@@ -530,7 +595,7 @@
                 <div class="form-group">
 
                     <label class="form-label" for="address">
-                        주소
+                        주소<span class="required">*</span>
                     </label>
 
                     <input
@@ -540,6 +605,7 @@
                         class="form-input"
                         placeholder="주소를 입력해주세요"
                         maxlength="500"
+                        required
                     >
                 </div>
             </section>
@@ -551,7 +617,7 @@
                     <div class="form-group">
 
                         <label class="form-label" for="tel">
-                            전화번호
+                            전화번호<span class="required">*</span>
                         </label>
                         <input
                             type="tel"
@@ -560,12 +626,13 @@
                             class="form-input"
                             placeholder="02-1234-5678"
                             maxlength="20"
+                            required
                         >
                     </div>
                     <!-- 휴대폰 -->
                     <div class="form-group">
                         <label class="form-label" for="mtel">
-                            휴대폰 번호
+                            휴대폰 번호<span class="required">*</span>
                         </label>
                         <input
                             type="tel"
@@ -574,27 +641,90 @@
                             class="form-input"
                             placeholder="010-1234-5678"
                             maxlength="20"
+                            required
                         >
                     </div>
                 </div>
             </section>
             <!-- 약관 -->
-            <section class="form-section">
-                <h2 class="section-label">약관 동의</h2>
-                <div class="terms-box">
-                    <label class="terms-label">
-                        <input
-                            type="checkbox"
-                            id="agree"
-                            name="agree"
-                            required
-                        >
-                        <span>
-                            MovieBox 이용약관 및 개인정보 처리방침에 동의합니다.
-                        </span>
-                    </label>
-                </div>
-            </section>
+<section class="form-section">
+    <h2 class="section-label">약관 동의</h2>
+
+    <div class="terms-box">
+
+        <!-- 이용약관 -->
+        <div class="terms-content">
+            <h3 class="terms-title">MovieBox 이용약관</h3>
+
+            <div class="terms-text">
+                <p>
+                    제1조 (목적)<br>
+                    본 약관은 MovieBox에서 제공하는 영화 관련 서비스의 이용 조건 및
+                    절차에 관한 사항을 규정하는 것을 목적으로 합니다.
+                </p>
+
+                <p>
+                    제2조 (서비스 이용)<br>
+                    회원은 MovieBox에서 제공하는 영화 정보, 영화 예매, 리뷰 등의
+                    서비스를 이용할 수 있습니다.
+                </p>
+
+                <p>
+                    제3조 (회원의 의무)<br>
+                    회원은 서비스를 이용하는 과정에서 다른 회원에게 불쾌감을 주는
+                    행위를 하거나 타인의 정보를 무단으로 이용해서는 안 됩니다.
+                </p>
+
+                <p>
+                    제4조 (서비스 이용 제한)<br>
+                    서비스 운영에 중대한 지장을 주는 행위가 확인될 경우 서비스 이용이
+                    제한될 수 있습니다.
+                </p>
+            </div>
+        </div>
+
+        <!-- 개인정보 처리방침 -->
+        <div class="terms-content">
+            <h3 class="terms-title">개인정보 처리방침</h3>
+
+            <div class="terms-text">
+                <p>
+                    MovieBox는 회원가입 및 서비스 이용을 위해 필요한 최소한의
+                    개인정보를 수집합니다.
+                </p>
+
+                <p>
+                    수집하는 개인정보에는 아이디, 비밀번호, 이름, 이메일,
+                    전화번호 및 주소 등이 포함될 수 있습니다.
+                </p>
+
+                <p>
+                    수집된 개인정보는 회원 관리 및 영화 예매 등의 서비스 제공을
+                    위한 목적으로 사용됩니다.
+                </p>
+
+                <p>
+                    회원의 개인정보는 관련 법령에 따라 안전하게 관리되며,
+                    이용 목적이 달성된 후 관련 규정에 따라 처리됩니다.
+                </p>
+            </div>
+        </div>
+
+        <!-- 약관 동의 -->
+        <label class="terms-label">
+            <input
+                type="checkbox"
+                id="agree"
+                name="agree"
+                required
+            >
+            <span>
+                MovieBox 이용약관 및 개인정보 처리방침에 동의합니다.
+            </span>
+        </label>
+
+    </div>
+</section>
             <!-- 버튼 -->
             <div class="join-buttons">
                 <button
