@@ -1,13 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Movie Box</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
   <style>
   	@charset "UTF-8";
 
@@ -348,8 +340,7 @@
 
 }
   </style>
-</head>
-<body>
+
   <header class="site-header">
     <jsp:include page="/inc/Top.jsp"/>
   </header>
@@ -419,7 +410,7 @@
                         name="member_pass"
                         class="form-input"
                         placeholder="비밀번호를 입력해주세요"
-                        maxlength="255"
+                        maxlength="20"
                         required
                     >
 
@@ -607,11 +598,10 @@
             <!-- 버튼 -->
             <div class="join-buttons">
                 <button
-                    type="button"
+                    type="reset"
                     class="btn-cancel"
-                    onclick="history.back();"
                 >
-                    취소
+                    재입력
                 </button>
                 <button type="submit" class="btn-join">
                     회원가입
@@ -621,9 +611,3 @@
         </div>
     </div>
 </main>
-
-  <footer class="site-footer">
-  	<jsp:include page="/inc/Bottom.jsp"/>
-  </footer>
-</body>
-</html>
