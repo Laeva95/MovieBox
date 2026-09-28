@@ -221,7 +221,7 @@
          </div>
          <div class="login-card">
              <form method="post"
-                   action="${pageContext.request.contextPath}/member/loginPro.do">
+                   action="${pageContext.request.contextPath}/member/LoginPro.do">
                  <div class="login-form-group">
                      <label class="login-form-label" for="memberId">
                          아이디
