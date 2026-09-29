@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Context>
+	<Resource
+    name="jdbc/moviebox"
+    auth="Container"
+    type="javax.sql.DataSource"
+    driverClassName="com.mysql.cj.jdbc.Driver"
+    username="id"
+    password="pass"
+    maxTotal="20"
+    maxIdle="10"
+    maxWaitMillis="10000"
+    url="jdbc:mysql://localhost:3306/rentcar_edu?serverTimezone=Asia/Seoul&amp;characterEncoding=UTF-8&amp;useUnicode=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false"
+	/>
+</Context>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

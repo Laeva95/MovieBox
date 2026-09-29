@@ -1,26 +1,18 @@
-
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="movie.MovieDTO" %>
-
+<%@ page import="movie.MovieDAO" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-    // 컨트롤러에서 request에 담아준 데이터 꺼내기
-    List<MovieDTO> movieList = (List<MovieDTO>) request.getAttribute("movieList");
-    String country = (String) request.getAttribute("country");
-    String genre = (String) request.getAttribute("genre");
-    String sort = (String) request.getAttribute("sort");
+    // 사용자가 선택한 파라미터 값 받기
+    String country = request.getParameter("country");
+    String genre = request.getParameter("genre");
+    String sort = request.getParameter("sort");
+    
+    MovieDAO dao = new MovieDAO();
+    // 필터 및 정렬이 적용된 목록 가져오기
+    List<MovieDTO> movieList = dao.getFilteredAndSortedMovieList(country, genre, sort);
 %>
-
-<%
-    // 만약 컨트롤러를 거치지 않고 곧바로 JSP에 들어왔다면, 강제로 컨트롤러로 토스해줍니다!
-    if (request.getAttribute("movieList") == null) {
-        response.sendRedirect(request.getContextPath() + "/movie/MovieList.do");
-        return;
-    }
-%>
-
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -82,7 +74,7 @@
       <div class="gnb-left">
         <a href="${pageContext.request.contextPath}/" class="brand-logo">MOVIE<span class="logo-red">BOX</span></a>
         <nav class="main-nav">
-		  <a href="${pageContext.request.contextPath}/movie/MovieList.do" style="color: #e50914;">영화</a>
+          <a href="${pageContext.request.contextPath}/movie/MovieList.jsp" style="color: #e50914;">영화</a>
           <a href="#">예매</a>
           <a href="#">영화관</a>
           <a href="#">이벤트</a>
@@ -103,11 +95,10 @@
       
       <!-- 필터와 정렬 폼 -->
       <div class="filter-container">
-      <!-- method를 get에서 post로 변경 -->
-	  <form method="post" action="${pageContext.request.contextPath}/movie/MovieList.do" style="display: flex; gap: 10px;">
+        <form method="get" action="MovieList.jsp" style="display: flex; gap: 10px;">
             <select name="country">
                 <option value="all">전체 국가</option>
-                <option value="대한민국" <%= "대한민국".equals(country) ? "selected" : "" %>>한국</option>
+                <option value="한국" <%= "한국".equals(country) ? "selected" : "" %>>한국</option>
                 <option value="미국" <%= "미국".equals(country) ? "selected" : "" %>>미국</option>
                 <option value="일본" <%= "일본".equals(country) ? "selected" : "" %>>일본</option>
             </select>
@@ -116,9 +107,7 @@
                 <option value="all">전체 장르</option>
                 <option value="액션" <%= "액션".equals(genre) ? "selected" : "" %>>액션</option>
                 <option value="드라마" <%= "드라마".equals(genre) ? "selected" : "" %>>드라마</option>
-                <option value="스릴러" <%= "스릴러".equals(genre) ? "selected" : "" %>>스릴러</option>
                 <option value="코미디" <%= "코미디".equals(genre) ? "selected" : "" %>>코미디</option>
-                <option value="SF" <%= "SF".equals(genre) ? "selected" : "" %>>SF</option>
                 <option value="애니메이션" <%= "애니메이션".equals(genre) ? "selected" : "" %>>애니메이션</option>
             </select>
             
@@ -140,14 +129,13 @@
                 <div class="movie-card" onclick="location.href='MovieDetail.jsp?movie_id=<%= movie.getMovieId() %>'">
                   <div class="poster-area">
                     <!-- 포스터 이미지 경로 수정 (${pageContext.request.contextPath}/poster/...) -->
-					<img class="poster-img" src="<%= movie.getPosterUrl() %>" 
-					                        alt="<%= movie.getTitle() %>" 
-					                        style="width: 100%;
-					                               height: auto; 
-					                               object-fit: contain; 
-					                               border-radius: 4px; 
-					                               margin-bottom: 10px;"
-                        onerror="this.src='${pageContext.request.contextPath}/images/no_image.jpg';">
+                    <img class="poster-img" src="${pageContext.request.contextPath}/poster/<%= movie.getPosterUrl() %>" 
+                    						alt="<%= movie.getTitle() %>" 
+                    						style="width: 100%;
+                    						 height: auto; /* 🌟 높이를 고정값 대신 auto로 설정하여 원본 비율대로 늘어남 */;
+                    						 object-fit: contain; /* 🌟 이미지가 잘리지 않고 영역 안에 전체 다 들어오도록 함 (권장) */ 	
+                    					     border-radius: 4px; 
+                    					     margin-bottom: 10px;">
                     <div class="rank-overlay"><span class="rank-number"><%= i + 1 %></span></div>
                   </div>
                   <div class="card-info">

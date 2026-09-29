@@ -132,7 +132,7 @@
       <div class="gnb-left">
         <a href="${pageContext.request.contextPath}/" class="brand-logo">MOVIE<span class="logo-red">BOX</span></a>
         <nav class="main-nav">
-		  <a href="${pageContext.request.contextPath}/movie/MovieList.do" style="color: #e50914;">영화</a>
+          <a href="${pageContext.request.contextPath}/movie/MovieList.jsp" style="color: #e50914;">영화</a>
           <a href="#">예매</a>
           <a href="#">영화관</a>
           <a href="#">이벤트</a>
@@ -150,12 +150,9 @@
       <% if (movie != null) { %>
           <div class="detail-container">
               <!-- 좌측: 포스터 이미지 영역 -->
-				<div class="detail-poster-area">
-				    <img class="detail-poster-img" 
-				         src="<%= movie.getPosterUrl() %>" 
-				         alt="<%= movie.getTitle() %>" 
-				         onerror="this.src='${pageContext.request.contextPath}/poster/default.jpg'">
-				</div>
+              <div class="detail-poster-area">
+                  <img class="detail-poster-img" src="${pageContext.request.contextPath}/poster/<%= movie.getPosterUrl() %>" alt="<%= movie.getTitle() %>">
+              </div>
               
               <!-- 우측: 영화 정보 및 줄거리 영역 -->
               <div class="detail-info-area">
@@ -167,23 +164,17 @@
                           <p><strong>국가:</strong> <%= movie.getCountry() %></p>
                           <p><strong>개봉일:</strong> <%= movie.getReleaseDate() %></p>
                           <p><strong>러닝타임:</strong> <%= movie.getRunningTime() %></p>
-                      	  <p><strong>감독:</strong> <%= movie.getDirector() %></p>
-                          <p><strong>출연:</strong> <%= movie.getActor() %></p>
-                      
                       </div>
                       
-						<div class="movie-summary-section">
-						
-						    <h3>줄거리</h3>
-						
-						    <p><%= movie.getPlot() %></p>
-						
-						</div>
+                      <div class="movie-summary-section">
+                          <h3>줄거리</h3>
+                          <p>이 영화는 가상의 멋진 줄거리를 가지고 있습니다. (추후 DB에 줄거리 컬럼을 추가해 연결할 수 있습니다!)</p>
+                      </div>
                   </div>
                   
                   <!-- 하단 버튼 그룹 -->
                   <div class="detail-btn-group">
-                     <a href="${pageContext.request.contextPath}/movie/MovieList.do" class="btn-back">목록으로</a>
+                      <a href="MovieList.jsp" class="btn-back">목록으로</a>
                       <a href="booking.jsp?movie_id=<%= movie.getMovieId() %>" class="btn-booking">예매하러 가기</a>
                   </div>
               </div>
