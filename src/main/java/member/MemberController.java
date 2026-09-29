@@ -46,21 +46,7 @@ public class MemberController extends HttpServlet {
 		
         try {
         	if ("/Login.do".equals(action)) {
-
-        		response.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
-			    response.setHeader("Pragma", "no-cache");
-			    response.setDateHeader("Expires", 0);
-			    
-			    // 이미 로그인한 상태라면 로그인 화면으로 가지 않음
-			    if (session.getAttribute("id") != null) {
-			    	out.println("<script>");
-	        	    out.println("alert('이미 로그인된 상태입니다.');");
-	        	    out.println("location.href='" + request.getContextPath() + "/Index.jsp';");
-	        	    out.println("</script>");
-			        return;
-			    }
-			    
-				// ---------------------------------------------------- 로그인 화면
+				// 로그인 화면
 				request.setAttribute("center", "members/Login.jsp");
 				nextPage = "/Index.jsp";
         	}else if ("/LoginPro.do".equals(action)) {
@@ -71,7 +57,7 @@ public class MemberController extends HttpServlet {
 				// DB 에 저장된 비밀번호를 꺼내서 입력한 비밀번호와 비교한다
 				String storedPass = memberDao.getPassword(id);
 
-				if (storedPass == null || pass == null || !pass.equals(storedPass)) { // DB 에 없는 아이디
+				if (storedPass == null || pass == null || !PasswordUtil.checkPassword(pass, storedPass)) { // DB 에 없는 아이디
 					session.removeAttribute("id");
 					out.println("<script> window.alert('아이디 또는 비밀번호를 확인해주세요'); history.go(-1); </script>"); // history.go(-1) = 한 페이지 뒤로
 					return;
@@ -100,34 +86,280 @@ public class MemberController extends HttpServlet {
 				// ---------------------------------------------------- 로그인 화면
 				request.setAttribute("center", "members/Join.jsp");
 				nextPage = "/Index.jsp";
-        	} else if ("/JoinPro.do".equals(action)) {
+        	}else if ("/JoinPro.do".equals(action)) {
 				// ---------------------------------------------------- 회원가입 처리
-				// (덧붙임) getParameter("이름") = 화면 form 의 <input name="이름"> 에 입력한 값을 꺼낸다. 없으면 null
+				// 주의: reg_date는 DB에서 자동으로 입력되므로 직접 입력하지 않음
 				String member_id     = request.getParameter("member_id");
 				String member_pass   = request.getParameter("member_pass");
 				String member_name   = request.getParameter("member_name");
-				int age  = Integer.parseInt(request.getParameter("age"));
+				String member_pass_confirm = request.getParameter("member_pass_confirm");
+				String age  = request.getParameter("age");
 				String gender    = request.getParameter("gender");
+				String address = request.getParameter("address");
 				String email     = request.getParameter("email");
-				String tel = request.getParameter("tel"); // 화면에서 온 값은 전부 글자라서 나이도 일단 글자로 받는다
-				String mtel = request.getParameter("mtel"); // 화면에서 온 값은 전부 글자라서 나이도 일단 글자로 받는다
-				Timestamp reg_date = new Timestamp(System.currentTimeMillis());
+				String tel = request.getParameter("tel"); 
+				String mtel = request.getParameter("mtel");
+				
+				// 모든 입력값에 대해 null 값 방지
+				if (member_id == null || member_pass == null || member_name == null
+				        || member_pass_confirm == null || age == null
+				        || gender == null || address == null || email == null
+				        || tel == null || mtel == null) {
 
+				    out.println("<script>");
+				    out.println("alert('모든 입력값을 입력해주세요.');");
+				    out.println("history.back();");
+				    out.println("</script>");
+				    return;
+				}
+				
+				// id 형식 확인(영어, 숫자 4 ~ 12)
+				if (!member_id.matches("^[a-zA-Z0-9]{4,12}$")) {
+				    out.println("<script>");
+				    out.println("alert('아이디는 영문 또는 숫자를 포함하여 4~12자로 입력해주세요.');");
+				    out.println("history.back();");
+				    out.println("</script>");
+				    return;
+				}
+				
+			    // id 중복 확인
+			    boolean idDuplicate = memberDao.isMemberIdDuplicate(member_id);
+			    
+			    if (idDuplicate) {
+			        out.println("<script>");
+			        out.println("alert('이미 사용 중인 아이디입니다.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
+			    
+				 // 비밀번호 형식 확인
+				 if (!member_pass.matches("^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$")) {
+				     out.println("<script>");
+				     out.println("alert('비밀번호는 영문, 숫자, 특수문자를 포함하여 8~20자로 입력해주세요.');");
+				     out.println("history.back();");
+				     out.println("</script>");
+				     return;
+				 }
+			    
+			    // 비밀번호, 비밀번호 확인 값 일치 확인
+			    if (!member_pass.equals(member_pass_confirm)) {
+			        out.println("<script>");
+			        out.println("alert('비밀번호와 비밀번호 확인이 일치하지 않습니다.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
+			    
+			    // 이메일 형식 확인
+			    if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+			        out.println("<script>");
+			        out.println("alert('올바른 이메일 형식을 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
+			    
+			    // 이름 형식 확인
+			    if (!member_name.matches("^[가-힣]{1,20}$")) {
+			        out.println("<script>");
+			        out.println("alert('올바른 이름을 한글로 ');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
+			    
+			    // 주소 형식 확인
+			    if (!address.matches("^[가-힣0-9 ]{1,99}$")) {
+			        out.println("<script>");
+			        out.println("alert('올바른 한글 주소를 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
+			    
+			    // 나이 형식 확인
+			    if (!age.matches("^(0|[1-9][0-9]?|1[0-4][0-9]|150)$")) {
+
+			        out.println("<script>");
+			        out.println("alert('올바른 나이를 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+			    // 나이가 0~150 사이의 숫자임을 확인 후 정수 타입으로 변경
+			    int ageInt = Integer.parseInt(age);
+			    
+			    // 전화번호 형식 확인
+			    if (!tel.matches("^0\\d{1,2}\\d{3,4}\\d{4}$")) {
+
+			        out.println("<script>");
+			        out.println("alert('올바른 전화번호를 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+			    
+			    // 휴대전화 형식 확인
+			    if (!mtel.matches("^010\\d{7,8}$")) {
+
+			        out.println("<script>");
+			        out.println("alert('올바른 휴대폰 번호를 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+			    
+			    // 비밀번호 해싱
+			    String hashedPassword = PasswordUtil.createPasswordHash(member_pass);
+
+			    // dto 객체에 회원 가입 정보 저장
 				MemberDTO dto = new MemberDTO();
 				dto.setMember_id(member_id);
-				dto.setMember_pass(member_pass);
+				dto.setMember_pass(hashedPassword);
 				dto.setMember_name(member_name);
-				dto.setAge(age);
+				dto.setAge(ageInt);
 				dto.setGender(gender);
+				dto.setAddress(address);
 				dto.setEmail(email);
 				dto.setTel(tel);
 				dto.setMtel(mtel);
-				dto.setReg_date(reg_date);
 
-				int result = memberDao.insertMember(dto); // 사원에게 "DB 에 저장해" 라고 시킨다
+				int result = memberDao.insertMember(dto); // DB에 쿼리를 사용해 저장
+				
+				if (result != 1) { 
+					// 1줄이 저장되지 않았으면 실패
+					// 이전 페이지 호출
+					out.println("<script>");
+					out.println(" alert('회원가입에 실패했습니다. 아이디를 다시 확인해주세요.');");
+					out.println(" history.back();");
+					out.println("</script>");
+					return;
+				}else if(result == 1){
+					out.println("<script>");
+					out.println(" alert('회원가입에 성공했습니다!');");
+					out.println("location.href='" + request.getContextPath() + "/Index.jsp';");
+				    out.println("</script>");
 
-				nextPage = "/Index.jsp"; // 가입 성공 -> 메인 화면 (CarController 가 받는 주소)
+				    return;
+				} 
+				
+				// 가입 성공시 메인 페이지 호출
+				nextPage = "/Index.jsp"; //
 
+			}else if ("/IdCheck.do".equals(action)) {
+
+			    String memberId = request.getParameter("member_id");
+
+			    boolean duplicate = memberDao.isMemberIdDuplicate(memberId);
+
+			    response.setContentType("application/json; charset=UTF-8");
+
+			    out.print("{\"duplicate\":" + duplicate + "}");
+
+			    out.flush();
+
+			    return;
+			}else if ("/MyPage.do".equals(action)) {
+				String id = (String)session.getAttribute("id");
+				if(id == null || id.trim() == "") {
+					out.println("<script>");
+	        	    out.println("alert('로그인 전용 페이지입니다.');");
+	        	    out.println("location.href='" + request.getContextPath() + "/member/Login.do';");
+	        	    out.println("</script>");
+	        	    return;
+				}
+				
+				// id를 통해 회원 정보 dto 객체 하나를 조회해서 저장
+				MemberDTO dto = memberDao.getMember(id);
+				
+				request.setAttribute("member", dto);
+				
+				// 회원 개인 화면
+				request.setAttribute("center", "members/MyPage.jsp");
+				nextPage = "/Index.jsp";
+			}else if ("/UpdatePro.do".equals(action)) {
+				
+				String id = (String)session.getAttribute("id");
+				
+				if(id == null || id.trim() == "") {
+					out.println("<script>");
+	        	    out.println("alert('로그인 전용 페이지입니다.');");
+	        	    out.println("location.href='" + request.getContextPath() + "/member/Login.do';");
+	        	    out.println("</script>");
+	        	    return;
+				}
+				
+				// 회원 정보 페이지에서 수정할 데이터를 전달 받음
+				String address = request.getParameter("address");
+				String email     = request.getParameter("email");
+				String tel = request.getParameter("tel"); 
+				String mtel = request.getParameter("mtel");
+				
+				// 모든 입력값에 대해 null 값 방지
+				if (address == null || email == null || tel == null || mtel == null) {
+				    out.println("<script>");
+				    out.println("alert('모든 입력값을 입력해주세요.');");
+				    out.println("history.back();");
+				    out.println("</script>");
+				    return;
+				}
+				
+				// 이메일 형식 확인
+			    if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+			        out.println("<script>");
+			        out.println("alert('올바른 이메일 형식을 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
+			    
+			    // 주소 형식 확인
+			    if (!address.matches("^[가-힣0-9 ]{1,99}$")) {
+			        out.println("<script>");
+			        out.println("alert('올바른 한글 주소를 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
+			    
+			    // 전화번호 형식 확인
+			    if (!tel.matches("^0\\d{1,2}\\d{3,4}\\d{4}$")) {
+			        out.println("<script>");
+			        out.println("alert('올바른 전화번호를 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
+			    
+			    // 휴대전화 형식 확인
+			    if (!mtel.matches("^010\\d{7,8}$")) {
+			        out.println("<script>");
+			        out.println("alert('올바른 휴대폰 번호를 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
+			    
+			    int result = memberDao.updateMember(id, email, address, tel, mtel);
+			    
+			    // 수정 성공
+			    if (result > 0) {
+			        out.println("<script>");
+			        out.println("alert('회원정보가 수정되었습니다.');");
+			        out.println("location.href='" + request.getContextPath() + "/Index.jsp';");
+			        out.println("</script>");
+			        return;
+			    } else {
+			        out.println("<script>");
+			        out.println("alert('회원정보 수정에 실패했습니다.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
 			}
         	// 결과 화면으로 이동 (주소창은 그대로, 화면만 바뀐다)
         	request.getRequestDispatcher(nextPage).forward(request, response);
