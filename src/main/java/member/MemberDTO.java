@@ -9,11 +9,18 @@ public class MemberDTO {
 	private Timestamp reg_date;
 	private int age;
 	private String gender;
+	private String address;
 	private String email;
 	private String tel;
 	private String mtel;
 	
 	
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
 	public String getMember_id() {
 		return member_id;
 	}

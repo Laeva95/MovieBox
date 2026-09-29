@@ -260,10 +260,6 @@
                  <a href="${pageContext.request.contextPath}/member/Join.do">
                      회원가입
                  </a>
-                 <span class="link-divider"></span>
-                 <a href="#">아이디 찾기</a>
-                 <span class="link-divider"></span>
-                 <a href="#">비밀번호 찾기</a>
              </div>
              <div class="login-divider">
                  <span>또는</span>

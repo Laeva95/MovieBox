@@ -14,7 +14,7 @@
         <a href="${pageContext.request.contextPath}/member/MyPage.do">마이페이지</a>
       </c:otherwise>
     </c:choose>
-    <a href="#">고객센터</a>
+
   </div>
 </div>
 <div class="inner-container gnb-bar">

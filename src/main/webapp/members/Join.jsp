@@ -411,7 +411,42 @@
 	    color: #fff;
 	}
  </style>
+<script>
+function idCheck() {
 
+    // 입력한 아이디 가져오기
+    const memberId = document.getElementById("memberId").value.trim();
+
+    // 아이디를 입력하지 않은 경우
+    if (memberId === "") {
+        alert("아이디를 입력해주세요.");
+        return;
+    }
+
+    // Servlet으로 비동기 요청
+    fetch("${pageContext.request.contextPath}/member/IdCheck.do?member_id=" + encodeURIComponent(memberId))
+        .then(response => response.json())
+        .then(data => {
+
+            const idCheckText = document.getElementById("joinIdCheckText");
+
+            if (data.duplicate) {
+                // 중복된 아이디
+                idCheckText.textContent = "이미 사용 중인 아이디입니다.";
+                idCheckText.style.color = "red";
+            } else {
+                // 사용 가능한 아이디
+                idCheckText.textContent = "사용 가능한 아이디입니다.";
+                idCheckText.style.color = "green";
+            }
+
+        })
+        .catch(error => {
+            console.error("아이디 중복 확인 오류:", error);
+            alert("아이디 중복 확인 중 오류가 발생했습니다.");
+        });
+}
+</script>
 <main class="join-page">
     <div class="join-container">
         <!-- 제목 -->
@@ -440,13 +475,13 @@
                             maxlength="12"
                             required
                         >
-                        <button type="button" class="btn-check">
+                        <button type="button" class="btn-check" onclick="idCheck();">
                             중복 확인
                         </button>
 
                     </div>
 
-                    <p class="form-help">
+                    <p class="form-help" id="joinIdCheckText">
                         영문, 숫자를 포함하여 4~12자로 입력해주세요.
                     </p>
 
@@ -470,7 +505,7 @@
                         required
                     >
               		<p class="form-help">
-                        영문, 숫자를 포함하여 4~12자로 입력해주세요.
+                        영문, 숫자를 포함하여 8~20자로 입력해주세요.
                     </p>
                 </div>
   
@@ -489,6 +524,7 @@
                         name="member_pass_confirm"
                         class="form-input"
                         placeholder="비밀번호를 다시 입력해주세요"
+                        maxlength="20"
                         required
                     >
                     <p class="form-help">
@@ -624,10 +660,13 @@
                             id="tel"
                             name="tel"
                             class="form-input"
-                            placeholder="02-1234-5678"
+                            placeholder="0212345678"
                             maxlength="20"
                             required
                         >
+                        <p class="form-help">
+                        하이픈(-)기호 없이 숫자만 입력해주세요
+                    </p>
                     </div>
                     <!-- 휴대폰 -->
                     <div class="form-group">
@@ -639,10 +678,13 @@
                             id="mtel"
                             name="mtel"
                             class="form-input"
-                            placeholder="010-1234-5678"
+                            placeholder="01012345678"
                             maxlength="20"
                             required
                         >
+                        <p class="form-help">
+                        하이픈(-)기호 없이 숫자만 입력해주세요
+                    </p>
                     </div>
                 </div>
             </section>

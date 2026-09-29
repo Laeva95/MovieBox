@@ -22,15 +22,15 @@ if (centerPage == null || centerPage.trim().isEmpty()) {
 // 현재 page 객체의 "center" 키에 중앙 화면 페이지 주소를 저장
 pageContext.setAttribute("center", centerPage);
 %>
-// Top.jsp 영역
+<!-- Top.jsp 영역 -->
   <header class="site-header">
     <jsp:include page="/inc/Top.jsp"/>
   </header>
   
-// center 영역
+<!-- center 영역 -->
   <jsp:include page="${center}"/>
   
-// Bottom.jsp 영역
+<!-- Bottom.jsp 영역 -->
   <footer class="site-footer">
   	<jsp:include page="/inc/Bottom.jsp"/>
   </footer>
