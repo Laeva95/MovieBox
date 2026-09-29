@@ -6,12 +6,12 @@
     auth="Container"
     type="javax.sql.DataSource"
     driverClassName="com.mysql.cj.jdbc.Driver"
-    username="id"
-    password="pass"
+    username="teamid"
+    password="teampass"
     maxTotal="20"
     maxIdle="10"
     maxWaitMillis="10000"
-    url="jdbc:mysql://localhost:3306/rentcar_edu?serverTimezone=Asia/Seoul&amp;characterEncoding=UTF-8&amp;useUnicode=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false"
+    url="jdbc:mysql://localhost:3306/moviebox?serverTimezone=Asia/Seoul&amp;characterEncoding=UTF-8&amp;useUnicode=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false"
 	/>
 </Context>
 
