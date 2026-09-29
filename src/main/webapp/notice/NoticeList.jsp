@@ -1,6 +1,34 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page import="java.util.*" %>
+<%
+    // 1. 여기서 데이터를 만듭니다.
+    List<Map<String, Object>> noticeList = new ArrayList<>();
+    
+    Map<String, Object> n1 = new HashMap<>();
+    n1.put("noticeId", 1);
+    n1.put("title", "추석 연휴 영화관 운영 안내");
+    n1.put("createdAt", "2026-09-23");
+    n1.put("viewCount", 0);
+    noticeList.add(n1);
 
+    Map<String, Object> n2 = new HashMap<>();
+    n2.put("noticeId", 2);
+    n2.put("title", "시스템 점검 안내");
+    n2.put("createdAt", "2026-09-23");
+    n2.put("viewCount", 0);
+    noticeList.add(n2);
+
+    Map<String, Object> n3 = new HashMap<>();
+    n3.put("noticeId", 3);
+    n3.put("title", "주차장 이용 안내");
+    n3.put("createdAt", "2026-09-23");
+    n3.put("viewCount", 0);
+    noticeList.add(n3);
+
+    // 2. request 영역에 담아줍니다.
+    request.setAttribute("noticeList", noticeList);
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,6 +58,44 @@
     .search-box input { width: 300px; padding: 10px; border: 1px solid #ccc; }
     .search-box button { padding: 10px 20px; border: none; background: #222; color: white; cursor: pointer; }
 </style>
+<script>
+    function searchNotice() {
+        // 1. 검색 버튼이 눌렸는지 확인용 로그
+        console.log("검색 버튼 클릭됨!");
+
+        const inputObj = document.getElementById("searchInput");
+        if (!inputObj) {
+            console.log("searchInput 요소를 찾을 수 없습니다!");
+            return;
+        }
+
+        const keyword = inputObj.value.trim().toLowerCase();
+        console.log("입력된 검색어:", keyword);
+
+        const rows = document.querySelectorAll(".notice-table tbody tr");
+        console.log("찾은 공지사항 행 개수:", rows.length);
+
+        rows.forEach((row, index) => {
+            if (row.cells.length < 2) return;
+
+            const titleTd = row.querySelector(".notice-title");
+            if (!titleTd) {
+                console.log(index +번째 행에서 .notice-title을 찾지 못했습니다.");
+                return;
+            }
+
+            const titleText = titleTd.innerText.toLowerCase();
+            console.log(index +번째 글 제목:", titleText);
+
+            // 검색어가 포함되어 있는지 확인 후 표시/숨김 처리
+            if (titleText.includes(keyword)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+</script>
 </head>
 
 <body>
@@ -63,7 +129,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- 데이터베이스에서 가져온 공지사항 목록을 반복문으로 출력 -->
+                    <!-- 3. 반복문을 통해 데이터 출력 -->
                     <c:choose>
                         <c:when test="${empty noticeList}">
                             <tr>
@@ -75,7 +141,8 @@
                                 <tr>
                                     <td>${notice.noticeId}</td>
                                     <td class="notice-title">
-                                        <!-- 클릭 시 해당 글 번호(id)를 들고 detail 컨트롤러로 이동 -->
+                                    
+                                    	<%-- 각 글의 번호(id)를 들고 상세 페이지로 넘어가는 링크 --%>
                                         <a href="detail?id=${notice.noticeId}">${notice.title}</a>
                                     </td>
                                     <td>${notice.createdAt}</td>
@@ -94,8 +161,8 @@
             </div>
 
             <div class="search-box">
-                <input type="text" placeholder="공지사항 검색">
-                <button type="button">검색</button>
+                <input type="text" id="searchInput" placeholder="공지사항 검색" onkeyup="if(event.key === 'Enter'){ searchNotice(); }">
+    			<button type="button" onclick="searchNotice()">검색</button>
             </div>
         </div>
     </section>
