@@ -140,7 +140,7 @@
                 <div class="movie-card" onclick="location.href='MovieDetail.jsp?movie_id=<%= movie.getMovieId() %>'">
                   <div class="poster-area">
                     <!-- 포스터 이미지 경로 수정 (${pageContext.request.contextPath}/poster/...) -->
-					<img class="poster-img" src="<%= movie.getPosterUrl() %>" 
+					<img class="poster-img" src="<%= movie.getPoster() %>" 
 					                        alt="<%= movie.getTitle() %>" 
 					                        style="width: 100%;
 					                               height: auto; 

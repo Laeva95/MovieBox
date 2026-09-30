@@ -152,7 +152,7 @@
               <!-- 좌측: 포스터 이미지 영역 -->
 				<div class="detail-poster-area">
 				    <img class="detail-poster-img" 
-				         src="<%= movie.getPosterUrl() %>" 
+				         src="<%= movie.getPoster() %>" 
 				         alt="<%= movie.getTitle() %>" 
 				         onerror="this.src='${pageContext.request.contextPath}/poster/default.jpg'">
 				</div>
@@ -168,7 +168,7 @@
                           <p><strong>개봉일:</strong> <%= movie.getReleaseDate() %></p>
                           <p><strong>러닝타임:</strong> <%= movie.getRunningTime() %></p>
                       	  <p><strong>감독:</strong> <%= movie.getDirector() %></p>
-                          <p><strong>출연:</strong> <%= movie.getActor() %></p>
+                          <p><strong>출연:</strong> <%= movie.getActors() %></p>
                       
                       </div>
                       
@@ -176,7 +176,7 @@
 						
 						    <h3>줄거리</h3>
 						
-						    <p><%= movie.getPlot() %></p>
+						    <p><%= movie.getSummary() %></p>
 						
 						</div>
                   </div>
