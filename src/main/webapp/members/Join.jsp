@@ -422,6 +422,12 @@ function idCheck() {
         alert("아이디를 입력해주세요.");
         return;
     }
+    
+    // 아이디가 너무 짧은 경우
+    if(memberId.length < 4){
+    	alert("아이디가 너무 짧습니다.")
+    	return;
+    }
 
     // Servlet으로 비동기 요청
     fetch("${pageContext.request.contextPath}/member/IdCheck.do?member_id=" + encodeURIComponent(memberId))
@@ -472,7 +478,7 @@ function idCheck() {
                             name="member_id"
                             class="form-input"
                             placeholder="아이디를 입력해주세요"
-                            maxlength="12"
+                            maxlength="10"
                             required
                         >
                         <button type="button" class="btn-check" onclick="idCheck();">
@@ -482,7 +488,7 @@ function idCheck() {
                     </div>
 
                     <p class="form-help" id="joinIdCheckText">
-                        영문, 숫자를 포함하여 4~12자로 입력해주세요.
+                        영문 또는 숫자를 포함하여 4~10자로 입력해주세요.
                     </p>
 
                 </div>
@@ -505,7 +511,7 @@ function idCheck() {
                         required
                     >
               		<p class="form-help">
-                        영문, 숫자를 포함하여 8~20자로 입력해주세요.
+                        영문, 숫자, 특수문자를 포함하여 8~20자로 입력해주세요.
                     </p>
                 </div>
   

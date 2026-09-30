@@ -23,6 +23,51 @@ public class MemberDAO {
 			}
 		}
 		
+		public int kakaoLogin(MemberDTO member) {
+
+		    int result = 0;
+
+		    // 1. 먼저 카카오 회원이 이미 존재하는지 확인
+		    String selectSql =
+		            "SELECT member_id FROM member WHERE member_id = ?";
+
+		    try (Connection con = ds.getConnection();
+		         PreparedStatement pstmt = con.prepareStatement(selectSql)) {
+
+		        pstmt.setString(1, member.getMember_id());
+
+		        try (ResultSet rs = pstmt.executeQuery()) {
+
+		            // 이미 회원이 존재한다면
+		            if (rs.next()) {
+		                result = 1;
+		                return result;
+		            }
+		        }
+
+		        // 2. 회원이 없다면 회원가입
+		        String insertSql =
+		                "INSERT INTO member (member_id, member_pass, member_name) "
+		              + "VALUES (?, ?, ?)";
+
+		        try (PreparedStatement insertPstmt =
+		                con.prepareStatement(insertSql)) {
+
+		            insertPstmt.setString(1, member.getMember_id());
+		            
+		            // 카카오 로그인은 MovieBox 비밀번호를 사용하지 않으므로 임의의 문자열을 대입
+		            insertPstmt.setString(2, "password");
+		            
+		            insertPstmt.setString(3, member.getMember_name());
+		            
+		            result = insertPstmt.executeUpdate();
+		        }
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		    return result;
+		}
+		
 		// 입력 받은 id를 통해 비밀번호를 조회하는 메소드
 		public String getPassword(String id) {
 			String sql = "select member_pass from member where member_id=?";
@@ -136,15 +181,18 @@ public class MemberDAO {
 
 		    return member;
 		}
-		public int updateMember(String id, String email, String address, String tel, String mtel) {
+		public int updateMember(String id, String email, String address, String tel, String mtel, String age, String gender) {
 		    int result = 0;
+		    int ageInt = Integer.parseInt(age);
 
 		    String sql =
 		        "UPDATE member " +
 		        "SET email = ?, " +
 		        "    address = ?, " +
 		        "    tel = ?, " +
-		        "    mtel = ? " +
+		        "    mtel = ?, " +
+		        "	 age = ?, " + 
+		        " 	 gender = ? " +
 		        "WHERE member_id = ?";
 		    try (
 		        Connection con = ds.getConnection();
@@ -154,7 +202,9 @@ public class MemberDAO {
 		        pstmt.setString(2, address);
 		        pstmt.setString(3, tel);
 		        pstmt.setString(4, mtel);
-		        pstmt.setString(5, id);
+		        pstmt.setInt(5, ageInt);
+		        pstmt.setString(6, gender);
+		        pstmt.setString(7, id);
 
 		        result = pstmt.executeUpdate();
 		    } catch (Exception e) {
