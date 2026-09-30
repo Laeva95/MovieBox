@@ -343,7 +343,7 @@
                                    name="age"
                                    class="member-info-input"
                                    value="${member.age}"
-                                   readonly>
+                                   >
                         </div>
                         <div class="member-info-group">
                             <label class="member-info-label">
@@ -353,7 +353,7 @@
                                    name="gender"
                                    class="member-info-input"
                                    value="${member.gender}"
-                                   readonly>
+                                   >
                         </div>
                     </div>
                 </div>

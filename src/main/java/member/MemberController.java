@@ -10,6 +10,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import member.MemberDTO;
 import member.MemberDAO;
@@ -20,10 +30,28 @@ public class MemberController extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private MemberDAO memberDao;
+    
+    // 카카오 로그인 요청을 위한 변수
+    private String restApiKey;
+    private String clientSecret;
+    private String redirectUri;
 
     @Override
-    public void init() {
+    public void init() throws ServletException {
         memberDao = new MemberDAO();
+        
+        try {
+
+            Context initContext = new InitialContext();
+            Context envContext = (Context) initContext.lookup("java:comp/env");
+
+            restApiKey = (String) envContext.lookup("kakao/restApiKey");
+            clientSecret = (String) envContext.lookup("kakao/clientSecret");
+            redirectUri = (String) envContext.lookup("kakao/redirectUri");
+
+        } catch (NamingException e) {
+            throw new ServletException("카카오 로그인 설정을 불러오지 못했습니다.", e);
+        }
     }
 
     @Override
@@ -113,10 +141,10 @@ public class MemberController extends HttpServlet {
 				    return;
 				}
 				
-				// id 형식 확인(영어, 숫자 4 ~ 12)
-				if (!member_id.matches("^[a-zA-Z0-9]{4,12}$")) {
+				// id 형식 확인(영어, 숫자 4 ~ 10)
+				if (!member_id.matches("^[a-zA-Z0-9]{4,10}$")) {
 				    out.println("<script>");
-				    out.println("alert('아이디는 영문 또는 숫자를 포함하여 4~12자로 입력해주세요.');");
+				    out.println("alert('아이디는 영문 또는 숫자를 포함하여 4~10자로 입력해주세요.');");
 				    out.println("history.back();");
 				    out.println("</script>");
 				    return;
@@ -287,26 +315,47 @@ public class MemberController extends HttpServlet {
 				
 				if(id == null || id.trim() == "") {
 					out.println("<script>");
-	        	    out.println("alert('로그인 전용 페이지입니다.');");
+	        	    out.println("alert('로그인 전용 기능입니다.');");
 	        	    out.println("location.href='" + request.getContextPath() + "/member/Login.do';");
 	        	    out.println("</script>");
 	        	    return;
 				}
 				
 				// 회원 정보 페이지에서 수정할 데이터를 전달 받음
+				String age = request.getParameter("age");
+				String gender = request.getParameter("gender");
 				String address = request.getParameter("address");
 				String email     = request.getParameter("email");
 				String tel = request.getParameter("tel"); 
 				String mtel = request.getParameter("mtel");
 				
 				// 모든 입력값에 대해 null 값 방지
-				if (address == null || email == null || tel == null || mtel == null) {
+				if (age == null || gender == null || address == null || email == null || tel == null || mtel == null) {
 				    out.println("<script>");
 				    out.println("alert('모든 입력값을 입력해주세요.');");
 				    out.println("history.back();");
 				    out.println("</script>");
 				    return;
 				}
+				
+				// 나이 형식 확인
+			    if (!age.matches("^(0|[1-9][0-9]?|1[0-4][0-9]|150)$")) {
+
+			        out.println("<script>");
+			        out.println("alert('올바른 나이를 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+			    // 성별 형식 확인
+			    if (!gender.equals("남") && !gender.equals("여")) {
+			        out.println("<script>");
+			        out.println("alert('성별은 남 또는 여로 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+			        return;
+			    }
 				
 				// 이메일 형식 확인
 			    if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
@@ -344,7 +393,7 @@ public class MemberController extends HttpServlet {
 			        return;
 			    }
 			    
-			    int result = memberDao.updateMember(id, email, address, tel, mtel);
+			    int result = memberDao.updateMember(id, email, address, tel, mtel, age, gender);
 			    
 			    // 수정 성공
 			    if (result > 0) {
@@ -360,6 +409,104 @@ public class MemberController extends HttpServlet {
 			        out.println("</script>");
 			        return;
 			    }
+			}else if ("/KakaoLogin.do".equals(action)) {
+				// 카카오 로그인 화면
+				// 카카오 REST API KEY를 제대로 불러왔는지 확인
+				if (restApiKey == null || restApiKey.trim().isEmpty()) { // 아직 진짜 키를 넣지 않았으면
+					out.println("<script>");
+					out.println(" alert('카카오 로그인이 아직 설정되지 않았습니다.\\n"
+							+ "MemberController 의 restApiKey 를 확인해주세요.');");
+					out.println(" history.back();");
+					out.println("</script>");
+					return;
+				}
+				
+				// rest api key와 리다이렉트 uri를 통해 카카오 로그인 요청
+				String kakaoLoginUrl =
+			            "https://kauth.kakao.com/oauth/authorize"
+			            + "?response_type=code"
+			            + "&client_id=" + restApiKey
+			            + "&redirect_uri=" + redirectUri;
+
+			    response.sendRedirect(kakaoLoginUrl);
+			    return;
+				
+			}else if ("/KakaoCallback.do".equals(action)) {
+				// 카카오에서 전달한 인가 코드
+			    String code = request.getParameter("code");
+
+			    System.out.println("카카오 인가 코드 : " + code);
+
+			    // 전달 받은 코드가 null 이거나 비어있는 값이라면 로그인 실패 처리
+			    if (code == null || code.trim().isEmpty()) {
+
+			        out.println("<script>");
+			        out.println("alert('카카오 로그인에 실패했습니다.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+			    
+			    try {
+
+			        // 인가 코드 → Access Token 요청
+			        String tokenResponse = getKakaoAccessToken(code);
+			        
+			        // 전달 받은 json 데이터에서 access_token 키의 값만 가져옴
+			        String accessToken = tokenResponse.substring(tokenResponse.indexOf("\"access_token\":\"")+ 16,
+			                        tokenResponse.indexOf("\"", tokenResponse.indexOf("\"access_token\":\"") + 16));
+			        
+			        // token을 통해 사용자 정보를 가져옴
+			        String data = getKakaoUserInfo(accessToken);
+			        
+			        // id, nickname 저장
+			        String kakaoId = getKakaoId(data);
+			        String kakaoNickname = getKakaoNickname(data);
+			        
+			        System.out.println("카카오 ID : " + kakaoId);
+			        System.out.println("카카오 닉네임 : " + kakaoNickname);
+			        
+			        // MemberDTO 객체를 생성하여 id, nickname 저장
+			        MemberDTO member = new MemberDTO();
+			        member.setMember_id("k" + kakaoId);
+			        member.setMember_name(kakaoNickname);
+			        
+			        // 로그인을 위한 db 접근 요청
+			        int result = memberDao.kakaoLogin(member);
+			        
+			        // result == 1 일시 로그인 성공
+			        if (result == 1) {
+			        	// 세션에 id, name 저장
+			            session.setAttribute("id", member.getMember_id());
+			            session.setAttribute("name", member.getMember_name());
+
+			            // 메인 화면으로 이동
+			            response.sendRedirect(
+			                request.getContextPath() + "/Index.jsp"
+			            );
+
+			            return;
+			            
+			        // 로그인 실패
+			        }else {
+			        	// 이전 화면으로 이동
+			            out.println("<script>");
+			            out.println("alert('카카오 로그인에 실패했습니다.');");
+			            out.println("history.back();");
+			            out.println("</script>");
+
+			            return;
+			        }
+			    } catch (Exception e) {
+			        e.printStackTrace();
+			        out.println("<script>");
+			        out.println("alert('카카오 로그인 처리 중 오류가 발생했습니다.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
 			}
         	// 결과 화면으로 이동 (주소창은 그대로, 화면만 바뀐다)
         	request.getRequestDispatcher(nextPage).forward(request, response);
@@ -367,5 +514,182 @@ public class MemberController extends HttpServlet {
         	System.out.println("[MemberController] 처리 중 오류 : " + action);
 			e.printStackTrace(); // 오류가 난 위치(몇 번째 줄)까지 콘솔에 자세히 출력한다
         }
+    }
+    
+    private String getKakaoAccessToken(String code) throws Exception {
+
+        String tokenUrl = "https://kauth.kakao.com/oauth/token";
+
+        URL url = new URL(tokenUrl);
+
+        HttpURLConnection conn =
+                (HttpURLConnection) url.openConnection();
+
+        // POST 방식
+        conn.setRequestMethod("POST");
+
+        // 요청 데이터를 서버로 보낼 수 있도록 설정
+        conn.setDoOutput(true);
+
+        // 요청 데이터 형식
+        conn.setRequestProperty(
+                "Content-Type",
+                "application/x-www-form-urlencoded;charset=utf-8"
+        );
+
+        // 카카오에 보낼 데이터
+        String params =
+                "grant_type=authorization_code"
+                + "&client_id=" + URLEncoder.encode(restApiKey, "UTF-8")
+                + "&redirect_uri=" + URLEncoder.encode(redirectUri, "UTF-8")
+                + "&code=" + URLEncoder.encode(code, "UTF-8")
+                + "&client_secret=" + URLEncoder.encode(clientSecret, "UTF-8");
+
+        // 요청 데이터 전송
+        try (OutputStream os = conn.getOutputStream()) {
+
+            os.write(params.getBytes(StandardCharsets.UTF_8));
+            os.flush();
+        }
+
+        // 카카오의 응답 코드 확인
+        int responseCode = conn.getResponseCode();
+
+        System.out.println("카카오 Token API 응답 코드 : " + responseCode);
+
+        // 응답 읽기
+        BufferedReader br;
+
+        if (responseCode == 200) {
+
+            br = new BufferedReader(
+                    new InputStreamReader(
+                            conn.getInputStream(),
+                            StandardCharsets.UTF_8
+                    )
+            );
+
+        } else {
+
+            br = new BufferedReader(
+                    new InputStreamReader(
+                            conn.getErrorStream(),
+                            StandardCharsets.UTF_8
+                    )
+            );
+        }
+
+        StringBuilder response = new StringBuilder();
+
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            response.append(line);
+        }
+
+        br.close();
+
+        System.out.println("카카오 Token 응답 : " + response);
+
+        return response.toString();
+    }
+
+    private String getKakaoUserInfo(String accessToken) throws Exception {
+
+        String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
+
+        URL url = new URL(userInfoUrl);
+
+        HttpURLConnection conn =
+                (HttpURLConnection) url.openConnection();
+
+        conn.setRequestMethod("GET");
+
+        conn.setRequestProperty(
+                "Authorization",
+                "Bearer " + accessToken
+        );
+
+        conn.setRequestProperty(
+                "Content-Type",
+                "application/x-www-form-urlencoded;charset=utf-8"
+        );
+
+        int responseCode = conn.getResponseCode();
+
+        System.out.println("카카오 사용자 정보 응답 코드 : " + responseCode);
+
+        BufferedReader br;
+
+        if (responseCode == 200) {
+
+            br = new BufferedReader(
+                    new InputStreamReader(
+                            conn.getInputStream(),
+                            StandardCharsets.UTF_8
+                    )
+            );
+
+        } else {
+
+            br = new BufferedReader(
+                    new InputStreamReader(
+                            conn.getErrorStream(),
+                            StandardCharsets.UTF_8
+                    )
+            );
+        }
+
+        StringBuilder response = new StringBuilder();
+
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            response.append(line);
+        }
+
+        br.close();
+
+        return response.toString();
+    }
+    private String getKakaoId(String result) {
+
+        String key = "\"id\":";
+
+        int start = result.indexOf(key);
+
+        if (start == -1) {
+            return null;
+        }
+
+        start += key.length();
+
+        int end = result.indexOf(",", start);
+
+        if (end == -1) {
+            return null;
+        }
+
+        return result.substring(start, end).trim();
+    }
+    private String getKakaoNickname(String result) {
+
+        String key = "\"nickname\":\"";
+
+        int start = result.indexOf(key);
+
+        if (start == -1) {
+            return null;
+        }
+
+        start += key.length();
+
+        int end = result.indexOf("\"", start);
+
+        if (end == -1) {
+            return null;
+        }
+
+        return result.substring(start, end);
     }
 }

@@ -264,7 +264,7 @@
              <div class="login-divider">
                  <span>또는</span>
              </div>
-             <a href="${pageContext.request.contextPath}/member/kakaoLogin.do"
+             <a href="${pageContext.request.contextPath}/member/KakaoLogin.do"
                 class="btn-kakao-login">
                  <span class="kakao-symbol">K</span>
                  카카오로 로그인
