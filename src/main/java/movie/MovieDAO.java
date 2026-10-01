@@ -1,5 +1,4 @@
 package movie;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -8,6 +7,7 @@ import java.net.URLEncoder;
 
 import java.sql.Connection;
 import java.sql.Date;
+import javax.sql.DataSource;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,31 +27,35 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-
 public class MovieDAO {
 
+	// =========================================================
+    // 1. context.xml에서 불러오는 JNDI 데이터소스 및 KMDb API 키
     // =========================================================
-    // 1. MySQL DB 연결 정보
-    // =========================================================
-
-    private final String URL =
-            "jdbc:mysql://localhost:3306/moviebox"
-            + "?serverTimezone=Asia/Seoul"
-            + "&characterEncoding=UTF-8";
-
-    private final String USER = "teamid";
-
-    private final String PASS = "teampass";
-
+    private javax.sql.DataSource dataSource;
+    private String serviceKey;
 
     // =========================================================
-    // 2. KMDb API KEY
+    // 2. KMDb API KEY (context.xml에서 불러오기)
     // =========================================================
+    // 생성자에서 context.xml의 KMDb API 키를 읽어옴
+    // 생성자
+    public MovieDAO() {
+        try {
+            javax.naming.Context initContext = new javax.naming.InitialContext();
+            javax.naming.Context envContext = (javax.naming.Context) initContext.lookup("java:comp/env");
 
-    private final String SERVICE_KEY =
-            "E2R512K63ELVY49O4AF4";
+            // KMDb API 키 로드
+            this.serviceKey = (String) envContext.lookup("kmdb/serviceKey");
 
+            // ★ context.xml의 데이터소스를 dataSource에 연결!
+            this.dataSource = (javax.sql.DataSource) envContext.lookup("jdbc/moviebox");
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            
+        }
+    }
     // =========================================================
     // 3. KMDb API → 영화 목록 가져오기
     // =========================================================
@@ -106,7 +110,7 @@ public class MovieDAO {
                     "http://api.koreafilm.or.kr"
                     + "/openapi-data2/wisenut/search_api/search_json2.jsp"
                     + "?collection=kmdb_new2"
-                    + "&ServiceKey=" + SERVICE_KEY
+                    + "&ServiceKey=" + serviceKey
                     + "&detail=Y"
                     + "&query=" + query
                     + "&releaseDts=" + releaseDtsParam
@@ -995,107 +999,91 @@ public class MovieDAO {
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
-        try {
+        try (
+                Connection conn = dataSource.getConnection(); // 변경됨!
 
-            Class.forName(
-                    "com.mysql.cj.jdbc.Driver"
+                PreparedStatement pstmt =
+                        conn.prepareStatement(sql)
+        ) {
+
+
+            // 제목
+            pstmt.setString(
+                    1,
+                    movie.getTitle()
             );
 
 
-            try (
-                    Connection conn =
-                            DriverManager.getConnection(
-                                    URL,
-                                    USER,
-                                    PASS
-                            );
-
-                    PreparedStatement pstmt =
-                            conn.prepareStatement(sql)
-            ) {
+            // 장르
+            pstmt.setString(
+                    2,
+                    movie.getGenre()
+            );
 
 
-                // 제목
-                pstmt.setString(
-                        1,
-                        movie.getTitle()
+            // ★ 러닝타임
+            pstmt.setString(
+                    3,
+                    movie.getRunningTime()
+            );
+
+
+            // ★ release_date는 MySQL DATE
+            if (movie.getReleaseDate() != null
+                    && !movie.getReleaseDate().isEmpty()) {
+
+                pstmt.setDate(
+                        4,
+                        Date.valueOf(
+                                movie.getReleaseDate()
+                        )
                 );
 
+            } else {
 
-                // 장르
-                pstmt.setString(
-                        2,
-                        movie.getGenre()
+                pstmt.setNull(
+                        4,
+                        java.sql.Types.DATE
                 );
-
-
-                // ★ 러닝타임
-                // 이제 DB도 VARCHAR이므로 setString()
-                pstmt.setString(
-                        3,
-                        movie.getRunningTime()
-                );
-
-
-                // ★ release_date는 MySQL DATE
-                // Java에서는 String 그대로 유지하고
-                // DB에 넣을 때 Date로 변환
-                if (movie.getReleaseDate() != null
-                        && !movie.getReleaseDate().isEmpty()) {
-
-                    pstmt.setDate(
-                            4,
-                            Date.valueOf(
-                                    movie.getReleaseDate()
-                            )
-                    );
-
-                } else {
-
-                    pstmt.setNull(
-                            4,
-                            java.sql.Types.DATE
-                    );
-                }
-
-
-                // 포스터
-                pstmt.setString(
-                        5,
-                        movie.getPoster()
-                );
-
-
-                // 줄거리
-                pstmt.setString(
-                        6,
-                        movie.getSummary()
-                );
-
-
-                // 감독
-                pstmt.setString(
-                        7,
-                        movie.getDirector()
-                );
-
-
-                // 배우
-                pstmt.setString(
-                        8,
-                        movie.getActors()
-                );
-
-
-                // 국가
-                pstmt.setString(
-                        9,
-                        movie.getCountry()
-                );
-
-
-                return pstmt.executeUpdate();
             }
+
+
+            // 포스터
+            pstmt.setString(
+                    5,
+                    movie.getPoster()
+            );
+
+
+            // 줄거리
+            pstmt.setString(
+                    6,
+                    movie.getSummary()
+            );
+
+
+            // 감독
+            pstmt.setString(
+                    7,
+                    movie.getDirector()
+            );
+
+
+            // 배우
+            pstmt.setString(
+                    8,
+                    movie.getActors()
+            );
+
+
+            // 국가
+            pstmt.setString(
+                    9,
+                    movie.getCountry()
+            );
+
+
+            return pstmt.executeUpdate();
 
 
         } catch (Exception e) {
@@ -1162,80 +1150,66 @@ public class MovieDAO {
                 + "ORDER BY release_date DESC"
                 + " LIMIT 30";
 
+        try (
+                Connection conn = dataSource.getConnection(); // 변경됨!
 
-        try {
+                PreparedStatement pstmt =
+                        conn.prepareStatement(sql);
 
-            Class.forName(
-                    "com.mysql.cj.jdbc.Driver"
-            );
-
-
-            try (
-                    Connection conn =
-                            DriverManager.getConnection(
-                                    URL,
-                                    USER,
-                                    PASS
-                            );
-
-                    PreparedStatement pstmt =
-                            conn.prepareStatement(sql);
-
-                    ResultSet rs =
-                            pstmt.executeQuery()
-            ) {
+                ResultSet rs =
+                        pstmt.executeQuery()
+        ) {
 
 
-                int movieId = 1;
+            int movieId = 1;
 
 
-                while (rs.next()) {
+            while (rs.next()) {
 
-                    MovieDTO movie =
-                            new MovieDTO(
+                MovieDTO movie =
+                        new MovieDTO(
 
-                                    movieId++,
+                                movieId++,
 
-                                    rs.getString(
-                                            "title"
-                                    ),
+                                rs.getString(
+                                        "title"
+                                ),
 
-                                    rs.getString(
-                                            "genre"
-                                    ),
+                                rs.getString(
+                                        "genre"
+                                ),
 
-                                    rs.getString(
-                                            "running_time"
-                                    ),
+                                rs.getString(
+                                        "running_time"
+                                ),
 
-                                    rs.getString(
-                                            "poster"
-                                    ),
+                                rs.getString(
+                                        "poster"
+                                ),
 
-                                    rs.getString(
-                                            "country"
-                                    ),
+                                rs.getString(
+                                        "country"
+                                ),
 
-                                    rs.getString(
-                                            "release_date"
-                                    ),
+                                rs.getString(
+                                        "release_date"
+                                ),
 
-                                    rs.getString(
-                                            "director"
-                                    ),
+                                rs.getString(
+                                        "director"
+                                ),
 
-                                    rs.getString(
-                                            "actors"
-                                    ),
+                                rs.getString(
+                                        "actors"
+                                ),
 
-                                    rs.getString(
-                                            "summary"
-                                    )
-                            );
+                                rs.getString(
+                                        "summary"
+                                )
+                        );
 
 
-                    list.add(movie);
-                }
+                list.add(movie);
             }
 
 
@@ -1247,7 +1221,6 @@ public class MovieDAO {
 
         return list;
     }
-
 
     // =========================================================
     // 14. 영화 상세정보
