@@ -172,7 +172,7 @@ public class NoticeDAO {
             conn = ds.getConnection();
         	
             // 2. 특정 ID의 글만 조회하는 SQL 쿼리 작성
-            String sql = "SELECT notice_id, title, content, created_at, updated_at, view_count, filename "
+            String sql = "SELECT notice_id, title, content, writer, created_at, updated_at, view_count, filename "
                     + "FROM notice "
                     + "WHERE notice_id = ?";
             
@@ -193,6 +193,7 @@ public class NoticeDAO {
                 notice.setUpdatedAt(rs.getTimestamp("updated_at"));
                 notice.setViewCount(rs.getInt("view_count"));
                 notice.setFileName(rs.getString("filename"));
+                notice.setWriter(rs.getString("writer"));
             }
             
         } catch (Exception e) {
