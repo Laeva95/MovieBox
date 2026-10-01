@@ -482,9 +482,7 @@ public class MemberController extends HttpServlet {
 			            session.setAttribute("name", member.getMember_name());
 
 			            // 메인 화면으로 이동
-			            response.sendRedirect(
-			                request.getContextPath() + "/Index.jsp"
-			            );
+			            response.sendRedirect(request.getContextPath() + "/Index.jsp");
 
 			            return;
 			            

@@ -21,10 +21,10 @@
   <div class="gnb-left">
     <a href="${pageContext.request.contextPath}/" class="brand-logo">MOVIE<span class="logo-red">BOX</span></a>
     <nav class="main-nav">
-      <a href="${pageContext.request.contextPath}/movie/MovieList.jsp">영화</a>
+      <a href="${pageContext.request.contextPath}/movies/MovieList.do">영화</a>
       <a href="${pageContext.request.contextPath}/reservation/reservation.jsp">예매</a>
       <a href="#">리뷰</a>
-      <a href="${pageContext.request.contextPath}/notice/Notice.jsp">공지사항</a>
+      <a href="${pageContext.request.contextPath}/notice/list">공지사항</a>
     </nav>
   </div>
   <div class="gnb-right">
