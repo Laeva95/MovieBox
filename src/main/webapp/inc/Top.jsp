@@ -24,7 +24,7 @@
       <a href="${pageContext.request.contextPath}/movie/MovieList.jsp">영화</a>
       <a href="${pageContext.request.contextPath}/reservation/reservation.jsp">예매</a>
       <a href="#">리뷰</a>
-      <a href="${pageContext.request.contextPath}/notice/Notice.jsp">공지사항</a>
+      <a href="${pageContext.request.contextPath}/notice/list">공지사항</a>
     </nav>
   </div>
   <div class="gnb-right">
