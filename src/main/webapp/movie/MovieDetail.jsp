@@ -15,14 +15,7 @@
         movie = dao.getMovieDetails(movieId);
     }
 %>
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>영화 상세 정보 - Movie Box</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+
   <style>
       /* 상세 페이지 전용 레이아웃 스타일 */
       .detail-container {
@@ -108,42 +101,7 @@
           background-color: #b20710;
       }
   </style>
-</head>
-<body>
-  <!-- 헤더 영역 (index.jsp, MovieList.jsp와 동일) -->
-  <header class="site-header">
-    <div class="util-bar">
-      <div class="inner-container util-inner">
-        <c:choose>
-          <c:when test="${empty sessionScope.loginUser}">
-            <a href="${pageContext.request.contextPath}/member/login.jsp">로그인</a>
-            <a href="${pageContext.request.contextPath}/member/join.jsp">회원가입</a>
-          </c:when>
-          <c:otherwise>
-            <span><strong>${sessionScope.loginUser.name}</strong>님 환영합니다</span>
-            <a href="${pageContext.request.contextPath}/member/logout.do">로그아웃</a>
-            <a href="${pageContext.request.contextPath}/member/myPage.jsp">마이페이지</a>
-          </c:otherwise>
-        </c:choose>
-        <a href="#">고객센터</a>
-      </div>
-    </div>
-    <div class="inner-container gnb-bar">
-      <div class="gnb-left">
-        <a href="${pageContext.request.contextPath}/" class="brand-logo">MOVIE<span class="logo-red">BOX</span></a>
-        <nav class="main-nav">
-		  <a href="${pageContext.request.contextPath}/movie/MovieList.do" style="color: #e50914;">영화</a>
-          <a href="#">예매</a>
-          <a href="#">영화관</a>
-          <a href="#">이벤트</a>
-          <a href="#">리뷰</a>
-        </nav>
-      </div>
-      <div class="gnb-right">
-        <a href="${pageContext.request.contextPath}/#quick-booking" class="btn-quick-nav">빠른예매</a>
-      </div>
-    </div>
-  </header>
+
 
   <main style="padding-top: 112px;">
     <section class="inner-container section-wrap" style="margin-top: 40px; margin-bottom: 80px;">
@@ -183,7 +141,7 @@
                   
                   <!-- 하단 버튼 그룹 -->
                   <div class="detail-btn-group">
-                     <a href="${pageContext.request.contextPath}/movie/MovieList.do" class="btn-back">목록으로</a>
+                     <a href="${pageContext.request.contextPath}/movies/MovieList.do" class="btn-back">목록으로</a>
                       <a href="booking.jsp?movie_id=<%= movie.getMovieId() %>" class="btn-booking">예매하러 가기</a>
                   </div>
               </div>
@@ -196,11 +154,3 @@
       <% } %>
     </section>
   </main>
-
-  <footer class="site-footer">
-    <div class="inner-container">
-      <p>&copy; Movie Box Cinema Corp. All rights reserved.</p>
-    </div>
-  </footer>
-</body>
-</html>
