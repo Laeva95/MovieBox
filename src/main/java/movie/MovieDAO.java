@@ -534,7 +534,7 @@ public class MovieDAO {
 
             for (MovieData data : tempList) {
 
-                if (list.size() >= 30) {
+                if (list.size() >= 50) {
 
                     break;
                 }
@@ -989,7 +989,7 @@ public class MovieDAO {
     ) {
 
         String sql =
-                "INSERT INTO movie "
+                "INSERT ignore INTO movie "
                 + "(title, genre, running_time, release_date, "
                 + "poster, summary, director, actors, country) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -1159,7 +1159,8 @@ public class MovieDAO {
 
         String sql =
                 "SELECT * FROM movie "
-                + "ORDER BY release_date DESC";
+                + "ORDER BY release_date DESC"
+                + " LIMIT 30";
 
 
         try {
