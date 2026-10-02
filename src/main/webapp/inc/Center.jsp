@@ -415,7 +415,7 @@
                 %>
 
                     <div class="home-movie-card">
-                        <a href="${pageContext.request.contextPath}/movies/MovieList.do">
+                        <a href="${pageContext.request.contextPath}/movies/MovieDetail.do?movie_id=<%= movie.getMovieId() %>">
                             <div class="home-poster">
                                 <img
                                     src="<%= movie.getPoster() %>"
