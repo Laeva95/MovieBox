@@ -1,4 +1,4 @@
-package controller;
+package booking;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import Service.ReservationService;
 
 @WebServlet("/reservation/seat")
 public class SeatController extends HttpServlet {

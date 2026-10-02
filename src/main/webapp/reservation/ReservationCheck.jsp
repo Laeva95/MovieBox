@@ -3,7 +3,7 @@
     pageEncoding="UTF-8"%>
 
 <%@ page import="java.util.List"%>
-<%@ page import="VO.ReservationVO"%>
+<%@ page import="booking.ReservationVO"%>
 
 <!DOCTYPE html>
 <html lang="ko">

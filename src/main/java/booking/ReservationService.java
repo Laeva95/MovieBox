@@ -1,9 +1,7 @@
-package Service;
+package booking;
 
 import java.util.List;
 
-import VO.ReservationVO;
-import dao.ReservationDAO;
 
 public class ReservationService {
 

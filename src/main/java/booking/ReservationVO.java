@@ -1,4 +1,4 @@
-package VO;
+package booking;
 
 public class ReservationVO {
 
