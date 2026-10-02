@@ -240,6 +240,72 @@ public class NoticeDAO {
     
     }
     
+ // 이전글 조회 메서드
+    public NoticeDTO getPrevNotice(int noticeId) {
+        NoticeDTO notice = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = ds.getConnection();
+            String sql = "SELECT notice_id, title FROM notice WHERE notice_id < ? ORDER BY notice_id DESC LIMIT 1";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, noticeId);
+            rs = pstmt.executeQuery();
+
+            if (rs != null && rs.next()) {
+                notice = new NoticeDTO();
+                notice.setNoticeId(rs.getInt("notice_id"));
+                notice.setTitle(rs.getString("title"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return notice;
+    }
+
+    // 다음글 조회 메서드
+    public NoticeDTO getNextNotice(int noticeId) {
+        NoticeDTO notice = null;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = ds.getConnection();
+            String sql = "SELECT notice_id, title FROM notice WHERE notice_id > ? ORDER BY notice_id ASC LIMIT 1";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, noticeId);
+            rs = pstmt.executeQuery();
+
+            if (rs != null && rs.next()) {
+                notice = new NoticeDTO();
+                notice.setNoticeId(rs.getInt("notice_id"));
+                notice.setTitle(rs.getString("title"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return notice;
+    }
+    
     public void insertNotice(NoticeDTO notice) {
         Connection conn = null;
         PreparedStatement pstmt = null;

@@ -25,9 +25,9 @@
         return;
     }
 
-    // 이전글 / 다음글 ID
-    int nextId = id + 1;
-    int prevId = id - 1;
+ 	// 이전글 / 다음글 정보 가져오기 (DAO 메서드 호출)
+    NoticeDTO prevNotice = dao.getPrevNotice(id);
+    NoticeDTO nextNotice = dao.getNextNotice(id);
 %>
 
 <!DOCTYPE html>
@@ -223,56 +223,48 @@
 
 
     <!-- 이전글 / 다음글 -->
-    <div class="nav">
+<div class="nav">
 
-        <!-- 다음글 -->
-        <div class="nav-row">
+    <!-- 다음글 -->
+    <div class="nav-row">
+        <span class="nav-label">
+            다음글 &and;
+        </span>
 
-            <span class="nav-label">
-                다음글 &and;
+        <%-- 다음글이 있는 경우 --%>
+        <% if (nextNotice != null) { %>
+            <!-- ★ 여기를 NoticeDetail.jsp 대신 detail 로 변경 -->
+            <a href="detail?id=<%= nextNotice.getNoticeId() %>">
+                <%= nextNotice.getTitle() %>
+            </a>
+        <% } else { %>
+            <span style="color: #999;">
+                다음글이 없습니다.
             </span>
-
-            <% if (nextId <= 3) { %>
-
-                <a href="NoticeDetail.jsp?id=<%= nextId %>">
-                    다음 공지사항
-                </a>
-
-            <% } else { %>
-
-                <span style="color: #999;">
-                    다음글이 없습니다.
-                </span>
-
-            <% } %>
-
-        </div>
-
-
-        <!-- 이전글 -->
-        <div class="nav-row">
-
-            <span class="nav-label">
-                이전글 &or;
-            </span>
-
-            <% if (prevId >= 1) { %>
-
-                <a href="NoticeDetail.jsp?id=<%= prevId %>">
-                    이전 공지사항
-                </a>
-
-            <% } else { %>
-
-                <span style="color: #999;">
-                    이전글이 없습니다.
-                </span>
-
-            <% } %>
-
-        </div>
-
+        <% } %>
     </div>
+
+
+    <!-- 이전글 -->
+    <div class="nav-row">
+        <span class="nav-label">
+            이전글 &or;
+        </span>
+
+        <%-- 이전글이 있는 경우 --%>
+        <% if (prevNotice != null) { %>
+            <!-- ★ 여기를 NoticeDetail.jsp 대신 detail 로 변경 -->
+            <a href="detail?id=<%= prevNotice.getNoticeId() %>">
+                <%= prevNotice.getTitle() %>
+            </a>
+        <% } else { %>
+            <span style="color: #999;">
+                이전글이 없습니다.
+            </span>
+        <% } %>
+    </div>
+
+</div>
 
 
     <!-- 버튼 -->
