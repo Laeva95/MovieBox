@@ -15,12 +15,14 @@
     MovieDAO dao = new MovieDAO();
 
 
+
     // ====================================================
     // 영화 목록 가져오기
     // ====================================================
 
     List<MovieDTO> movieList =
             dao.getMovieList();
+
 
 
     // ====================================================
@@ -47,8 +49,11 @@
         } catch (NumberFormatException e) {
 
             selectedMovie = null;
+
         }
+
     }
+
 
 
     // ====================================================
@@ -60,11 +65,14 @@
     Object loginMemberId =
             session.getAttribute("id");
 
+
     if (loginMemberId != null) {
 
         memberId =
                 loginMemberId.toString();
+
     }
+
 
 
     // ====================================================
@@ -75,6 +83,7 @@
             request.getContextPath();
 
 
+
     // ====================================================
     // 예약 날짜
     // 오늘 날짜를 기본으로 표시
@@ -82,6 +91,7 @@
 
     java.time.LocalDate today =
             java.time.LocalDate.now();
+
 
 
     // ====================================================
@@ -103,10 +113,15 @@
 
 <meta charset="UTF-8">
 
+
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0">
 
-<title>영화 예매 - Movie Box</title>
+
+<title>
+    영화 예매 - Movie Box
+</title>
+
 
 
 <link rel="stylesheet"
@@ -115,151 +130,416 @@
 
 <style>
 
-/* =========================================
+/* =========================================================
    전체
-========================================= */
+========================================================= */
+
+* {
+
+    box-sizing: border-box;
+
+}
+
+
+body {
+
+    margin: 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            #0d0d0d 0%,
+            #151515 45%,
+            #0d0d0d 100%
+        );
+
+    color: #fff;
+
+    font-family:
+        Arial,
+        "Noto Sans KR",
+        sans-serif;
+
+    min-height: 100vh;
+
+}
+
+
+
+/* =========================================================
+   전체 컨테이너
+========================================================= */
 
 .booking-container {
 
-    width: 1000px;
+    width: 1200px;
 
-    margin: 40px auto 80px;
+    max-width:
+        calc(100% - 40px);
 
-    padding: 40px;
+    margin:
+        50px auto 80px;
 
-    background-color: white;
+}
 
-    border: 1px solid #ddd;
+
+
+/* =========================================================
+   상단 제목
+========================================================= */
+
+.booking-header {
+
+    margin-bottom: 35px;
+
+}
+
+
+.booking-header .sub-title {
+
+    color: #e50914;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    margin-bottom: 8px;
+
+}
+
+
+.booking-header h1 {
+
+    margin: 0;
+
+    font-size: 34px;
+
+    font-weight: 700;
+
+}
+
+
+.booking-header p {
+
+    margin:
+        12px 0 0;
+
+    color: #999;
+
+    font-size: 14px;
+
+}
+
+
+
+/* =========================================================
+   진행 단계
+========================================================= */
+
+.booking-step {
+
+    display: flex;
+
+    align-items: center;
+
+    margin-bottom: 35px;
+
+    padding: 18px 22px;
+
+    background-color: #191919;
+
+    border: 1px solid #2b2b2b;
 
     border-radius: 10px;
+
 }
 
 
-/* =========================================
-   제목
-========================================= */
+.step-item {
 
-.booking-title {
+    display: flex;
 
-    text-align: center;
+    align-items: center;
 
-    margin-bottom: 40px;
+    gap: 9px;
+
+    color: #777;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
 }
 
 
-/* =========================================
-   영화 선택
-========================================= */
+.step-item.active {
+
+    color: #fff;
+
+}
+
+
+.step-number {
+
+    width: 28px;
+
+    height: 28px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background-color: #333;
+
+    color: #999;
+
+    font-size: 12px;
+
+}
+
+
+.step-item.active .step-number {
+
+    background-color: #e50914;
+
+    color: #fff;
+
+}
+
+
+.step-line {
+
+    flex: 1;
+
+    height: 1px;
+
+    margin: 0 18px;
+
+    background-color: #333;
+
+}
+
+
+
+/* =========================================================
+   영화 선택 영역
+========================================================= */
 
 .movie-select-area {
 
-    margin-bottom: 40px;
+    margin-bottom: 30px;
+
 }
 
 
-.movie-select-area h2 {
+.section-title {
 
-    margin-bottom: 20px;
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 18px;
+
 }
 
 
-/* =========================================
+.section-title h2 {
+
+    margin: 0;
+
+    font-size: 19px;
+
+}
+
+
+.section-title span {
+
+    color: #777;
+
+    font-size: 13px;
+
+}
+
+
+
+/* =========================================================
    영화 목록
-========================================= */
+========================================================= */
 
 .movie-list {
 
     display: grid;
 
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns:
+        repeat(5, 1fr);
 
-    gap: 15px;
+    gap: 16px;
+
 }
 
 
-/* =========================================
+
+/* =========================================================
    영화 카드
-========================================= */
+========================================================= */
 
 .movie-card {
 
-    border: 2px solid #ddd;
-
-    border-radius: 8px;
-
     overflow: hidden;
+
+    background-color: #1a1a1a;
+
+    border: 1px solid #2c2c2c;
+
+    border-radius: 10px;
 
     cursor: pointer;
 
-    background-color: white;
+    transition:
+        transform 0.2s,
+        border-color 0.2s,
+        box-shadow 0.2s;
 
-    transition: 0.2s;
 }
 
 
 .movie-card:hover {
 
-    transform: translateY(-5px);
+    transform: translateY(-4px);
 
-    border-color: #e50914;
+    border-color: #777;
+
 }
 
 
 .movie-card.selected {
 
-    border-color: #e50914;
+    border: 2px solid #e50914;
 
-    box-shadow: 0 0 0 2px #e50914;
+    box-shadow:
+        0 0 0 1px #e50914,
+        0 8px 25px rgba(
+            229,
+            9,
+            20,
+            0.18
+        );
+
 }
 
 
-/* =========================================
+
+/* =========================================================
    포스터
-========================================= */
+========================================================= */
 
 .movie-poster {
 
+    display: block;
+
     width: 100%;
 
-    height: 230px;
+    height: 270px;
 
     object-fit: cover;
 
-    display: block;
+    background-color: #222;
+
 }
 
 
-/* =========================================
+
+/* =========================================================
    영화 이름
-========================================= */
+========================================================= */
 
 .movie-name {
 
-    padding: 10px;
+    padding:
+        13px 13px 5px;
 
     font-size: 15px;
 
     font-weight: bold;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
 }
 
 
-/* =========================================
+
+/* =========================================================
    영화 정보
-========================================= */
+========================================================= */
 
 .movie-meta {
 
-    padding: 0 10px 10px;
+    padding:
+        0 13px 14px;
 
     color: #777;
 
     font-size: 12px;
+
 }
 
 
-/* =========================================
-   선택된 영화 정보
-========================================= */
+
+/* =========================================================
+   영화가 없을 경우
+========================================================= */
+
+.no-movie {
+
+    padding: 50px 20px;
+
+    text-align: center;
+
+    background-color: #181818;
+
+    border: 1px solid #2b2b2b;
+
+    border-radius: 10px;
+
+    color: #777;
+
+}
+
+
+
+/* =========================================================
+   선택 정보 + 예매 설정
+========================================================= */
+
+.booking-content {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        390px;
+
+    gap: 22px;
+
+}
+
+
+
+/* =========================================================
+   선택한 영화
+========================================================= */
 
 .selected-movie {
 
@@ -267,221 +547,558 @@
 
     gap: 25px;
 
+    min-height: 310px;
+
     padding: 25px;
 
-    margin-bottom: 35px;
+    background-color: #191919;
 
-    background-color: #f8f8f8;
+    border: 1px solid #2c2c2c;
 
-    border: 1px solid #ddd;
+    border-radius: 10px;
 
-    border-radius: 8px;
 }
 
 
 .selected-poster {
 
-    width: 140px;
+    width: 180px;
 
-    height: 200px;
+    height: 260px;
 
     object-fit: cover;
 
-    border-radius: 6px;
+    border-radius: 7px;
+
+    background-color: #222;
+
 }
 
 
 .selected-info {
 
-    padding-top: 10px;
+    padding-top: 4px;
+
+}
+
+
+.selected-info .selected-label {
+
+    color: #e50914;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    margin-bottom: 10px;
+
 }
 
 
 .selected-info h2 {
 
-    margin-bottom: 20px;
+    margin:
+        0 0 22px;
+
+    font-size: 26px;
+
 }
 
 
 .selected-info p {
 
-    margin: 8px 0;
+    margin: 10px 0;
+
+    color: #aaa;
+
+    font-size: 14px;
+
 }
 
 
-/* =========================================
-   선택 영역
-========================================= */
+.selected-info p strong {
 
-.select-area {
+    display: inline-block;
 
-    margin-top: 30px;
+    width: 55px;
 
-    scroll-margin-top: 30px;
+    color: #777;
+
 }
 
 
-.select-area h3 {
 
-    margin-bottom: 15px;
+/* =========================================================
+   예매 설정 카드
+========================================================= */
+
+.booking-option {
+
+    padding: 25px;
+
+    background-color: #191919;
+
+    border: 1px solid #2c2c2c;
+
+    border-radius: 10px;
+
 }
 
 
-/* =========================================
-   날짜 선택
-========================================= */
+.option-title {
+
+    margin-bottom: 20px;
+
+}
+
+
+.option-title h3 {
+
+    margin: 0;
+
+    font-size: 17px;
+
+}
+
+
+.option-title p {
+
+    margin:
+        7px 0 0;
+
+    color: #777;
+
+    font-size: 12px;
+
+}
+
+
+
+/* =========================================================
+   날짜
+========================================================= */
 
 .date-select {
 
-    display: flex;
+    margin-bottom: 25px;
 
-    align-items: center;
-
-    gap: 15px;
-
-    margin-bottom: 30px;
 }
 
 
 .date-select label {
 
-    font-size: 16px;
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: #bbb;
+
+    font-size: 13px;
 
     font-weight: bold;
+
+}
+
+
+/* 날짜 입력창 + 아이콘 */
+
+.date-input-wrap {
+
+    position: relative;
+
+    width: 100%;
+
 }
 
 
 .date-select input {
 
-    width: 190px;
+    width: 100%;
 
-    height: 45px;
+    height: 46px;
 
-    padding: 0 12px;
+    padding:
+        0 45px 0 12px;
 
-    border: 1px solid #ccc;
+    border:
+        1px solid #3a3a3a;
 
-    border-radius: 5px;
+    border-radius: 6px;
+
+    outline: none;
+
+    background-color: #101010;
+
+    color: #fff;
 
     font-size: 14px;
 
-    background-color: white;
+    color-scheme: dark;
+
 }
 
 
-/* =========================================
-   선택 버튼
-========================================= */
+.date-select input:focus {
 
-.select-box {
+    border-color: #e50914;
+
+}
+
+
+/* 브라우저 기본 달력 아이콘은 숨김 */
+
+.date-select input::-webkit-calendar-picker-indicator {
+
+    opacity: 0;
+
+    cursor: pointer;
+
+}
+
+
+/* =========================================================
+   달력 버튼
+========================================================= */
+
+.calendar-button {
+
+    position: absolute;
+
+    right: 8px;
+
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+    width: 34px;
+
+    height: 34px;
+
+    padding: 0;
+
+    border: none;
+
+    border-radius: 5px;
+
+    background: transparent;
+
+    color: #fff;
+
+    cursor: pointer;
 
     display: flex;
 
-    gap: 10px;
+    align-items: center;
 
-    flex-wrap: wrap;
+    justify-content: center;
+
+    font-size: 19px;
+
+}
+
+
+.calendar-button:hover {
+
+    background-color: #252525;
+
+}
+
+
+/* =========================================================
+   상영시간
+========================================================= */
+
+.time-select {
+
+    margin-bottom: 25px;
+
+}
+
+
+.time-select > label {
+
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: #bbb;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+}
+
+
+.select-box {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 9px;
+
 }
 
 
 .select-box input {
 
     display: none;
+
 }
 
 
 .select-box label {
 
-    display: inline-block;
+    padding: 12px 10px;
 
-    padding: 12px 20px;
+    text-align: center;
 
-    border: 1px solid #ccc;
+    border: 1px solid #3a3a3a;
 
-    border-radius: 5px;
+    border-radius: 6px;
+
+    background-color: #101010;
+
+    color: #aaa;
+
+    font-size: 14px;
 
     cursor: pointer;
 
-    background-color: white;
+    transition: 0.2s;
+
 }
 
 
-.select-box input:checked + label {
+.select-box label:hover {
+
+    border-color: #777;
+
+    color: #fff;
+
+}
+
+
+.select-box input:checked
++ label {
 
     background-color: #e50914;
 
-    color: white;
-
     border-color: #e50914;
+
+    color: #fff;
+
+    font-weight: bold;
+
 }
 
 
-/* =========================================
+
+/* =========================================================
    지난 시간
-========================================= */
+========================================================= */
 
-.select-box input:disabled + label {
+.select-box input:disabled
++ label {
 
-    background-color: #eeeeee;
+    background-color: #222;
 
-    color: #999;
+    border-color: #2c2c2c;
 
-    border-color: #ddd;
+    color: #555;
 
     cursor: not-allowed;
 
     text-decoration: line-through;
+
 }
 
 
-/* =========================================
-   버튼
-========================================= */
+
+/* =========================================================
+   좌석 선택 버튼
+========================================================= */
 
 .button-area {
 
-    text-align: center;
+    margin-top: 5px;
 
-    margin-top: 50px;
 }
 
 
 .button-area button {
 
-    width: 250px;
+    width: 100%;
 
-    padding: 15px;
+    height: 52px;
 
     border: none;
 
-    border-radius: 5px;
+    border-radius: 7px;
 
     background-color: #e50914;
 
-    color: white;
+    color: #fff;
 
-    font-size: 16px;
+    font-size: 15px;
+
+    font-weight: bold;
 
     cursor: pointer;
+
+    transition:
+        background-color 0.2s,
+        transform 0.2s;
+
 }
 
 
 .button-area button:hover {
 
     background-color: #b20710;
+
+    transform: translateY(-1px);
+
 }
 
 
-/* =========================================
-   영화 없음
-========================================= */
 
-.no-movie {
+/* =========================================================
+   영화 미선택 상태
+========================================================= */
+
+.empty-content {
+
+    margin-top: 10px;
+
+    padding: 60px 20px;
+
+    background-color: #191919;
+
+    border: 1px solid #2c2c2c;
+
+    border-radius: 10px;
 
     text-align: center;
 
-    padding: 30px;
+    color: #666;
 
-    color: #777;
+}
+
+
+
+/* =========================================================
+   반응형
+========================================================= */
+
+@media (max-width: 1000px) {
+
+    .movie-list {
+
+        grid-template-columns:
+            repeat(3, 1fr);
+
+    }
+
+
+    .booking-content {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+
+
+@media (max-width: 650px) {
+
+    .booking-container {
+
+        max-width:
+            calc(100% - 20px);
+
+        margin-top: 25px;
+
+    }
+
+
+    .booking-header h1 {
+
+        font-size: 27px;
+
+    }
+
+
+    .booking-step {
+
+        padding: 14px;
+
+    }
+
+
+    .step-line {
+
+        margin: 0 8px;
+
+    }
+
+
+    .step-item {
+
+        font-size: 12px;
+
+        gap: 5px;
+
+    }
+
+
+    .step-number {
+
+        width: 24px;
+
+        height: 24px;
+
+    }
+
+
+    .movie-list {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+
+    .movie-poster {
+
+        height: 220px;
+
+    }
+
+
+    .selected-movie {
+
+        flex-direction: column;
+
+        align-items: center;
+
+        text-align: center;
+
+    }
+
+
+    .selected-info p strong {
+
+        width: auto;
+
+        margin-right: 5px;
+
+    }
+
 }
 
 </style>
@@ -489,132 +1106,308 @@
 </head>
 
 
+
 <body>
+
 
 
 <div class="booking-container">
 
 
-    <!-- =========================================
-         제목
-    ========================================== -->
 
-    <h1 class="booking-title">
+    <!-- =================================================
+         상단 제목
+    ================================================== -->
 
-        영화 예매
+    <div class="booking-header">
 
-    </h1>
+        <div class="sub-title">
+
+            MOVIE BOX
+
+        </div>
 
 
-    <!-- =========================================
+        <h1>
+
+            영화 예매
+
+        </h1>
+
+
+        <p>
+
+            원하는 영화와 날짜, 상영시간을 선택해주세요.
+
+        </p>
+
+    </div>
+
+
+
+    <!-- =================================================
+         진행 단계
+    ================================================== -->
+
+    <div class="booking-step">
+
+
+        <div class="step-item active">
+
+            <div class="step-number">
+
+                1
+
+            </div>
+
+            영화 선택
+
+        </div>
+
+
+
+        <div class="step-line">
+
+        </div>
+
+
+
+        <div class="step-item active">
+
+            <div class="step-number">
+
+                2
+
+            </div>
+
+            날짜 선택
+
+        </div>
+
+
+
+        <div class="step-line">
+
+        </div>
+
+
+
+        <div class="step-item active">
+
+            <div class="step-number">
+
+                3
+
+            </div>
+
+            상영시간 선택
+
+        </div>
+
+
+
+        <div class="step-line">
+
+        </div>
+
+
+
+        <div class="step-item">
+
+            <div class="step-number">
+
+                4
+
+            </div>
+
+            좌석 선택
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =================================================
          1. 영화 선택
-    ========================================== -->
+    ================================================== -->
 
     <div class="movie-select-area">
 
-        <h2>
 
-            1. 영화 선택
+        <div class="section-title">
 
-        </h2>
+
+            <h2>
+
+                1. 영화 선택
+
+            </h2>
+
+
+            <span>
+
+                영화를 선택하세요
+
+            </span>
+
+
+        </div>
+
 
 
         <div class="movie-list">
 
 
+
 <%
 
     if (movieList != null
+
             && !movieList.isEmpty()) {
 
 
         for (MovieDTO movie : movieList) {
 
 
-            boolean selected = false;
+            boolean selected =
+                    false;
 
 
-            if (selectedMovie != null
-                    && selectedMovie.getMovieId()
-                    == movie.getMovieId()) {
+            if (
+                selectedMovie != null
+                &&
+                selectedMovie.getMovieId()
+                ==
+                movie.getMovieId()
+            ) {
 
-                selected = true;
+                selected =
+                        true;
+
             }
 
 
-            // ====================================
+
+            // =========================================
             // 포스터 경로
-            // ====================================
+            // =========================================
 
             String posterUrl =
                     movie.getPosterUrl();
+
 
             String posterPath =
                     posterUrl;
 
 
-            if (posterUrl != null
-                    && !posterUrl.trim().isEmpty()) {
+            if (
+                posterUrl != null
+                &&
+                !posterUrl.trim().isEmpty()
+            ) {
 
 
                 posterUrl =
                         posterUrl.trim();
 
 
-                if (posterUrl.startsWith("http://")
-                        || posterUrl.startsWith("https://")) {
+                if (
+                    posterUrl.startsWith(
+                        "http://"
+                    )
+                    ||
+                    posterUrl.startsWith(
+                        "https://"
+                    )
+                ) {
 
                     posterPath =
                             posterUrl;
 
                 }
 
-                else if (posterUrl.startsWith(
-                        contextPath + "/")) {
+
+                else if (
+                    posterUrl.startsWith(
+                        contextPath + "/"
+                    )
+                ) {
 
                     posterPath =
                             posterUrl;
 
                 }
 
-                else if (posterUrl.startsWith("/")) {
+
+                else if (
+                    posterUrl.startsWith("/")
+                ) {
 
                     posterPath =
                             contextPath
-                            + posterUrl;
+                            +
+                            posterUrl;
 
                 }
 
-                else if (posterUrl.startsWith("poster/")) {
+
+                else if (
+                    posterUrl.startsWith(
+                        "poster/"
+                    )
+                ) {
 
                     posterPath =
                             contextPath
-                            + "/"
-                            + posterUrl;
+                            +
+                            "/"
+                            +
+                            posterUrl;
 
                 }
+
 
                 else {
 
                     posterPath =
                             contextPath
-                            + "/poster/"
-                            + posterUrl;
+                            +
+                            "/poster/"
+                            +
+                            posterUrl;
+
                 }
+
             }
 
 %>
 
 
+
             <!-- 영화 카드 -->
 
-            <div class="movie-card <%= selected ? "selected" : "" %>"
-                 onclick="selectMovie(<%= movie.getMovieId() %>)">
+            <div
+
+                class="movie-card
+                    <%= selected
+                        ? "selected"
+                        : "" %>"
 
 
-                <img class="movie-poster"
-                     src="<%= posterPath %>"
-                     alt="<%= movie.getTitle() %>">
+                onclick="selectMovie(
+                    <%= movie.getMovieId() %>
+                )">
+
+
+                <img
+
+                    class="movie-poster"
+
+                    src="<%= posterPath %>"
+
+                    alt="<%= movie.getTitle() %>">
 
 
                 <div class="movie-name">
@@ -628,7 +1421,7 @@
 
                     <%= movie.getGenre() %>
 
-                    |
+                    ·
 
                     <%= movie.getCountry() %>
 
@@ -638,21 +1431,25 @@
             </div>
 
 
+
 <%
 
         }
 
+    }
 
-    } else {
+    else {
 
 %>
 
 
-            <div class="no-movie">
 
-                등록된 영화가 없습니다.
+        <div class="no-movie">
 
-            </div>
+            등록된 영화가 없습니다.
+
+        </div>
+
 
 
 <%
@@ -662,7 +1459,9 @@
 %>
 
 
+
         </div>
+
 
     </div>
 
@@ -677,298 +1476,467 @@
     if (selectedMovie != null) {
 
 
+
         String selectedPosterUrl =
                 selectedMovie.getPosterUrl();
+
 
         String selectedPosterPath =
                 selectedPosterUrl;
 
 
-        if (selectedPosterUrl != null
-                && !selectedPosterUrl.trim().isEmpty()) {
+
+        if (
+            selectedPosterUrl != null
+            &&
+            !selectedPosterUrl.trim().isEmpty()
+        ) {
 
 
             selectedPosterUrl =
                     selectedPosterUrl.trim();
 
 
-            if (selectedPosterUrl.startsWith("http://")
-                    || selectedPosterUrl.startsWith("https://")) {
+            if (
+                selectedPosterUrl.startsWith(
+                    "http://"
+                )
+                ||
+                selectedPosterUrl.startsWith(
+                    "https://"
+                )
+            ) {
 
                 selectedPosterPath =
                         selectedPosterUrl;
 
             }
 
-            else if (selectedPosterUrl.startsWith(
-                    contextPath + "/")) {
+
+            else if (
+                selectedPosterUrl.startsWith(
+                    contextPath + "/"
+                )
+            ) {
 
                 selectedPosterPath =
                         selectedPosterUrl;
 
             }
 
-            else if (selectedPosterUrl.startsWith("/")) {
+
+            else if (
+                selectedPosterUrl.startsWith("/")
+            ) {
 
                 selectedPosterPath =
                         contextPath
-                        + selectedPosterUrl;
+                        +
+                        selectedPosterUrl;
 
             }
 
-            else if (selectedPosterUrl.startsWith("poster/")) {
+
+            else if (
+                selectedPosterUrl.startsWith(
+                    "poster/"
+                )
+            ) {
 
                 selectedPosterPath =
                         contextPath
-                        + "/"
-                        + selectedPosterUrl;
+                        +
+                        "/"
+                        +
+                        selectedPosterUrl;
 
             }
+
 
             else {
 
                 selectedPosterPath =
                         contextPath
-                        + "/poster/"
-                        + selectedPosterUrl;
+                        +
+                        "/poster/"
+                        +
+                        selectedPosterUrl;
+
             }
+
         }
 
 %>
 
 
-    <!-- =========================================
-         2. 선택한 영화 정보
-    ========================================== -->
 
-    <div class="selected-movie">
-
-
-        <img class="selected-poster"
-             src="<%= selectedPosterPath %>"
-             alt="<%= selectedMovie.getTitle() %>">
-
-
-        <div class="selected-info">
-
-
-            <h2>
-
-                <%= selectedMovie.getTitle() %>
-
-            </h2>
-
-
-            <p>
-
-                장르 :
-
-                <%= selectedMovie.getGenre() %>
-
-            </p>
-
-
-            <p>
-
-                국가 :
-
-                <%= selectedMovie.getCountry() %>
-
-            </p>
-
-
-            <p>
-
-                개봉일 :
-
-                <%= selectedMovie.getReleaseDate() %>
-
-            </p>
-
-
-            <p>
-
-                러닝타임 :
-
-                <%= selectedMovie.getRunningTime() %>
-
-            </p>
-
-
-        </div>
-
-    </div>
-
-
-
-    <!-- =========================================
-         3. 예매 정보 선택
-    ========================================== -->
+    <!-- =================================================
+         선택한 영화 + 예매 설정
+    ================================================== -->
 
     <form
+
         action="${pageContext.request.contextPath}/reservation/seat"
+
         method="get">
 
 
-        <!-- =====================================
-             회원 ID
-        ====================================== -->
+
+        <!-- 회원 ID -->
 
         <input
+
             type="hidden"
+
             name="memberId"
+
             value="<%= memberId %>">
 
 
-        <!-- =====================================
-             영화 ID
-        ====================================== -->
+
+        <!-- 영화 ID -->
 
         <input
+
             type="hidden"
+
             name="movieId"
+
             value="<%= selectedMovie.getMovieId() %>">
 
 
-        <!-- =====================================
-             날짜 선택
-        ====================================== -->
 
-        <div class="select-area">
-
-
-            <h3>
-
-                2. 예매 날짜 선택
-
-            </h3>
-
-
-            <div class="date-select">
-
-
-                <label for="reservationDate">
-
-                    날짜
-
-                </label>
-
-
-                <input
-                    type="date"
-                    id="reservationDate"
-                    name="reservationDate"
-                    value="<%= today %>"
-                    min="<%= today %>"
-                    max="<%= maxDate %>"
-                    required>
-
-
-            </div>
-
-        </div>
+        <div class="booking-content">
 
 
 
-        <!-- =====================================
-             상영시간 선택
-        ====================================== -->
+            <!-- =========================================
+                 선택한 영화
+            ========================================== -->
 
-        <div class="select-area" id="selectArea">
-
-
-            <h3>
-
-                3. 상영시간 선택
-
-            </h3>
-
-
-            <div class="select-box">
-
-
-                <input
-                    type="radio"
-                    name="screeningId"
-                    value="1"
-                    id="time1"
-                    data-time="10:00"
-                    required>
-
-
-                <label for="time1">
-
-                    10:00
-
-                </label>
+            <div class="selected-movie">
 
 
 
-                <input
-                    type="radio"
-                    name="screeningId"
-                    value="2"
-                    id="time2"
-                    data-time="13:00">
+                <img
 
+                    class="selected-poster"
 
-                <label for="time2">
+                    src="<%= selectedPosterPath %>"
 
-                    13:00
-
-                </label>
+                    alt="<%= selectedMovie.getTitle() %>">
 
 
 
-                <input
-                    type="radio"
-                    name="screeningId"
-                    value="3"
-                    id="time3"
-                    data-time="16:00">
+                <div class="selected-info">
 
 
-                <label for="time3">
+                    <div class="selected-label">
 
-                    16:00
+                        SELECTED MOVIE
 
-                </label>
+                    </div>
 
 
 
-                <input
-                    type="radio"
-                    name="screeningId"
-                    value="4"
-                    id="time4"
-                    data-time="19:00">
+                    <h2>
+
+                        <%= selectedMovie.getTitle() %>
+
+                    </h2>
 
 
-                <label for="time4">
 
-                    19:00
+                    <p>
 
-                </label>
+                        <strong>
+
+                            장르
+
+                        </strong>
+
+                        <%= selectedMovie.getGenre() %>
+
+                    </p>
+
+
+
+                    <p>
+
+                        <strong>
+
+                            국가
+
+                        </strong>
+
+                        <%= selectedMovie.getCountry() %>
+
+                    </p>
+
+
+
+                    <p>
+
+                        <strong>
+
+                            개봉일
+
+                        </strong>
+
+                        <%= selectedMovie.getReleaseDate() %>
+
+                    </p>
+
+
+
+                    <p>
+
+                        <strong>
+
+                            러닝타임
+
+                        </strong>
+
+                        <%= selectedMovie.getRunningTime() %>
+
+                    </p>
+
+
+                </div>
 
 
             </div>
 
-        </div>
+
+
+            <!-- =========================================
+                 예매 설정
+            ========================================== -->
+
+            <div
+                class="booking-option"
+                id="nextSelectArea">
 
 
 
-        <!-- =====================================
-             좌석 선택 버튼
-        ====================================== -->
-
-        <div class="button-area">
+                <div class="option-title">
 
 
-            <button type="submit">
+                    <h3>
 
-                좌석 선택
+                        예매 정보 선택
 
-            </button>
+                    </h3>
+
+
+                    <p>
+
+                        날짜와 상영시간을 선택해주세요.
+
+                    </p>
+
+
+                </div>
+
+
+
+                <!-- =====================================
+                     날짜 선택
+                ====================================== -->
+
+                <div class="date-select">
+
+
+                    <label for="reservationDate">
+
+                        2. 예매 날짜
+
+                    </label>
+
+
+
+                    <div class="date-input-wrap">
+
+
+                        <input
+
+                            type="date"
+
+                            id="reservationDate"
+
+                            name="reservationDate"
+
+                            value="<%= today %>"
+
+                            min="<%= today %>"
+
+                            max="<%= maxDate %>"
+
+                            required>
+
+
+
+                        <!-- 달력 버튼 -->
+
+                        <button
+
+                            type="button"
+
+                            class="calendar-button"
+
+                            onclick="openCalendar()"
+
+                            aria-label="달력 열기">
+
+                            📅
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =====================================
+                     상영시간 선택
+                ====================================== -->
+
+                <div class="time-select">
+
+
+                    <label>
+
+                        3. 상영시간
+
+                    </label>
+
+
+
+                    <div class="select-box">
+
+
+
+                        <!-- 10:00 -->
+
+                        <input
+
+                            type="radio"
+
+                            name="screeningId"
+
+                            value="1"
+
+                            id="time1"
+
+                            data-time="10:00"
+
+                            required>
+
+
+                        <label for="time1">
+
+                            10:00
+
+                        </label>
+
+
+
+                        <!-- 13:00 -->
+
+                        <input
+
+                            type="radio"
+
+                            name="screeningId"
+
+                            value="2"
+
+                            id="time2"
+
+                            data-time="13:00">
+
+
+                        <label for="time2">
+
+                            13:00
+
+                        </label>
+
+
+
+                        <!-- 16:00 -->
+
+                        <input
+
+                            type="radio"
+
+                            name="screeningId"
+
+                            value="3"
+
+                            id="time3"
+
+                            data-time="16:00">
+
+
+                        <label for="time3">
+
+                            16:00
+
+                        </label>
+
+
+
+                        <!-- 19:00 -->
+
+                        <input
+
+                            type="radio"
+
+                            name="screeningId"
+
+                            value="4"
+
+                            id="time4"
+
+                            data-time="19:00">
+
+
+                        <label for="time4">
+
+                            19:00
+
+                        </label>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =====================================
+                     좌석 선택
+                ====================================== -->
+
+                <div class="button-area">
+
+
+                    <button type="submit">
+
+                        좌석 선택
+
+                    </button>
+
+
+                </div>
+
+
+            </div>
 
 
         </div>
@@ -980,20 +1948,24 @@
 
 <%
 
-    } else {
+    }
+
+    else {
 
 %>
 
 
-    <!-- =========================================
-         영화 미선택
-    ========================================== -->
 
-    <div class="no-movie">
+    <!-- =================================================
+         영화 미선택
+    ================================================== -->
+
+    <div class="empty-content">
 
         위에서 예매할 영화를 선택해주세요.
 
     </div>
+
 
 
 <%
@@ -1003,6 +1975,7 @@
 %>
 
 
+
 </div>
 
 
@@ -1010,28 +1983,35 @@
 <script>
 
 
-/* =========================================
+/* =========================================================
    영화 선택
-========================================= */
+========================================================= */
 
 function selectMovie(movieId) {
+
 
     var contextPath =
             "${pageContext.request.contextPath}";
 
 
     location.href =
+
             contextPath
+
             + "/movie/booking.jsp?movie_id="
+
             + movieId;
+
 }
 
 
-/* =========================================
-   현재 날짜를 YYYY-MM-DD 형식으로 가져오기
-========================================= */
+
+/* =========================================================
+   현재 날짜 YYYY-MM-DD
+========================================================= */
 
 function getTodayString() {
+
 
     var today =
             new Date();
@@ -1042,30 +2022,48 @@ function getTodayString() {
 
 
     var month =
-            String(today.getMonth() + 1).padStart(2, "0");
+            String(
+                today.getMonth() + 1
+            ).padStart(2, "0");
 
 
     var day =
-            String(today.getDate()).padStart(2, "0");
+            String(
+                today.getDate()
+            ).padStart(2, "0");
 
 
-    return year + "-" + month + "-" + day;
+    return year
+
+            + "-"
+
+            + month
+
+            + "-"
+
+            + day;
+
 }
 
 
-/* =========================================
+
+/* =========================================================
    지난 상영시간 비활성화
-========================================= */
+========================================================= */
 
 function checkPastTime() {
 
+
     var dateInput =
-            document.getElementById("reservationDate");
+            document.getElementById(
+                "reservationDate"
+            );
 
 
     if (!dateInput) {
 
         return;
+
     }
 
 
@@ -1095,119 +2093,255 @@ function checkPastTime() {
             now.getMinutes();
 
 
-    timeInputs.forEach(function(input) {
+    timeInputs.forEach(
+        function(input) {
 
 
-        var showTime =
-                input.getAttribute("data-time");
+            var showTime =
+                    input.getAttribute(
+                        "data-time"
+                    );
 
 
-        var time =
-                showTime.split(":");
+            var time =
+                    showTime.split(":");
 
 
-        var showHour =
-                parseInt(time[0]);
+            var showHour =
+                    parseInt(
+                        time[0]
+                    );
 
 
-        var showMinute =
-                parseInt(time[1]);
+            var showMinute =
+                    parseInt(
+                        time[1]
+                    );
 
 
-        /*
-         * 오늘 날짜인 경우
-         * 현재 시간보다 이전인 상영시간은 비활성화
-         */
-
-        if (selectedDate === todayString) {
-
+            /* 오늘 */
 
             if (
-                showHour < currentHour
-                ||
-                (
-                    showHour === currentHour
-                    &&
-                    showMinute <= currentMinute
-                )
+                selectedDate
+                ===
+                todayString
             ) {
 
-                input.disabled = true;
 
-                input.checked = false;
+                if (
+
+                    showHour < currentHour
+
+                    ||
+
+                    (
+                        showHour
+                        ===
+                        currentHour
+
+                        &&
+
+                        showMinute
+                        <=
+                        currentMinute
+                    )
+
+                ) {
+
+
+                    input.disabled =
+                            true;
+
+
+                    input.checked =
+                            false;
+
+                }
+
+
+                else {
+
+
+                    input.disabled =
+                            false;
+
+                }
 
             }
+
+
+            /* 미래 */
 
             else {
 
-                input.disabled = false;
+
+                input.disabled =
+                        false;
 
             }
 
-
         }
+    );
 
-        /*
-         * 미래 날짜라면
-         * 모든 상영시간 선택 가능
-         */
-
-        else {
-
-            input.disabled = false;
-
-        }
-
-    });
 }
 
 
-/* =========================================
+
+/* =========================================================
    날짜 변경
-========================================= */
+========================================================= */
 
 var reservationDate =
-        document.getElementById("reservationDate");
+
+        document.getElementById(
+
+            "reservationDate"
+
+        );
 
 
 if (reservationDate) {
 
+
     reservationDate.addEventListener(
+
         "change",
-        checkPastTime
+
+        function() {
+
+
+            checkPastTime();
+
+
+        }
+
     );
+
 }
 
 
-/* =========================================
-   페이지 로딩
-========================================= */
 
-window.onload = function() {
+/* =========================================================
+   달력 열기
+========================================================= */
 
-
-    checkPastTime();
+function openCalendar() {
 
 
-    var selectArea =
-            document.getElementById("selectArea");
+    var dateInput =
+
+            document.getElementById(
+
+                "reservationDate"
+
+            );
 
 
-    if (selectArea) {
+    if (!dateInput) {
 
-        selectArea.scrollIntoView({
+        return;
 
-            behavior: "smooth",
-
-            block: "start"
-
-        });
     }
 
-};
 
+    /* Chrome / Edge */
+
+    if (dateInput.showPicker) {
+
+
+        dateInput.showPicker();
+
+
+    }
+
+
+    /* showPicker를 지원하지 않는 경우 */
+
+    else {
+
+
+        dateInput.click();
+
+    }
+
+}
+
+
+
+/* =========================================================
+   페이지 로딩
+========================================================= */
+
+window.onload =
+
+    function() {
+
+
+        checkPastTime();
+
+
+        // =========================================
+        // 영화를 선택한 경우
+        // 다음 선택창으로 이동
+        // =========================================
+
+        var movieId =
+
+                "${param.movie_id}";
+
+
+        var nextSelectArea =
+
+                document.getElementById(
+
+                    "nextSelectArea"
+
+                );
+
+
+        if (
+
+            movieId != null
+
+            &&
+
+            movieId != ""
+
+            &&
+
+            nextSelectArea
+
+        ) {
+
+
+            setTimeout(
+
+                function() {
+
+
+                    nextSelectArea.scrollIntoView({
+
+                        behavior:
+                            "smooth",
+
+                        block:
+                            "start"
+
+                    });
+
+
+                },
+
+                200
+
+            );
+
+        }
+
+    };
 
 </script>
+
 
 
 </body>
