@@ -455,6 +455,20 @@ body {
 
 
 <body>
+<button type="button"
+        onclick="history.back()"
+        style="
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            border: none;
+            background: none;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        ">
+    ×
+</button>
 
 
 <div class="seat-container">
