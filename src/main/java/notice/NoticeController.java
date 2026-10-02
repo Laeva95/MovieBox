@@ -1,6 +1,6 @@
 package notice;
 
-import java.io.File;
+import java.io.File; 
 import java.io.IOException;
 import java.util.List;
 
@@ -66,15 +66,13 @@ public class NoticeController extends HttpServlet {
     // 1. 목록 조회 로직 (기존 NoticeController 내용)
     private void listNotice(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String pageParam = request.getParameter("page");
+        String keyword = request.getParameter("keyword");
         
         int page = 1; // 기본값은 1페이지
         
 		if (pageParam != null && !pageParam.isEmpty()) {
 				page = Integer.parseInt(pageParam);
 		}
-		
-		// 검색 키워드 처리
-		String keyword = request.getParameter("keyword");
 		
 		 // 한 페이지에 보여줄 게시글 수
 	    int pageSize = 10;

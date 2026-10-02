@@ -126,24 +126,52 @@
    				Pagination
    ======================================== */
 
+	.board-bottom-wrapper {
+	    margin-top: 25px;
+	}
+
+	.board-info-top {
+	    display: flex;
+	    justify-content: space-between;
+	    align-items: center;
+	    margin-bottom: 15px;
+	    color: #aaa;
+	    font-size: 14px;
+	}
+
 	.board-bottom-area {
 	  display: flex;
-	  justify-content: center; /* 기본적으로 가운데 정렬인 경우 */
+	  justify-content: center; /* 페이징 번호는 항상 정중앙 */
 	  align-items: center;
 	  position: relative;
 	  margin-bottom: 20px;
 	}
 
     .pagination {
-        margin-top: 35px;
-        text-align: center;
-    }
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+	}
 
-	/* 페이지 번호 */
-    .pagination a {
-        margin: 0 8px auto;
+	.pagination a {
         text-decoration: none;
-        color: white;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 4px;
+        background-color: #222;
+	}
+	
+	.pagination a.active {
+        font-weight: bold;
+        background-color: #ff5722;
+        color: #fff;
+	}
+
+    .pagination a.disabled {
+        color: #555;
+        background-color: #111;
+        pointer-events: none;
     }
 
 	/* ========================================
@@ -172,16 +200,16 @@
     }
     
     /* 글쓰기 버튼 (빨간 배경, 흰 글씨) */
-    .write-btn {
-		position: absolute;
-		right: 0; /* 부모 컨테이너 기준 맨 오른쪽에 배치 */
-        background-color: #ff4d4d; /* 빨간색 배경 */
-        color: #ffffff;            /* 글자색 흰색 */
-        border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
+	.write-btn {
+	    position: absolute; /* 부모 컨테이너 기준 맨 오른쪽에 배치 */
+	    right: 0; 
+	    background-color: #ff4d4d; /* 빨간색 배경 */
+	    color: #ffffff;            /* 글자색 흰색 */
+	    border: none;
+	    padding: 10px 20px;
+	    border-radius: 4px;
+	    cursor: pointer;
+	    font-weight: bold;
 	}
 
     .write-btn:hover {
@@ -249,50 +277,91 @@
             </table>
 
 
-            <!-- 페이지 번호와 글쓰기 버튼을 같은 줄에 배치하기 위한 구조 -->
-			<div class="board-bottom-area">
+            <!-- 하단 정보 및 페이징 영역 -->
+            <div class="board-bottom-wrapper">
 
-	            <!-- Pagination -->
-	            <div class="pagination">
+                <!-- 상단 정보 라인 (총 게시글 수 / 로그인 ID) -->
+                <div class="board-info-top">
+                    <div>총 페이지 수: ${totalPages}</div>
+                    <div>
+                        <c:if test="${not empty sessionScope.id}">
+                            현재 로그인 ID: ${sessionScope.id}
+                        </c:if>
+                    </div>
+                </div>
 
-				    <% 
-				        Integer currentPage = (Integer) request.getAttribute("page");
-				        Integer totalPages = (Integer) request.getAttribute("totalPages");
-				
-				        if (currentPage == null) currentPage = 1;
-				        if (totalPages == null) totalPages = 1;
-				
-				        String keyword = (String) request.getAttribute("keyword");
-				    %>
-				
-				    <% for (int i = 1; i <= totalPages; i++) { %>
-				
-				        <a href="<%=request.getContextPath()%>/notice/list?page=<%=i%><%= keyword != null && !keyword.isEmpty() ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "" %>"
-				           class="<%= currentPage == i ? "active" : "" %>">
-				            <%=i%>
-				        </a>
-				
-				    <% } %>
+                <!-- 페이징 및 글쓰기 버튼 영역 -->
+                <div class="board-bottom-area">
 
-				</div>
-				
-				총 게시글 수: <%= request.getAttribute("totalPages") %>
-            
-            	 <!-- 관리자에게만 글쓰기 버튼 표시 -->
-			     <c:if test="${sessionScope.id == 'admin'}">
-				 	<button class="write-btn" onclick="location.href='${pageContext.request.contextPath}/notice/write'">
-					    글쓰기
-					</button>
-				 </c:if>   
-			    
-			    현재 로그인 ID: ${sessionScope.id}
-			    
-			</div>
+                    <% 
+                        Integer currentPage = (Integer) request.getAttribute("page");
+                        Integer totalPages = (Integer) request.getAttribute("totalPages");
+                
+                        if (currentPage == null) currentPage = 1;
+                        if (totalPages == null) totalPages = 1;
+                
+                        String keyword = (String) request.getAttribute("keyword");
+                        
+                        // --- 10개씩 페이징 블록 계산 ---
+                        int blockSize = 10;
+                        int endPage = (int)(Math.ceil(currentPage / (double)blockSize)) * blockSize;
+                        int startPage = (endPage - blockSize) + 1;
+                        
+                        if (endPage > totalPages) {
+                            endPage = totalPages;
+                        }
+
+                        // 이전/다음 블록 존재 여부 계산
+                        boolean prev = startPage > 1;
+                        boolean next = endPage < totalPages;
+                        int prevPage = startPage - 1;
+                        int nextPage = endPage + 1;
+
+                        String searchParam = (keyword != null && !keyword.isEmpty()) ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "";
+                    %>
+                
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <!-- 이전 블록 버튼 -->
+                        <a href="<%=request.getContextPath()%>/notice/list?page=<%=prevPage%><%=searchParam%>" 
+                           class="<%= !prev ? "disabled" : "" %>">&lt;</a>
+
+                        <!-- 페이지 번호 반복 -->
+                        <% for (int i = startPage; i <= endPage; i++) { %>
+                            <a href="<%=request.getContextPath()%>/notice/list?page=<%=i%><%=searchParam%>"
+                               class="<%= currentPage == i ? "active" : "" %>">
+                                <%=i%>
+                            </a>
+                        <% } %>
+
+                        <!-- 다음 블록 버튼 -->
+                        <a href="<%=request.getContextPath()%>/notice/list?page=<%=nextPage%><%=searchParam%>" 
+                           class="<%= !next ? "disabled" : "" %>">&gt;</a>
+                    </div>
+                
+                    <!-- 관리자에게만 글쓰기 버튼 표시 (우측 절대 위치 배치) -->
+                    <c:if test="${sessionScope.id == 'admin'}">
+                        <button class="write-btn" onclick="location.href='${pageContext.request.contextPath}/notice/write'" style="position: absolute; right: 0;">
+                            글쓰기
+                        </button>
+                    </c:if>   
+                    
+                </div>
+
+            </div>
 
             <!-- Search -->
             <div class="search-box">
-                <input type="text" placeholder="공지사항 검색">
-                <button type="button">검색</button>
+                <form action="${pageContext.request.contextPath}/notice/list" method="get">
+                    <!-- 검색 시 첫 페이지(1페이지)부터 보여주도록 설정 -->
+                    <input type="hidden" name="page" value="1">
+                    
+                    <!-- name="keyword"를 추가해야 백엔드로 검색어가 전달됩니다 -->
+                    <input type="text" name="keyword" value="${param.keyword != null ? param.keyword : ''}" placeholder="공지사항 검색">
+                    
+                    <!-- type="button"을 type="submit"으로 변경하거나 유지하되 폼이 제출되도록 합니다 -->
+                    <button type="submit">검색</button>
+                </form>
             </div>
 
         </div>
