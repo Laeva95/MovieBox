@@ -266,20 +266,6 @@
 
 </div>
 
-<div style="background: #ffeaa7; padding: 10px; margin-bottom: 10px; font-size: 13px; color: #333;">
-    [현재 세션에 들어있는 모든 키 값 확인]<br>
-    <%
-        java.util.Enumeration<String> attrNames = session.getAttributeNames();
-        if (!attrNames.hasMoreElements()) {
-            out.println("-> 현재 세션에 저장된 데이터가 아예 없습니다! (로그인 상태 아님)");
-        }
-        while(attrNames.hasMoreElements()){
-            String attrName = attrNames.nextElement();
-            out.println("- " + attrName + " : " + session.getAttribute(attrName) + "<br>");
-        }
-    %>
-</div>
-
 <%-- 세션에 저장된 id가 admin인 경우에만 수정/삭제 버튼 노출 --%>
 <c:if test="${not empty sessionScope.id and sessionScope.id == 'admin'}">
     <div class="btn-area" style="margin-top: 20px; text-align: right;">
