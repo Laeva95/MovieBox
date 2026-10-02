@@ -1,4 +1,4 @@
-package dao;
+package booking;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import VO.ReservationVO;
-import util.DUtil;
 
 public class ReservationDAO {
 

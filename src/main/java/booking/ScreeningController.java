@@ -1,4 +1,4 @@
-package controller;
+package booking;
 
 import java.io.IOException;
 
