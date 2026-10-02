@@ -188,13 +188,8 @@
         <div class="pin-area">
 
             <label>
-                <input
-                    type="checkbox"
-                    name="is_pinned"
-                    value="1">
-
-                상단 고정
-            </label>
+    			<input type="checkbox" name="is_pinned" value="1"> 상단 고정
+			</label>
 
         </div>
 

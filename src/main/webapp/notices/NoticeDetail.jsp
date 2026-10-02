@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page import="notice.NoticeDAO"%>
 <%@ page import="notice.NoticeDTO"%>
 
@@ -266,15 +266,35 @@
 
 </div>
 
+<div style="background: #ffeaa7; padding: 10px; margin-bottom: 10px; font-size: 13px; color: #333;">
+    [현재 세션에 들어있는 모든 키 값 확인]<br>
+    <%
+        java.util.Enumeration<String> attrNames = session.getAttributeNames();
+        if (!attrNames.hasMoreElements()) {
+            out.println("-> 현재 세션에 저장된 데이터가 아예 없습니다! (로그인 상태 아님)");
+        }
+        while(attrNames.hasMoreElements()){
+            String attrName = attrNames.nextElement();
+            out.println("- " + attrName + " : " + session.getAttribute(attrName) + "<br>");
+        }
+    %>
+</div>
 
-    <!-- 버튼 -->
-    <div class="button-area">
-
-        <a href="list" class="btn">
-            목록
-        </a>
-
+<%-- 세션에 저장된 id가 admin인 경우에만 수정/삭제 버튼 노출 --%>
+<c:if test="${not empty sessionScope.id and sessionScope.id == 'admin'}">
+    <div class="btn-area" style="margin-top: 20px; text-align: right;">
+        <a href="edit?id=<%= notice.getNoticeId() %>" class="btn btn-primary" style="padding: 6px 12px; background-color: #333; color: #fff; text-decoration: none; border-radius: 4px; margin-right: 5px;">수정</a>
+        
+        <a href="${pageContext.request.contextPath}/notice/deleteOk?id=${notice.noticeId}" 
+           onclick="return confirm('정말 이 공지사항을 삭제하시겠습니까?');"
+           style="padding: 6px 12px; background-color: #ff4757; color: #fff; text-decoration: none; border-radius: 4px; margin-right: 5px;">삭제</a>
     </div>
+</c:if>
+
+<!-- 목록 버튼은 항상 노출 -->
+<div class="button-area" style="margin-top: 20px; text-align: center;">
+    <a href="list" class="btn" style="padding: 8px 20px; background-color: #666; color: #fff; text-decoration: none; border-radius: 4px;">목록</a>
+</div>
 
 </div>
 

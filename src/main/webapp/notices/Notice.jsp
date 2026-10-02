@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="notice.NoticeDTO" %>
 <%-- <c:if>를 사용하기 위한 JSTL 선언 --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -253,26 +255,56 @@
                     </tr>
                 </thead>
 
-                <tbody>
-                    <!-- DB에서 가져온 공지사항 리스트 반복 출력 -->
-                    <c:forEach var="notice" items="${noticeList}">
-                        <tr>
-                            <td>${notice.noticeId}</td>
-                            <td class="notice-title">
-                                <a href="${pageContext.request.contextPath}/notice/detail?id=${notice.noticeId}">${notice.title}</a>
-                            </td>
-                            <td>${notice.createdAt}</td>
-                            <td>${notice.viewCount}</td>
-                        </tr>
-                    </c:forEach>
-                    
-                    <!-- 만약 등록된 글이 하나도 없을 때 -->
-                    <c:if test="${empty noticeList}">
-                        <tr>
-                            <td colspan="4" style="text-align: center; color: #777;">등록된 공지사항이 없습니다.</td>
-                        </tr>
-                    </c:if>
-                </tbody>
+<tbody>
+    <% 
+        // 컨트롤러에서 넘어온 noticeList를 받아와서 자바 코드로 반복 출력
+        List<NoticeDTO> pinnedList = (List<NoticeDTO>) request.getAttribute("pinnedList");
+        List<NoticeDTO> noticeList = (List<NoticeDTO>) request.getAttribute("noticeList");
+        
+     	// 1. 상단 고정 글 출력 (어느 페이지에서든 항상 노출)
+        if (pinnedList != null) {
+            for (NoticeDTO notice : pinnedList) {
+    %>
+        <tr style="background-color: rgba(255, 71, 87, 0.03);">
+            <td>
+                <span style="color: #ff4757; font-weight: bold; border: 1px solid #ff4757; border-radius: 50%; padding: 1px 6px; font-size: 12px;">!</span>
+            </td>
+            <td class="notice-title" style="text-align: left;">
+                <a href="<%=request.getContextPath()%>/notice/detail?id=<%=notice.getNoticeId()%>" 
+                   style="color: #ff4757; font-weight: bold;">
+                    <%= notice.getTitle() %>
+                </a>
+            </td>
+            <td style="color: white;"><%= notice.getCreatedAt() %></td>
+            <td style="color: white;"><%= notice.getViewCount() %></td>
+        </tr>
+    <% 
+            } 
+        } 
+     	
+     	// 2. 일반 페이징 글 출력
+        if (noticeList != null && !noticeList.isEmpty()) {
+            for (NoticeDTO notice : noticeList) {
+    %>
+		<tr>
+            <td><%= notice.getNoticeId() %></td>
+            <td class="notice-title" style="text-align: left;">
+                <a href="<%=request.getContextPath()%>/notice/detail?id=<%=notice.getNoticeId()%>" style="color: white;">
+                    <%= notice.getTitle() %>
+                </a>
+            </td>
+            <td style="color: white;"><%= notice.getCreatedAt() %></td>
+            <td style="color: white;"><%= notice.getViewCount() %></td>
+        </tr>
+    <% 
+            } 
+        } else if ((pinnedList == null || pinnedList.isEmpty()) && (noticeList == null || noticeList.isEmpty())) { 
+    %>
+        <tr>
+            <td colspan="4" style="text-align: center; color: #777;">등록된 공지사항이 없습니다.</td>
+        </tr>
+    <% } %>
+</tbody>
 
             </table>
 
