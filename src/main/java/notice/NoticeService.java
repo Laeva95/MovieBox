@@ -29,9 +29,24 @@ public class NoticeService {
         return noticeDAO.getNoticeById(noticeId);
     }
     
+    // NoticeService.java 에 추가할 메서드 예시
+    public List<NoticeDTO> getPinnedNoticeList() {
+        return noticeDAO.getPinnedNoticeList();
+    }
+    
     public void registerNotice(NoticeDTO notice) {
     	
         noticeDAO.insertNotice(notice); // DAO에 INSERT 메서드를 호출합니다.
     }
+
+	public void deleteNotice(int noticeId) {
+		noticeDAO.deleteNotice(noticeId);
+		
+	}
+
+	public void updateNotice(NoticeDTO notice) {
+		noticeDAO.updateNotice(notice);
+		
+	}
     
 }

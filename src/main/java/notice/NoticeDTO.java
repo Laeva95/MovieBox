@@ -11,6 +11,7 @@ public class NoticeDTO {
     private int viewCount;      // view_count
     private String writer;
     private String fileName;    // 파일명
+    private int isPinned;
 
     public String getFileName() {
 		return fileName;
@@ -89,6 +90,9 @@ public class NoticeDTO {
     public void setWriter(String writer) {
         this.writer = writer;
     }
+    
+    public int getIsPinned() { return isPinned; }
+    public void setIsPinned(int isPinned) { this.isPinned = isPinned; }
 
     @Override
     public String toString() {
