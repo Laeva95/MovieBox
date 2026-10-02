@@ -1,75 +1,254 @@
 package movie;
 
 public class MovieDTO {
+
     private int movieId;
+
     private String title;
+
     private String genre;
+
     private String runningTime;
-    private String poster;
-    private String country;     // 국가 (예: "한국", "미국")
-    private String releaseDate; // 개봉일 (예: "2026-09-23")
-    private String directors;
-    private String actors;
+
+    private String posterUrl;
+
+    private String country;
+
+    private String releaseDate;
+
     private String summary;
-   
-    
-    
-    
-    
-    
-    // 생성자
-    public MovieDTO(int movieId, String title, String genre,
-			    		String runningTime, String poster,
-			    		String country, String releaseDate,
-			    		String director, String actors, String summary)
-    {		       
-    	this.movieId = movieId;
+
+    private String director;
+
+    private String actors;
+
+
+    // ====================================================
+    // 기본 생성자
+    // ====================================================
+
+    public MovieDTO() {
+
+    }
+
+
+    // ====================================================
+    // 7개짜리 생성자
+    // ====================================================
+
+    public MovieDTO(
+            int movieId,
+            String title,
+            String genre,
+            String runningTime,
+            String posterUrl,
+            String country,
+            String releaseDate) {
+
+        this.movieId = movieId;
         this.title = title;
         this.genre = genre;
         this.runningTime = runningTime;
-        this.poster = poster;
-        this.country= country;
-        this.releaseDate = releaseDate; // 7번째가 개봉일!
-        this.directors= director;
-        this.actors= actors;
-        this.summary= summary;
+        this.posterUrl = posterUrl;
+        this.country = country;
+        this.releaseDate = releaseDate;
     }
 
-    public MovieDTO() {}
-    
-    
 
-    // Getter & Setter
-	public int getMovieId() {return movieId;}
-    public String getTitle() {return title;}
-    public String getGenre() {return genre;}	
-    public String getRunningTime() {return runningTime;}
-	public String getPoster() {return poster;}
-	public String getCountry() {return country;}
-	public String getReleaseDate() {return releaseDate;}
-	public String getDirector() {return directors;}
-	public String getActors() {return actors;}
-	public String getSummary() {return summary;}
+    // ====================================================
+    // 10개짜리 생성자
+    // MovieDAO에서 사용하는 생성자
+    // ====================================================
 
-	
-	
-	
-	public void setMovieId(int movieId) {this.movieId = movieId;}
-	public void setTitle(String title) {this.title = title;}
-	public void setGenre(String genre) {this.genre = genre;}
-	public void setRunningTime(String runningTime) {this.runningTime = runningTime;}
-	public void setPoster(String poster) {this.poster = poster;}
-	public void setCountry(String country) {this.country = country;}
-	public void setReleaseDate(String releaseDate) {this.releaseDate = releaseDate;}
-	public void setDirector(String director) {this.directors = director;}
-	public void setActors(String actors) {this.actors = actors;}
-	public void setSummary(String summary) {this.summary = summary;}
+    public MovieDTO(
+            int movieId,
+            String title,
+            String genre,
+            String runningTime,
+            String posterUrl,
+            String country,
+            String releaseDate,
+            String summary,
+            String director,
+            String actors) {
 
-	
-	
-	
-	
-	
-	
-	
+        this.movieId = movieId;
+        this.title = title;
+        this.genre = genre;
+        this.runningTime = runningTime;
+        this.posterUrl = posterUrl;
+        this.country = country;
+        this.releaseDate = releaseDate;
+        this.summary = summary;
+        this.director = director;
+        this.actors = actors;
+    }
+
+
+    // ====================================================
+    // movieId
+    // ====================================================
+
+    public int getMovieId() {
+
+        return movieId;
+    }
+
+    public void setMovieId(int movieId) {
+
+        this.movieId = movieId;
+    }
+
+
+    // ====================================================
+    // title
+    // ====================================================
+
+    public String getTitle() {
+
+        return title;
+    }
+
+    public void setTitle(String title) {
+
+        this.title = title;
+    }
+
+
+    // ====================================================
+    // genre
+    // ====================================================
+
+    public String getGenre() {
+
+        return genre;
+    }
+
+    public void setGenre(String genre) {
+
+        this.genre = genre;
+    }
+
+
+    // ====================================================
+    // runningTime
+    // ====================================================
+
+    public String getRunningTime() {
+
+        return runningTime;
+    }
+
+    public void setRunningTime(String runningTime) {
+
+        this.runningTime = runningTime;
+    }
+
+
+    // ====================================================
+    // posterUrl
+    // ====================================================
+
+    public String getPosterUrl() {
+
+        return posterUrl;
+    }
+
+    public void setPosterUrl(String posterUrl) {
+
+        this.posterUrl = posterUrl;
+    }
+
+
+    // ====================================================
+    // ★ poster
+    // MovieList.jsp에서 사용하는 메서드
+    // 기존 posterUrl과 같은 값을 반환
+    // ====================================================
+
+    public String getPoster() {
+
+        return posterUrl;
+    }
+
+    public void setPoster(String poster) {
+
+        this.posterUrl = poster;
+    }
+
+
+    // ====================================================
+    // country
+    // ====================================================
+
+    public String getCountry() {
+
+        return country;
+    }
+
+    public void setCountry(String country) {
+
+        this.country = country;
+    }
+
+
+    // ====================================================
+    // releaseDate
+    // ====================================================
+
+    public String getReleaseDate() {
+
+        return releaseDate;
+    }
+
+    public void setReleaseDate(String releaseDate) {
+
+        this.releaseDate = releaseDate;
+    }
+
+
+    // ====================================================
+    // summary
+    // ====================================================
+
+    public String getSummary() {
+
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+
+        this.summary = summary;
+    }
+
+
+    // ====================================================
+    // director
+    // ====================================================
+
+    public String getDirector() {
+
+        return director;
+    }
+
+    public void setDirector(String director) {
+
+        this.director = director;
+    }
+
+
+    // ====================================================
+    // actors
+    // ====================================================
+
+    public String getActors() {
+
+        return actors;
+    }
+
+    public void setActors(String actors) {
+
+        this.actors = actors;
+    }
+
 }
