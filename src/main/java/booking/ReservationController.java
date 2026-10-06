@@ -248,8 +248,13 @@ public class ReservationController extends HttpServlet {
                 reservationDate
         );
 
-        request.getRequestDispatcher(
+        request.setAttribute(
+                "center",
                 "/reservation/ReservationResult.jsp"
+        );
+
+        request.getRequestDispatcher(
+                "/Index.jsp"
         ).forward(
                 request,
                 response
@@ -327,12 +332,17 @@ public class ReservationController extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.getRequestDispatcher(
-                "/reservation/Seat.jsp"
-        ).forward(
-                request,
-                response
-        );
+    	request.setAttribute(
+        	    "center",
+        	    "/reservation/Seat.jsp"
+        	);
+
+        	request.getRequestDispatcher(
+        	    "/Index.jsp"
+        	).forward(
+        	    request,
+        	    response
+        	);
     }
 
     private void forwardError(

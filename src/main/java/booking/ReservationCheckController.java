@@ -36,9 +36,10 @@ public class ReservationCheckController extends HttpServlet {
         // 회원 번호가 없으면 조회 화면으로 이동
         if (memberId == null || memberId.trim().isEmpty()) {
 
-            request.getRequestDispatcher(
-                    "/reservation/ReservationCheck.jsp")
-                    .forward(request, response);
+        	forwardReservationCheck(
+        	        request,
+        	        response
+        	);
 
             return;
         }
@@ -59,9 +60,10 @@ public class ReservationCheckController extends HttpServlet {
         );
 
         // 예약 확인 화면으로 이동
-        request.getRequestDispatcher(
-                "/reservation/ReservationCheck.jsp")
-                .forward(request, response);
+        forwardReservationCheck(
+                request,
+                response
+        );
     }
 
     // ====================================================
@@ -100,9 +102,10 @@ public class ReservationCheckController extends HttpServlet {
                     memberId
             );
 
-            request.getRequestDispatcher(
-                    "/reservation/ReservationCheck.jsp")
-                    .forward(request, response);
+            forwardReservationCheck(
+                    request,
+                    response
+            );
 
             return;
         }
@@ -129,9 +132,10 @@ public class ReservationCheckController extends HttpServlet {
                     memberId
             );
 
-            request.getRequestDispatcher(
-                    "/reservation/ReservationCheck.jsp")
-                    .forward(request, response);
+            forwardReservationCheck(
+                    request,
+                    response
+            );
 
             return;
         }
@@ -147,9 +151,10 @@ public class ReservationCheckController extends HttpServlet {
                     "회원 정보가 없습니다."
             );
 
-            request.getRequestDispatcher(
-                    "/reservation/ReservationCheck.jsp")
-                    .forward(request, response);
+            forwardReservationCheck(
+                    request,
+                    response
+            );
 
             return;
         }
@@ -200,8 +205,27 @@ public class ReservationCheckController extends HttpServlet {
         // ====================================================
         // 예매 확인 화면
         // ====================================================
+        forwardReservationCheck(
+                request,
+                response
+        );
+    }
+    
+    private void forwardReservationCheck(
+            HttpServletRequest request,
+            HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setAttribute(
+                "center",
+                "/reservation/ReservationCheck.jsp"
+        );
+
         request.getRequestDispatcher(
-                "/reservation/ReservationCheck.jsp")
-                .forward(request, response);
+                "/Index.jsp"
+        ).forward(
+                request,
+                response
+        );
     }
 }

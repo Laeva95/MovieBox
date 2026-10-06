@@ -41,21 +41,6 @@
 
 %>
 
-
-<!DOCTYPE html>
-
-<html lang="ko">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>좌석 선택 - Movie Box</title>
-
-
 <style>
 
 /* =========================================
@@ -451,10 +436,6 @@ body {
 
 </style>
 
-</head>
-
-
-<body>
 <button type="button"
         onclick="history.back()"
         style="
@@ -846,8 +827,3 @@ function checkReservation() {
 
 
 </script>
-
-
-</body>
-
-</html>
