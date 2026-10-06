@@ -28,7 +28,6 @@ ul { list-style: none; }
 button { border: none; background: none; cursor: pointer; font-family: inherit; }
 .inner-container { width: 100%; max-width: var(--max-width); margin: 0 auto; padding: 0 48px; }
 .site-header {
-  position: absolute; top: 0; left: 0; width: 100%; z-index: 1000;
   background-color: rgba(18, 19, 24, 0.85); backdrop-filter: blur(16px);
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
 }

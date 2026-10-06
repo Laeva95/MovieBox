@@ -1190,7 +1190,6 @@ public class MovieDAO {
 	                                 rs.getString("summary"),
 	                                 rs.getString("director"),
 	                                 rs.getString("actors")
-	                                 
                         );
 
                 list.add(movie);

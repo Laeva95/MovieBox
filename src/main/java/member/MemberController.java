@@ -3,6 +3,8 @@
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,6 +12,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import booking.ReservationService;
+import booking.ReservationVO;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -22,7 +28,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import member.MemberDTO;
+import movie.MovieDAO;
+import movie.MovieDTO;
 import member.MemberDAO;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @WebServlet("/member/*")
 public class MemberController extends HttpServlet {
@@ -30,6 +40,8 @@ public class MemberController extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private MemberDAO memberDao;
+    private ReservationService reservationService;
+    private MovieDAO movieDao;
     
     // 카카오 로그인 요청을 위한 변수
     private String restApiKey;
@@ -39,6 +51,8 @@ public class MemberController extends HttpServlet {
     @Override
     public void init() throws ServletException {
         memberDao = new MemberDAO();
+        reservationService = new ReservationService();
+        movieDao = new MovieDAO();
         
         try {
 
@@ -75,7 +89,7 @@ public class MemberController extends HttpServlet {
         try {
         	if ("/Login.do".equals(action)) {
 				// 로그인 화면
-				request.setAttribute("center", "members/Login.jsp");
+				request.setAttribute("center", "/members/Login.jsp");
 				nextPage = "/Index.jsp";
         	}else if ("/LoginPro.do".equals(action)) {
 				// ---------------------------------------------------- 로그인 처리
@@ -94,25 +108,30 @@ public class MemberController extends HttpServlet {
 				String name = memberDao.getName(id);
 				// 로그인 성공 : 예전 세션을 버리고 새 세션에 아이디를 저장한다 (세션 고정 공격 방지)
 				// (덧붙임) 세션 고정 공격 = 해커가 미리 알아 둔 세션 번호로 남의 로그인 상태를 가로채는 수법. 새 번호를 발급해서 막는다
-				session.invalidate();                  // 예전 보관함 폐기
-				session = request.getSession(true);    // 새 보관함 발급 (true = 없으면 새로 만든다)
-				session.setAttribute("id", id);        // 새 보관함에 로그인 아이디 저장 -> 이제부터 "로그인 상태"
+				session.invalidate();
+
+				session = request.getSession(true);
+				session.setAttribute("id", id);
 				session.setAttribute("name", name);
-				nextPage = "/Index.jsp";
+
+				response.sendRedirect(request.getContextPath() + "/Index.jsp");
+				return;
         	}else if ("/Logout.do".equals(action)) {
-        		// 로그아웃
+        		// 로그아웃 전 캐시 방지
+        	    response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+        	    response.setHeader("Pragma", "no-cache");
+        	    response.setDateHeader("Expires", 0);
+
+        	    // 세션 삭제
         	    session.invalidate();
-        	    
-        	    
-        	    out.println("<script>");
-        	    out.println("alert('로그아웃 되었습니다.');");
-        	    out.println("location.href='" + request.getContextPath() + "/Index.jsp';");
-        	    out.println("</script>");
+
+        	    // 메인 페이지로 이동
+        	    response.sendRedirect(request.getContextPath() + "/Index.jsp");
         	    return;
 
 			}else if ("/Join.do".equals(action)) {
 				// ---------------------------------------------------- 로그인 화면
-				request.setAttribute("center", "members/Join.jsp");
+				request.setAttribute("center", "/members/Join.jsp");
 				nextPage = "/Index.jsp";
         	}else if ("/JoinPro.do".equals(action)) {
 				// ---------------------------------------------------- 회원가입 처리
@@ -292,23 +311,52 @@ public class MemberController extends HttpServlet {
 
 			    return;
 			}else if ("/MyPage.do".equals(action)) {
-				String id = (String)session.getAttribute("id");
-				if(id == null || id.trim() == "") {
-					out.println("<script>");
-	        	    out.println("alert('로그인 전용 페이지입니다.');");
-	        	    out.println("location.href='" + request.getContextPath() + "/member/Login.do';");
-	        	    out.println("</script>");
-	        	    return;
-				}
-				
-				// id를 통해 회원 정보 dto 객체 하나를 조회해서 저장
-				MemberDTO dto = memberDao.getMember(id);
-				
-				request.setAttribute("member", dto);
-				
-				// 회원 개인 화면
-				request.setAttribute("center", "members/MyPage.jsp");
-				nextPage = "/Index.jsp";
+				 String id = (String) session.getAttribute("id");
+
+				 // session에 id가 없으면 로그인 전용 페이지이므로 로그인 화면으로 이동
+				    if (id == null || id.trim().isEmpty()) {
+				    	out.println("<script>");
+		        	    out.println("alert('로그인 전용 페이지입니다.');");
+		        	    out.println("location.href='" + request.getContextPath() + "/member/Login.do';");
+		        	    out.println("</script>");
+				        return;
+				    }
+
+				    // 회원 정보
+				    MemberDTO dto = memberDao.getMember(id);
+				    request.setAttribute("member", dto);
+
+
+				    // 예약 목록
+				    List<ReservationVO> reservationList =
+				            reservationService.getReservationList(id);
+
+
+				    // MyPage 화면용 데이터
+				    List<MyPageReservationVO> myPageReservationList =
+				            new ArrayList<>();
+
+				    // 예약 목록을 돌면서 영화 정보와 상영 시간, 과거 여부를 가져와 MyPageReservationVO 객체를 생성
+				    for (ReservationVO reservation : reservationList) {
+
+				        MovieDTO movie = movieDao.getMovieDetails(reservation.getMovieId());
+
+				        String screeningTime = getScreeningTime(reservation.getScreeningId());
+
+				        boolean past = isPast(reservation.getReservationDate(), screeningTime);
+
+				        MyPageReservationVO item = new MyPageReservationVO(reservation, movie, screeningTime, past);
+				        
+				        myPageReservationList.add(item);
+				    }
+
+				    // 리스트를 request에 저장하여 JSP에서 접근
+				    request.setAttribute("myPageReservationList", myPageReservationList);
+
+
+				    request.setAttribute("center", "members/MyPage.jsp");
+
+				    nextPage = "/Index.jsp";
 			}else if ("/UpdatePro.do".equals(action)) {
 				
 				String id = (String)session.getAttribute("id");
@@ -505,6 +553,86 @@ public class MemberController extends HttpServlet {
 
 			        return;
 			    }
+			}else if ("/CancelReservation.do".equals(action)) {
+
+			    String id = (String) session.getAttribute("id");
+			    
+			    // 로그인 전용 페이지이므로 로그인 상태가 아니면 로그인 화면으로 이동
+			    if (id == null || id.trim().isEmpty()) {
+			    	out.println("<script>");
+	        	    out.println("alert('로그인 전용 페이지입니다.');");
+	        	    out.println("location.href='" + request.getContextPath() + "/member/Login.do';");
+	        	    out.println("</script>");
+			        return;
+			    }
+
+			    // request에서 reservationId를 가져온다
+			    String reservationIdStr = request.getParameter("reservationId");
+
+			    int reservationId;
+
+			    try {
+			    	// reservationIdStr을 정수로 변환
+			        reservationId = Integer.parseInt(reservationIdStr);
+
+			    } catch (NumberFormatException e) {
+			    	// reservationIdStr이 정수가 아니면 예외 처리
+			        session.setAttribute("reservationMessage", "잘못된 예매번호입니다.");
+
+			        response.sendRedirect(request.getContextPath()+ "/member/MyPage.do");
+			        return;
+			    }
+
+
+			    // 현재 회원의 예약 목록 조회
+			    List<ReservationVO> reservationList = reservationService.getReservationList(id);
+
+			    ReservationVO targetReservation = null;
+
+			    // reservationId에 해당하는 예약을 조회
+			    for (ReservationVO reservation : reservationList) {
+			        if (reservation.getReservationId() == reservationId) {
+			            targetReservation = reservation;
+			            break;
+			        }
+			    }
+
+
+			    // 본인의 예약인지 확인
+			    if (targetReservation == null) {
+
+			        session.setAttribute("reservationMessage", "취소할 수 없는 예매입니다.");
+
+			        response.sendRedirect(request.getContextPath() + "/member/MyPage.do");
+
+			        return;
+			    }
+
+
+			    // 상영 시간이 지나지 않았는지 확인
+			    if (isPast(targetReservation.getReservationDate(), 
+			    		getScreeningTime(targetReservation.getScreeningId()))) {
+
+			        session.setAttribute("reservationMessage", "상영 시간이 지난 예매는 취소할 수 없습니다.");
+
+			        response.sendRedirect(request.getContextPath() + "/member/MyPage.do");
+			        return;
+			    }
+
+			    // 예약 취소 처리
+			    boolean result = reservationService.deleteReservation(reservationId, id);
+
+
+			    if (result) {
+			        session.setAttribute("reservationMessage", "예매가 취소되었습니다.");
+
+			    } else {
+			        session.setAttribute("reservationMessage", "예매 취소에 실패했습니다.");
+			    }
+
+			    // MyPage로 리다이렉트
+			    response.sendRedirect(request.getContextPath() + "/member/MyPage.do");
+			    return;
 			}
         	// 결과 화면으로 이동 (주소창은 그대로, 화면만 바뀐다)
         	request.getRequestDispatcher(nextPage).forward(request, response);
@@ -513,15 +641,15 @@ public class MemberController extends HttpServlet {
 			e.printStackTrace(); // 오류가 난 위치(몇 번째 줄)까지 콘솔에 자세히 출력한다
         }
     }
-    
+// 카카오 인가 코드로 Access Token을 가져오는 메소드
     private String getKakaoAccessToken(String code) throws Exception {
 
+    	// 카카오 토큰 요청 URL
         String tokenUrl = "https://kauth.kakao.com/oauth/token";
 
         URL url = new URL(tokenUrl);
 
-        HttpURLConnection conn =
-                (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
         // POST 방식
         conn.setRequestMethod("POST");
@@ -530,10 +658,7 @@ public class MemberController extends HttpServlet {
         conn.setDoOutput(true);
 
         // 요청 데이터 형식
-        conn.setRequestProperty(
-                "Content-Type",
-                "application/x-www-form-urlencoded;charset=utf-8"
-        );
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
 
         // 카카오에 보낼 데이터
         String params =
@@ -546,6 +671,7 @@ public class MemberController extends HttpServlet {
         // 요청 데이터 전송
         try (OutputStream os = conn.getOutputStream()) {
 
+        	// params 문자열을 바이트 배열로 변환하여 전송
             os.write(params.getBytes(StandardCharsets.UTF_8));
             os.flush();
         }
@@ -558,29 +684,21 @@ public class MemberController extends HttpServlet {
         // 응답 읽기
         BufferedReader br;
 
+        // 응답 코드가 200이면 정상 응답, 아니면 에러 응답을 읽는다
         if (responseCode == 200) {
-
-            br = new BufferedReader(
-                    new InputStreamReader(
-                            conn.getInputStream(),
-                            StandardCharsets.UTF_8
-                    )
-            );
+            br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
 
         } else {
-
-            br = new BufferedReader(
-                    new InputStreamReader(
-                            conn.getErrorStream(),
-                            StandardCharsets.UTF_8
-                    )
-            );
+            br = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+            
         }
 
+        // 응답 내용을 StringBuilder에 저장
         StringBuilder response = new StringBuilder();
 
         String line;
 
+        // 응답 내용을 한 줄씩 읽어와 StringBuilder에 추가
         while ((line = br.readLine()) != null) {
             response.append(line);
         }
@@ -591,27 +709,26 @@ public class MemberController extends HttpServlet {
 
         return response.toString();
     }
-
+// 카카오 사용자 정보 요청
     private String getKakaoUserInfo(String accessToken) throws Exception {
 
+    	// 카카오 사용자 정보 요청 URL
         String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
 
+        // HTTP GET 요청을 보내기 위해 URL 객체 생성
         URL url = new URL(userInfoUrl);
 
-        HttpURLConnection conn =
-                (HttpURLConnection) url.openConnection();
+        // HttpURLConnection 객체를 생성하여 GET 요청 설정
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
+        // GET 요청 설정
         conn.setRequestMethod("GET");
-
-        conn.setRequestProperty(
-                "Authorization",
-                "Bearer " + accessToken
-        );
-
-        conn.setRequestProperty(
-                "Content-Type",
-                "application/x-www-form-urlencoded;charset=utf-8"
-        );
+        
+        // Authorization 헤더에 Bearer 토큰 추가
+        conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+        
+        // Content-Type 헤더 설정
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
 
         int responseCode = conn.getResponseCode();
 
@@ -619,29 +736,20 @@ public class MemberController extends HttpServlet {
 
         BufferedReader br;
 
+        // 응답 코드가 200이면 정상 응답, 아니면 에러 응답을 읽는다
         if (responseCode == 200) {
-
-            br = new BufferedReader(
-                    new InputStreamReader(
-                            conn.getInputStream(),
-                            StandardCharsets.UTF_8
-                    )
-            );
-
+            br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            
         } else {
-
-            br = new BufferedReader(
-                    new InputStreamReader(
-                            conn.getErrorStream(),
-                            StandardCharsets.UTF_8
-                    )
-            );
+            br = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
         }
 
+        // 응답 내용을 StringBuilder에 저장
         StringBuilder response = new StringBuilder();
 
         String line;
 
+        // 응답 내용을 한 줄씩 읽어와 StringBuilder에 추가
         while ((line = br.readLine()) != null) {
             response.append(line);
         }
@@ -650,44 +758,100 @@ public class MemberController extends HttpServlet {
 
         return response.toString();
     }
+// json 데이터에서 카카오 id를 가져오는 메소드
     private String getKakaoId(String result) {
 
+    	// JSON 문자열에서 "id" 키를 찾기 위한 문자열
         String key = "\"id\":";
 
+        // "id" 키의 시작 위치를 찾는다
         int start = result.indexOf(key);
 
+        // "id" 키가 없으면 null 반환
         if (start == -1) {
             return null;
         }
 
+        // "id" 키의 값이 시작되는 위치로 이동
         start += key.length();
 
+        // "id" 키의 값이 끝나는 위치를 찾는다 (콤마 위치)
         int end = result.indexOf(",", start);
 
+        // "id" 키의 값이 끝나는 위치가 없으면 null 반환
         if (end == -1) {
             return null;
         }
 
+        // "id" 키의 값만 추출하여 반환 (공백 제거)
         return result.substring(start, end).trim();
     }
+// json 데이터에서 카카오 닉네임을 가져오는 메소드
     private String getKakaoNickname(String result) {
 
+    	// JSON 문자열에서 "nickname" 키를 찾기 위한 문자열
         String key = "\"nickname\":\"";
 
+        // "nickname" 키의 시작 위치를 찾는다
         int start = result.indexOf(key);
 
+        // "nickname" 키가 없으면 null 반환
         if (start == -1) {
             return null;
         }
 
+        // "nickname" 키의 값이 시작되는 위치로 이동
         start += key.length();
 
+        // 	"nickname" 키의 값이 끝나는 위치를 찾는다 (따옴표 위치)
         int end = result.indexOf("\"", start);
 
+        // "nickname" 키의 값이 끝나는 위치가 없으면 null 반환
         if (end == -1) {
             return null;
         }
 
+        // "nickname" 키의 값만 추출하여 반환
         return result.substring(start, end);
+    }
+// screening_id를 실제 상영 시간으로 변환
+    private String getScreeningTime(int screeningId) {
+
+        switch (screeningId) {
+            case 1:
+                return "10:00";
+            case 2:
+                return "13:00";
+            case 3:
+                return "16:00";
+            case 4:
+                return "19:00";
+            default:
+                return null;
+        }
+    }
+// 예약 날짜 + 상영 시간을 현재 시간과 비교
+    private boolean isPast(String reservationDate, String screeningTime) {
+
+        if (reservationDate == null || screeningTime == null) {
+            return true;
+        }
+
+        try {
+        	// 예약 날짜와 상영 시간을 LocalDateTime으로 변환
+            LocalDateTime screeningDateTime = LocalDateTime.parse(reservationDate + "T" 
+            + screeningTime,DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
+
+            LocalDateTime now = LocalDateTime.now();
+
+            // 현재 시간이 상영 시간과 같거나 지나갔다면 지난 예약
+            return !screeningDateTime.isAfter(now);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            // 날짜 형식이 잘못된 경우 안전하게 지난 예약으로 처리
+            return true;
+        }
     }
 }

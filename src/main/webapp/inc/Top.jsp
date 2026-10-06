@@ -27,7 +27,4 @@
       <a href="${pageContext.request.contextPath}/notice/list">공지사항</a>
     </nav>
   </div>
-  <div class="gnb-right">
-    <a href="#quick-booking" class="btn-quick-nav">빠른예매</a>
-  </div>
 </div>
