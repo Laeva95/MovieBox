@@ -105,9 +105,10 @@ public class NoticeController extends HttpServlet {
         request.setAttribute("page", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("keyword", keyword);
+        request.setAttribute("center", "/notices/Notice.jsp");
         
         
-        request.getRequestDispatcher("/notices/Notice.jsp").forward(request, response);
+        request.getRequestDispatcher("/Index.jsp").forward(request, response);
     }
 
     // 2. 상세 보기 로직 (기존 NoticeDetailController 내용)
@@ -118,7 +119,8 @@ public class NoticeController extends HttpServlet {
                 int noticeId = Integer.parseInt(idParam);
                 NoticeDTO notice = noticeService.getNoticeDetail(noticeId);
                 request.setAttribute("notice", notice);
-                request.getRequestDispatcher("/notices/NoticeDetail.jsp").forward(request, response);
+                request.setAttribute("center", "/notices/NoticeDetail.jsp");
+                request.getRequestDispatcher("/Index.jsp").forward(request, response);
                 return;
             }
         } catch (Exception e) {
@@ -129,7 +131,8 @@ public class NoticeController extends HttpServlet {
 
     // 3. 글쓰기 폼 이동 로직
     private void writeForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/notices/NoticeWrite.jsp").forward(request, response);
+    	request.setAttribute("center", "/notices/NoticeWrite.jsp");
+        request.getRequestDispatcher("/Index.jsp").forward(request, response);
     }
 
     // 4. 글 등록 처리 로직 (파일 업로드 대응 버전)
@@ -207,7 +210,8 @@ public class NoticeController extends HttpServlet {
                     
                     // 2. request에 담아서 jsp로 보내기
                     request.setAttribute("notice", notice);
-                    request.getRequestDispatcher("/notices/NoticeEdit.jsp").forward(request, response);
+                    request.setAttribute("center", "/notices/NoticeEdit.jsp");
+                    request.getRequestDispatcher("/Index.jsp").forward(request, response);
                     return;
                 }
             } catch (Exception e) {

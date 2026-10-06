@@ -30,13 +30,6 @@
     NoticeDTO nextNotice = dao.getNextNotice(id);
 %>
 
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-
-<title>공지사항</title>
-
 <style>
     body {
         margin: 0;
@@ -45,38 +38,38 @@
         color: #333;
     }
 
-    .container {
+    .notice-detail-container {
         width: 1000px;
         margin: 80px auto;
     }
 
-    .title {
+    .notice-detail-page-title {
         font-size: 32px;
         font-weight: bold;
         margin-bottom: 40px;
     }
 
-    .notice-box {
+    .notice-detail-box {
         border-top: 2px solid #333;
     }
 
-    .notice-header {
+    .notice-detail-header {
         padding: 20px;
         border-bottom: 1px solid #ddd;
     }
 
-    .notice-title {
+    .notice-detail-title {
         font-size: 24px;
         font-weight: bold;
         margin-bottom: 15px;
     }
 
-    .notice-info {
+    .notice-detail-info {
         font-size: 14px;
         color: #888;
     }
 
-    .notice-content {
+    .notice-detail-content {
         min-height: 300px;
         padding: 30px 20px;
         border-bottom: 1px solid #ddd;
@@ -84,37 +77,37 @@
         white-space: pre-wrap;
     }
 
-    .nav {
+    .notice-detail-nav {
         border-bottom: 1px solid #ddd;
     }
 
-    .nav-row {
+    .notice-detail-nav-row {
         display: flex;
         align-items: center;
         padding: 15px 20px;
         border-bottom: 1px solid #eee;
     }
 
-    .nav-label {
+    .notice-detail-nav-label {
         width: 100px;
         font-weight: bold;
     }
 
-    .nav-row a {
+    .notice-detail-nav-row a {
         color: #333;
         text-decoration: none;
     }
 
-    .nav-row a:hover {
+    .notice-detail-nav-row a:hover {
         text-decoration: underline;
     }
 
-    .button-area {
+    .notice-detail-button-area {
         margin-top: 30px;
         text-align: center;
     }
 
-    .btn {
+    .notice-detail-btn {
         display: inline-block;
         padding: 12px 25px;
         background-color: #333;
@@ -124,26 +117,26 @@
         margin: 0 5px;
     }
 
-    .btn:hover {
+    .notice-detail-btn:hover {
         background-color: #555;
     }
     
-    .attachment {
+    .notice-detail-attachment {
     padding: 18px 20px;
     border-bottom: 1px solid #ddd;
     background-color: #fafafa;
 	}
 	
-	.attachment-label {
+	.notice-detail-attachment-label {
 	    font-weight: bold;
 	    margin-right: 20px;
 	}
 	
-	.attachment-name {
+	.notice-detail-attachment-name {
 	    margin-right: 15px;
 	}
 	
-	.file-btn {
+	.notice-detail-file-btn {
 	    display: inline-block;
 	    padding: 6px 12px;
 	    margin-left: 5px;
@@ -155,33 +148,30 @@
 	    font-size: 13px;
 	}
 	
-	.file-btn:hover {
+	.notice-detail-file-btn:hover {
 	    background-color: #f0f0f0;
 	}
     
 </style>
 
-</head>
 
-<body>
+<div class="notice-detail-container">
 
-<div class="container">
-
-    <div class="title">
+    <div class="notice-detail-page-title">
         공지사항
     </div>
 
 
     <!-- 공지사항 내용 -->
-    <div class="notice-box">
+    <div class="notice-detail-box">
 
-        <div class="notice-header">
+        <div class="notice-detail-header">
 
-            <div class="notice-title">
+            <div class="notice-detail-title">
                 <%= notice.getTitle() %>
             </div>
 
-            <div class="notice-info">
+            <div class="notice-detail-info">
                 작성자 : <%= notice.getWriter() %>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
                 작성일 : <%= notice.getCreatedAt() %>
@@ -192,27 +182,27 @@
         </div>
 
 
-        <div class="notice-content">
+        <div class="notice-detail-content">
             <%= notice.getContent() %>
         </div>
         
         <% if (notice.getFileName() != null && !notice.getFileName().isEmpty()) { %>
 
-    <div class="attachment">
-        <span class="attachment-label">첨부파일</span>
+    <div class="notice-detail-attachment">
+        <span class="notice-detail-attachment-label">첨부파일</span>
 
-        <span class="attachment-name">
+        <span class="notice-detail-attachment-name">
             <%= notice.getFileName() %>
         </span>
 
         <a href="<%=request.getContextPath()%>/notice/file?fileName=<%=java.net.URLEncoder.encode(notice.getFileName(), "UTF-8")%>&mode=view"
            target="_blank"
-           class="file-btn">
+           class="notice-detail-file-btn">
             보기
         </a>
 
         <a href="<%=request.getContextPath()%>/notice/file?fileName=<%=java.net.URLEncoder.encode(notice.getFileName(), "UTF-8")%>&mode=download"
-           class="file-btn">
+           class="notice-detail-file-btn">
             다운로드
         </a>
     </div>
@@ -223,11 +213,11 @@
 
 
     <!-- 이전글 / 다음글 -->
-<div class="nav">
+<div class="notice-detail-nav">
 
     <!-- 다음글 -->
-    <div class="nav-row">
-        <span class="nav-label">
+    <div class="notice-detail-nav-row">
+        <span class="notice-detail-nav-label">
             다음글 &and;
         </span>
 
@@ -246,8 +236,8 @@
 
 
     <!-- 이전글 -->
-    <div class="nav-row">
-        <span class="nav-label">
+    <div class="notice-detail-nav-row">
+        <span class="notice-detail-nav-label">
             이전글 &or;
         </span>
 
@@ -268,8 +258,8 @@
 
 <%-- 세션에 저장된 id가 admin인 경우에만 수정/삭제 버튼 노출 --%>
 <c:if test="${not empty sessionScope.id and sessionScope.id == 'admin'}">
-    <div class="btn-area" style="margin-top: 20px; text-align: right;">
-        <a href="edit?id=<%= notice.getNoticeId() %>" class="btn btn-primary" style="padding: 6px 12px; background-color: #333; color: #fff; text-decoration: none; border-radius: 4px; margin-right: 5px;">수정</a>
+    <div class="notice-detail-btn-area" style="margin-top: 20px; text-align: right;">
+        <a href="edit?id=<%= notice.getNoticeId() %>" class="notice-detail-btn notice-detail-btn-primary" style="padding: 6px 12px; background-color: #333; color: #fff; text-decoration: none; border-radius: 4px; margin-right: 5px;">수정</a>
         
         <a href="${pageContext.request.contextPath}/notice/deleteOk?id=${notice.noticeId}" 
            onclick="return confirm('정말 이 공지사항을 삭제하시겠습니까?');"
@@ -278,11 +268,8 @@
 </c:if>
 
 <!-- 목록 버튼은 항상 노출 -->
-<div class="button-area" style="margin-top: 20px; text-align: center;">
-    <a href="list" class="btn" style="padding: 8px 20px; background-color: #666; color: #fff; text-decoration: none; border-radius: 4px;">목록</a>
+<div class="notice-detail-button-area" style="margin-top: 20px; text-align: center;">
+    <a href="list" class="notice-detail-btn" style="padding: 8px 20px; background-color: #666; color: #fff; text-decoration: none; border-radius: 4px;">목록</a>
 </div>
 
 </div>
-
-</body>
-</html>
