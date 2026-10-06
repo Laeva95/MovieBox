@@ -31,48 +31,42 @@
         return;
     }
 %>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>영화예매 - 공지사항 작성</title>
     
     <style>
 
         /* 전체 글쓰기 영역 */
-        .notice-container {
+        .notice-edit-container {
             width: 80%;
             max-width: 1000px;
             margin: 50px auto;
         }
 
         /* 제목 */
-        .section-title {
+        .notice-edit-section-title {
             font-size: 28px;
             margin-bottom: 10px;
         }
 
         /* 설명 */
-        .notice-description {
+        .notice-edit-description {
             color: #888;
             margin-bottom: 35px;
         }
 
         /* 입력 영역 */
-        .form-group {
+        .notice-edit-form-group {
             margin-bottom: 25px;
         }
 
         /* 입력 항목 이름 */
-        .form-label {
+        .notice-edit-form-label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
         }
 
         /* 제목 입력칸 */
-        .form-control {
+        .notice-edit-form-control {
             width: 100%;
             box-sizing: border-box;
             padding: 14px;
@@ -88,13 +82,13 @@
         }
 
         /* 작성자 입력칸 */
-        .writer-input {
+        .notice-edit-writer-input {
             background-color: #f5f5f5;
             color: #666;
         }
 
         /* 버튼 영역 */
-        .button-area {
+        .notice-edit-button-area {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
@@ -102,7 +96,7 @@
         }
 
         /* 버튼 공통 */
-        .btn {
+        .notice-edit-btn {
             padding: 12px 25px;
             border: none;
             cursor: pointer;
@@ -110,36 +104,33 @@
         }
 
         /* 등록 버튼 */
-        .btn-primary {
+        .notice-edit-btn-primary {
             background-color: #222;
             color: white;
         }
 
         /* 목록 버튼 */
-        .btn-secondary {
+        .notice-edit-btn-secondary {
             background-color: #eee;
             color: #333;
         }
 
         /* 상단 고정 */
-        .pin-area {
+        .notice-edit-pin-area {
             margin-top: 10px;
         }
 
     </style>
-    
-</head>
-<body>
 
-<div class="notice-container">
+<div class="notice-edit-container">
 
 
     <!-- 제목 -->
-    <h2 class="section-title">
+    <h2 class="notice-edit-section-title">
         공지사항 작성
     </h2>
     
-    <p class="notice-description">
+    <p class="notice-edit-description">
         MOVIE BOX의 새로운 공지사항을 등록합니다.
     </p>
     
@@ -151,16 +142,16 @@
 	 <input type="hidden" name="noticeId" value="${notice.noticeId}">
 		  
         <!-- 제목 -->
-        <div class="form-group">
+        <div class="notice-edit-form-group">
 
-            <label class="form-label" for="noticeTitle">
+            <label class="notice-edit-form-label" for="notice-edit-title-input">
                 제목
             </label>
 
             <input type="text" 
             	   name="Title" 
-            	   id="noticeTitle" 
-            	   class="form-control" 
+            	   id="notice-edit-title-input" 
+            	   class="notice-edit-form-control" 
             	   maxlength="200" 
             	   value="${notice.title}" 
             	   required>
@@ -168,17 +159,17 @@
 
 
         <!-- 작성자 -->
-        <div class="form-group">
+        <div class="notice-edit-form-group">
 
-            <label class="form-label" for="noticeWriter">
+            <label class="notice-edit-form-label" for="notice-edit-writer-input">
                 작성자
             </label>
 
             <input
                 type="text"
                 name="noticeWriter"
-                id="noticeWriter"
-                class="form-control writer-input"
+                id="notice-edit-writer-input"
+                class="notice-edit-form-control notice-edit-writer-input"
                 value="${sessionScope.id}"
                 readonly>
 
@@ -186,31 +177,31 @@
 
 
         <!-- 첨부파일 -->
-        <div class="form-group">
+        <div class="notice-edit-form-group">
 
-            <label class="form-label" for="uploadFile">
+            <label class="notice-edit-form-label" for="notice-edit-file-input">
                 첨부파일
             </label>
 
             <input
                 type="file"
                 name="uploadFile"
-                id="uploadFile">
+                id="notice-edit-file-input">
 
         </div>
 
 
         <!-- 내용 -->
-        <div class="form-group">
+        <div class="notice-edit-form-group">
 
-            <label class="form-label" for="noticeContent">
+            <label class="notice-edit-form-label" for="notice-edit-content-input">
                 내용
             </label>
 
             <textarea
 			    name="noticeContent"
-			    id="noticeContent"
-			    class="form-control"
+			    id="notice-edit-content-input"
+			    class="notice-edit-form-control"
 			    required><%= notice.getContent() %>
 			</textarea>
 			
@@ -218,7 +209,7 @@
 
 
         <!-- 상단 고정 -->
-        <div class="pin-area">
+        <div class="notice-edit-pin-area">
 
             <label>
     			<input type="checkbox" 
@@ -231,18 +222,18 @@
 
 
         <!-- 버튼 -->
-        <div class="button-area">
+        <div class="notice-edit-button-area">
 
             <button
                 type="button"
-                class="btn btn-secondary"
+                class="notice-edit-btn notice-edit-btn-secondary"
                 onclick="location.href='${pageContext.request.contextPath}/notice/list'">
                 목록
             </button>
 
             <button
                 type="submit"
-                class="btn btn-primary">
+                class="notice-edit-btn notice-edit-btn-primary">
                 등록
             </button>
 
@@ -250,7 +241,3 @@
 
         
     </form>
-    
-</body>
-
-</html>
