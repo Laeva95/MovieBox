@@ -9,8 +9,19 @@ public class NoticeDTO {
     private Date createdAt;     // created_at
     private Date updatedAt;     // updated_at
     private int viewCount;      // view_count
+    private String writer;
+    private String fileName;    // 파일명
+    private int isPinned;
 
-    // 기본 생성자
+    public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	// 기본 생성자
     public NoticeDTO() {}
 
     // 매개변수가 있는 생성자
@@ -71,6 +82,17 @@ public class NoticeDTO {
     public void setViewCount(int viewCount) {
         this.viewCount = viewCount;
     }
+    
+    public String getWriter() {
+        return writer;
+    }
+
+    public void setWriter(String writer) {
+        this.writer = writer;
+    }
+    
+    public int getIsPinned() { return isPinned; }
+    public void setIsPinned(int isPinned) { this.isPinned = isPinned; }
 
     @Override
     public String toString() {
