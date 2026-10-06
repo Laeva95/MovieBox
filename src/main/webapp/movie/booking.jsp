@@ -128,6 +128,7 @@
       href="${pageContext.request.contextPath}/css/style.css">
 
 
+
 <style>
 
 /* =========================================================
@@ -520,6 +521,279 @@ body {
 
 
 /* =========================================================
+   AI 영화 추천
+========================================================= */
+
+.ai-recommendation {
+
+    margin-bottom: 30px;
+
+    padding: 25px;
+
+    background-color: #191919;
+
+    border: 1px solid #2c2c2c;
+
+    border-radius: 10px;
+
+}
+
+
+.ai-recommendation-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 18px;
+
+}
+
+
+.ai-recommendation-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+}
+
+
+.ai-recommendation-title h2 {
+
+    margin: 0;
+
+    font-size: 19px;
+
+}
+
+
+.ai-badge {
+
+    padding:
+        4px 8px;
+
+    border-radius: 5px;
+
+    background-color: #2a2a2a;
+
+    color: #e50914;
+
+    font-size: 11px;
+
+    font-weight: bold;
+
+}
+
+
+.ai-recommendation-header p {
+
+    margin: 0;
+
+    color: #777;
+
+    font-size: 12px;
+
+}
+
+
+
+/* =========================================================
+   AI 입력
+========================================================= */
+
+.ai-input-area {
+
+    display: flex;
+
+    gap: 10px;
+
+}
+
+
+.ai-input {
+
+    flex: 1;
+
+    height: 46px;
+
+    padding:
+        0 14px;
+
+    border: 1px solid #3a3a3a;
+
+    border-radius: 6px;
+
+    outline: none;
+
+    background-color: #101010;
+
+    color: #fff;
+
+    font-size: 14px;
+
+}
+
+
+.ai-input:focus {
+
+    border-color: #e50914;
+
+}
+
+
+.ai-input::placeholder {
+
+    color: #666;
+
+}
+
+
+.ai-button {
+
+    width: 110px;
+
+    height: 46px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background-color: #e50914;
+
+    color: #fff;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+
+.ai-button:hover {
+
+    background-color: #b20710;
+
+}
+
+
+.ai-button:disabled {
+
+    background-color: #444;
+
+    color: #888;
+
+    cursor: not-allowed;
+
+}
+
+
+
+/* =========================================================
+   추천 예시 버튼
+========================================================= */
+
+.ai-examples {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-top: 12px;
+
+}
+
+
+.ai-example {
+
+    padding:
+        7px 11px;
+
+    border: 1px solid #333;
+
+    border-radius: 20px;
+
+    background-color: #111;
+
+    color: #999;
+
+    font-size: 12px;
+
+    cursor: pointer;
+
+}
+
+
+.ai-example:hover {
+
+    border-color: #777;
+
+    color: #fff;
+
+}
+
+
+
+/* =========================================================
+   AI 결과
+========================================================= */
+
+.ai-result {
+
+    display: none;
+
+    margin-top: 20px;
+
+    padding: 18px;
+
+    border:
+        1px solid #2f2f2f;
+
+    border-radius: 7px;
+
+    background-color: #101010;
+
+    white-space: pre-wrap;
+
+    line-height: 1.7;
+
+    color: #ddd;
+
+    font-size: 14px;
+
+}
+
+
+.ai-result.show {
+
+    display: block;
+
+}
+
+
+.ai-result-title {
+
+    margin-bottom: 10px;
+
+    color: #e50914;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+}
+
+
+
+/* =========================================================
    선택 정보 + 예매 설정
 ========================================================= */
 
@@ -700,8 +974,6 @@ body {
 }
 
 
-/* 날짜 입력창 + 아이콘 */
-
 .date-input-wrap {
 
     position: relative;
@@ -745,8 +1017,6 @@ body {
 }
 
 
-/* 브라우저 기본 달력 아이콘은 숨김 */
-
 .date-select input::-webkit-calendar-picker-indicator {
 
     opacity: 0;
@@ -754,6 +1024,7 @@ body {
     cursor: pointer;
 
 }
+
 
 
 /* =========================================================
@@ -803,6 +1074,7 @@ body {
     background-color: #252525;
 
 }
+
 
 
 /* =========================================================
@@ -1096,6 +1368,20 @@ body {
         width: auto;
 
         margin-right: 5px;
+
+    }
+
+
+    .ai-input-area {
+
+        flex-direction: column;
+
+    }
+
+
+    .ai-button {
+
+        width: 100%;
 
     }
 
@@ -1467,6 +1753,7 @@ body {
 
 
 
+
 <%
 
     // ====================================================
@@ -1714,7 +2001,9 @@ body {
             ========================================== -->
 
             <div
+
                 class="booking-option"
+
                 id="nextSelectArea">
 
 
@@ -1775,8 +2064,6 @@ body {
                             required>
 
 
-
-                        <!-- 달력 버튼 -->
 
                         <button
 
@@ -1982,7 +2269,6 @@ body {
 
 <script>
 
-
 /* =========================================================
    영화 선택
 ========================================================= */
@@ -2001,6 +2287,291 @@ function selectMovie(movieId) {
             + "/movie/booking.jsp?movie_id="
 
             + movieId;
+
+}
+
+
+
+/* =========================================================
+   AI 입력 예시
+========================================================= */
+
+function setAIPrompt(text) {
+
+
+    var input =
+            document.getElementById(
+                "aiPrompt"
+            );
+
+
+    if (!input) {
+
+        return;
+
+    }
+
+
+    input.value =
+            text;
+
+
+    input.focus();
+
+}
+
+
+
+/* =========================================================
+   AI 영화 추천
+========================================================= */
+
+function getAIRecommendation() {
+
+
+    var input =
+            document.getElementById(
+                "aiPrompt"
+            );
+
+
+    var button =
+            document.getElementById(
+                "aiButton"
+            );
+
+
+    var result =
+            document.getElementById(
+                "aiResult"
+            );
+
+
+    var resultText =
+            document.getElementById(
+                "aiResultText"
+            );
+
+
+
+    if (!input
+            || !button
+            || !result
+            || !resultText) {
+
+        return;
+
+    }
+
+
+
+    var prompt =
+            input.value.trim();
+
+
+
+    /* 입력 확인 */
+
+    if (prompt === "") {
+
+
+        alert(
+            "어떤 영화를 원하는지 입력해주세요."
+        );
+
+
+        input.focus();
+
+
+        return;
+
+    }
+
+
+
+    /* 버튼 비활성화 */
+
+    button.disabled =
+            true;
+
+
+    button.innerText =
+            "추천 중...";
+
+
+
+    /* 기존 결과 숨기기 */
+
+    result.classList.remove(
+        "show"
+    );
+
+
+    resultText.innerText =
+            "";
+
+
+
+    var contextPath =
+            "${pageContext.request.contextPath}";
+
+
+    var url =
+            contextPath
+            +
+            "/ai/recommendation";
+
+
+
+    /* ====================================================
+       Controller로 전송
+       application/x-www-form-urlencoded 방식
+       ==================================================== */
+
+    fetch(
+
+        url,
+
+        {
+
+            method:
+                "POST",
+
+
+            headers: {
+
+                "Content-Type":
+                    "application/x-www-form-urlencoded; charset=UTF-8"
+
+            },
+
+
+            body:
+
+                "prompt="
+                +
+                encodeURIComponent(prompt)
+
+        }
+
+    )
+
+    .then(
+
+        function(response) {
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "AI 추천 요청에 실패했습니다."
+                );
+
+            }
+
+
+            return response.text();
+
+        }
+
+    )
+
+    .then(
+
+        function(data) {
+
+
+            resultText.innerText =
+                    data;
+
+
+            result.classList.add(
+                "show"
+            );
+
+        }
+
+    )
+
+    .catch(
+
+        function(error) {
+
+
+            console.error(
+                error
+            );
+
+
+            resultText.innerText =
+                    "AI 영화 추천 중 오류가 발생했습니다.";
+
+
+            result.classList.add(
+                "show"
+            );
+
+        }
+
+    )
+
+    .finally(
+
+        function() {
+
+
+            button.disabled =
+                    false;
+
+
+            button.innerText =
+                    "추천받기";
+
+        }
+
+    );
+
+}
+
+
+
+/* =========================================================
+   엔터키로 AI 추천
+========================================================= */
+
+var aiPrompt =
+        document.getElementById(
+            "aiPrompt"
+        );
+
+
+if (aiPrompt) {
+
+
+    aiPrompt.addEventListener(
+
+        "keydown",
+
+        function(event) {
+
+
+            if (
+                event.key
+                ===
+                "Enter"
+            ) {
+
+
+                event.preventDefault();
+
+
+                getAIRecommendation();
+
+            }
+
+        }
+
+    );
 
 }
 
@@ -2117,6 +2688,7 @@ function checkPastTime() {
                     parseInt(
                         time[1]
                     );
+
 
 
             /* 오늘 */
@@ -2246,7 +2818,11 @@ function openCalendar() {
 
     /* Chrome / Edge */
 
-    if (dateInput.showPicker) {
+    if (
+        typeof dateInput.showPicker
+        ===
+        "function"
+    ) {
 
 
         dateInput.showPicker();
@@ -2259,6 +2835,8 @@ function openCalendar() {
 
     else {
 
+
+        dateInput.focus();
 
         dateInput.click();
 
