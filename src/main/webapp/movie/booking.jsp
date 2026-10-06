@@ -1295,7 +1295,7 @@ body {
             // =========================================
 
             String posterUrl =
-                    movie.getPosterUrl();
+                    movie.getPoster();
 
 
             String posterPath =
@@ -1478,7 +1478,7 @@ body {
 
 
         String selectedPosterUrl =
-                selectedMovie.getPosterUrl();
+                selectedMovie.getPoster();
 
 
         String selectedPosterPath =
