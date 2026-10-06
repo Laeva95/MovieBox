@@ -12,50 +12,12 @@
    					기본 설정
    ======================================== */
    
-    * {
-        box-sizing: border-box;
-    }
-
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        color: #222;
-    }
 
     .notice-list-container {
         width: 1200px;
         margin: 0 auto;
     }
 
-    /* ========================================
-   					Header
-   ======================================== */
-    
-    .notice-list-header {
-        border-bottom: 1px solid #ddd;
-    }
-
-    .notice-list-header-inner {
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .notice-list-logo {
-        font-size: 28px;
-        font-weight: bold;
-    }
-
-    .notice-list-nav {
-        display: flex;
-        gap: 35px;
-    }
-
-    .notice-list-nav a {
-        text-decoration: none;
-        color: #222;
-    }
 
     /* ========================================
    				Notice - 페이지 제목
@@ -220,7 +182,9 @@
     <section class="notice-list-section">
 
         <div class="notice-list-container">
-
+			<br>
+			<br>
+			<br>
             <h1 class="notice-list-page-title">공지사항</h1>
 
             <p class="notice-list-page-description">

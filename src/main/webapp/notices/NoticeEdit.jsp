@@ -123,7 +123,9 @@
     </style>
 
 <div class="notice-edit-container">
-
+	<br>
+	<br>
+	<br>
 
     <!-- 제목 -->
     <h2 class="notice-edit-section-title">

@@ -8,6 +8,17 @@
   <title>Movie Box</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+  
+  <script>
+  // 페이지가 캐시에서 로드될 때 새로고침(뒤로가기, 앞으로가기 등)
+        window.addEventListener("pageshow", function(event) {
+        	// persisted: 페이지가 캐시에서 로드되었는지 확인
+            if (event.persisted) {
+            	// 강제 새로고침
+                window.location.reload();
+            }
+        });
+    </script>
 </head>
 <body>
 <%

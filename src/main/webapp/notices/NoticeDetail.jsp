@@ -31,12 +31,6 @@
 %>
 
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #fff;
-        color: #333;
-    }
 
     .notice-detail-container {
         width: 1000px;
@@ -156,7 +150,9 @@
 
 
 <div class="notice-detail-container">
-
+	<br>
+	<br>
+	<br>
     <div class="notice-detail-page-title">
         공지사항
     </div>

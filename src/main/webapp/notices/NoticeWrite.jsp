@@ -92,7 +92,9 @@
  
 
 <div class="notice-write-container">
-
+	<br>
+	<br>
+	<br>
 
     <!-- 제목 -->
     <h2 class="notice-write-section-title">
