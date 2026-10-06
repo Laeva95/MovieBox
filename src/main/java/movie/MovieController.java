@@ -46,8 +46,9 @@ public class MovieController extends HttpServlet {
 		        String country = request.getParameter("country");
 		        String genre = request.getParameter("genre");
 		        String sort = request.getParameter("sort");
-		
-		     // 2. DAO를 통해 영화 목록 가져오기
+		        String searchKeyword = request.getParameter("searchKeyword");
+		     
+		        // 2. DAO를 통해 영화 목록 가져오기
 		        MovieDAO dao = new MovieDAO();
 		
 		        List<MovieDTO> movieList;
@@ -57,15 +58,16 @@ public class MovieController extends HttpServlet {
 		        if (country == null || country.equals("")) { country = "all"; }
 		        if (genre == null || genre.equals("")) { genre = "all"; }
 		        if (sort == null || sort.equals("")) { sort = "date"; } // 기본값: 개봉순(date)
-		
+		        if (searchKeyword == null) {searchKeyword = "";}
 		        // 무조건 필터 및 정렬 메서드를 호출하여 처음 접속 시에도 영화 목록이 쫙 뜨게 합니다!
-		        movieList = dao.getFilteredAndSortedMovieList(country, genre, sort);
+		        movieList = dao.getFilteredAndSortedMovieList(country, genre, sort, searchKeyword);
 		
 		        // 3. View(JSP)로 보낼 데이터를 request 영역에 저장
 		        request.setAttribute("movieList", movieList);
 		        request.setAttribute("country", country);
 		        request.setAttribute("genre", genre);
 		        request.setAttribute("sort", sort);
+		        request.setAttribute("searchKeyword", searchKeyword);
 		
 				request.setAttribute("center", "movie/MovieList.jsp");
 				nextPage = "/Index.jsp";
