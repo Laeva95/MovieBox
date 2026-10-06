@@ -59,7 +59,9 @@ public class MovieDAO {
     // =========================================================
     // 3. KMDb API → 영화 목록 가져오기
     // =========================================================
-
+	//  역할: kMDb API 서버에 HTTP 연결을 요청하고, 전달받은 JSON 데이터(영화 목록 및 포스터 URL 문자열)를 파싱하여 
+	//  	 Java 안으로 가져오는 시동을 거는 메소드입니다.
+	
     public List<MovieDTO> getMovieListFromAPI() {
 
         List<MovieDTO> list = new ArrayList<>();
@@ -107,15 +109,15 @@ public class MovieDAO {
             // -------------------------------------------------
 
             String urlStr =
-                    "http://api.koreafilm.or.kr"
-                    + "/openapi-data2/wisenut/search_api/search_json2.jsp"
-                    + "?collection=kmdb_new2"
-                    + "&ServiceKey=" + serviceKey
-                    + "&detail=Y"
-                    + "&query=" + query
-                    + "&releaseDts=" + releaseDtsParam
-                    + "&use=" + useParam
-                    + "&listCount=500";
+                    "http://api.koreafilm.or.kr" 	// KMDb API 서버 주소
+                    + "/openapi-data2/wisenut/search_api/search_json2.jsp" //	 KMDb API 엔드포인트
+                    + "?collection=kmdb_new2"  // 컬렉션 이름
+                    + "&ServiceKey=" + serviceKey	// KMDb API 키
+                    + "&detail=Y"	// 상세 정보 포함
+                    + "&query=" + query	// 검색어
+                    + "&releaseDts=" + releaseDtsParam	// 개봉일 범위
+                    + "&use=" + useParam	// 극장용 영화만
+                    + "&listCount=500";	// 한 번에 가져올 영화 수 (최대 500편)
 
 
             System.out.println(
@@ -244,6 +246,10 @@ public class MovieDAO {
                     JsonParser
                             .parseString(jsonResult)
                             .getAsJsonObject();
+			/*
+			 * • 역할: API가 준 거대한 문자열 덩어리에서 영화 제목, 포스터 주소 같은 필요한 데이터만 쏙쏙 추출(파싱)해내는 구글 라이브러리
+			 * 메소드입니다.
+			 */
 
 
             if (!root.has("Data")) {
@@ -438,18 +444,16 @@ public class MovieDAO {
                     // -------------------------------------------------
                     // 상세 정보
                     // -------------------------------------------------
-
+  
+                    String summary =
+                            getPlot(movie);
+                    
                     String director =
                             getDirector(movie);
 
 
                     String actors =
                             getActors(movie);
-
-
-                    String summary =
-                            getPlot(movie);
-
 
                     // -------------------------------------------------
                     // 임시 객체
@@ -476,15 +480,15 @@ public class MovieDAO {
 
                     data.releaseDate =
                             releaseDate;
-
+ 
+                    data.summary =
+                            summary;
+                    
                     data.director =
                             director;
 
                     data.actors =
                             actors;
-
-                    data.summary =
-                            summary;
 
 
                     // -------------------------------------------------
@@ -560,12 +564,13 @@ public class MovieDAO {
                                 data.country,
 
                                 data.releaseDate,
-
+                          
+                                data.summary,
+                               
                                 data.director,
 
-                                data.actors,
+                                data.actors
 
-                                data.summary
                         );
 
 
@@ -607,12 +612,14 @@ public class MovieDAO {
         String country;
 
         String releaseDate;
-
+    
+        String summary;
+        
         String director;
 
         String actors;
 
-        String summary;
+
     }
 
 
@@ -988,6 +995,12 @@ public class MovieDAO {
     // 11. ★ API에서 가져온 영화를 DB에 1편 저장
     // =========================================================
 
+    
+	/*
+	 * • 역할: API로 수집한 포스터 주소와 영화 정보들을 MySQL 데이터베이스에 영구적으로 채워 넣기 위해 INSERT INTO movie
+	 * ... SQL 쿼리문을 실행하는 메소드입니다.
+	 */
+
     public int insertMovie(
             MovieDTO movie
     ) {
@@ -1084,7 +1097,10 @@ public class MovieDAO {
 
 
             return pstmt.executeUpdate();
-
+			/*
+			 * ㄴ> 역할: Java가 준비한 INSERT 쿼리문을 실제 MySQL DB 서버로 
+			 * 			전송하여 데이터를 완전히 저장시키는 순수 JDBC 메소드입니다.		
+			 */
 
         } catch (Exception e) {
 
@@ -1161,234 +1177,285 @@ public class MovieDAO {
         ) {
 
 
-            int movieId = 1;
-
-
             while (rs.next()) {
 
                 MovieDTO movie =
-                        new MovieDTO(
-
-                                movieId++,
-
-                                rs.getString(
-                                        "title"
-                                ),
-
-                                rs.getString(
-                                        "genre"
-                                ),
-
-                                rs.getString(
-                                        "running_time"
-                                ),
-
-                                rs.getString(
-                                        "poster"
-                                ),
-
-                                rs.getString(
-                                        "country"
-                                ),
-
-                                rs.getString(
-                                        "release_date"
-                                ),
-
-                                rs.getString(
-                                        "director"
-                                ),
-
-                                rs.getString(
-                                        "actors"
-                                ),
-
-                                rs.getString(
-                                        "summary"
-                                )
+                        new MovieDTO(rs.getInt("movie_id"),
+	                        		 rs.getString("title"),
+	                                 rs.getString("genre"),
+	                                 rs.getString("running_time"),
+	                                 rs.getString("poster"),
+	                                 rs.getString("country"),
+	                                 rs.getString("release_date"),
+	                                 rs.getString("summary"),
+	                                 rs.getString("director"),
+	                                 rs.getString("actors")
+	                                 
                         );
-
 
                 list.add(movie);
             }
-
 
         } catch (Exception e) {
 
             e.printStackTrace();
         }
 
-
         return list;
     }
 
     // =========================================================
-    // 14. 영화 상세정보
+    // 14. 영화 상세정보 [추가] DB에서 특정 영화 ID로 상세 정보 조회하기
     // =========================================================
 
-    public MovieDTO getMovieDetails(
-            int movieId
-    ) {
-
-        List<MovieDTO> list =
-                getMovieList();
-
-
-        for (MovieDTO movie : list) {
-
-            if (movie.getMovieId()
-                    == movieId) {
-
-                return movie;
-            }
-        }
-
-
-        return null;
-    }
-
-
-    // =========================================================
-    // 15. 국가 + 장르 + 정렬
-    // =========================================================
-
-    public List<MovieDTO>
-    getFilteredAndSortedMovieList(
-            String country,
-            String genre,
-            String sort
-    ) {
-
-        List<MovieDTO> list =
-                getMovieList();
-
-
-        List<MovieDTO> result =
-                new ArrayList<>();
-
-
-        for (MovieDTO movie : list) {
-
-
-            boolean matchCountry =
-                    country == null
-                    || country.isEmpty()
-                    || country.equals("all")
-                    || (
-                        movie.getCountry() != null
-                        && movie.getCountry()
-                                .contains(country)
-                    );
-
-
-            boolean matchGenre = true;
-
-
-            if (genre != null
-                    && !genre.isEmpty()
-                    && !genre.equals("all")) {
-
-
-                if (movie.getGenre() == null) {
-
-                    matchGenre = false;
-
-                } else {
-
-                    String dbGenre =
-                            movie.getGenre()
-                                    .replaceAll("\\s+", "")
-                                    .toLowerCase();
-
-
-                    String targetGenre =
-                            genre
-                                    .replaceAll("\\s+", "")
-                                    .toLowerCase();
-
-
-                    matchGenre =
-                            dbGenre.contains(targetGenre)
-                            || targetGenre.contains(dbGenre);
+    public MovieDTO getMovieDetails(int movieId) {
+        MovieDTO movie = null;
+        
+        String sql = "SELECT * FROM movie WHERE movie_id = ?";
+        
+        try (Connection conn = this.dataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, movieId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    movie = new MovieDTO(); 
+                    movie.setMovieId(rs.getInt("movie_id"));
+                    movie.setTitle(rs.getString("title"));
+                    movie.setGenre(rs.getString("genre"));
+                    movie.setCountry(rs.getString("country"));
+                    movie.setReleaseDate(rs.getString("release_date"));
+                    movie.setPoster(rs.getString("poster"));
+                    
+                    // =========================================================
+                    // ★ [이 부분을 추가해야 화면의 null이 해결됩니다!]
+                    // =========================================================
+                    movie.setRunningTime(rs.getString("running_time"));
+                    movie.setSummary(rs.getString("summary")); 
+                    movie.setDirector(rs.getString("director"));
+                    movie.setActors(rs.getString("actors"));                
+                    // ※ 만약 MovieDTO에 정의된 메소드명이 setSummary가 아니라 setPlot 등 
+                    // 다른 이름이라면 본인의 DTO 메소드명에 맞게 변경해 주세요!
+                    // =========================================================
                 }
             }
-
-
-            if (matchCountry
-                    && matchGenre) {
-
-                result.add(movie);
-            }
+        } catch (SQLException e) {
+            System.out.println("getMovieDetails 조회 중 SQL 에러 발생");
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-
-        // 최신순
-        if ("date".equals(sort)) {
-
-            result.sort(
-                    (m1, m2) -> {
-
-                        String d1 =
-                                m1.getReleaseDate();
-
-                        String d2 =
-                                m2.getReleaseDate();
-
-
-                        if (d1 == null
-                                && d2 == null) {
-
-                            return 0;
-                        }
-
-                        if (d1 == null) {
-
-                            return 1;
-                        }
-
-                        if (d2 == null) {
-
-                            return -1;
-                        }
-
-
-                        return d2.compareTo(d1);
-                    }
-            );
-        }
-
-
-        // 제목순
-        else if ("title".equals(sort)) {
-
-            result.sort(
-                    (m1, m2) -> {
-
-                        String t1 =
-                                m1.getTitle();
-
-                        String t2 =
-                                m2.getTitle();
-
-
-                        if (t1 == null) {
-
-                            return 1;
-                        }
-
-                        if (t2 == null) {
-
-                            return -1;
-                        }
-
-
-                        return t1.compareTo(t2);
-                    }
-            );
-        }
-
-
-        return result;
+        
+        return movie;
     }
+
+
+ // =========================================================
+ // 15. 국가 + 장르 + 정렬
+ // =========================================================
+
+ // 기존 메소드
+ // 기존 Controller에서 사용하던 메소드 이름은 그대로 유지
+ public List<MovieDTO> getFilteredAndSortedMovieList(
+         String country,
+         String genre,
+         String sort
+ ) {
+
+     // 검색어가 없는 경우
+     return getFilteredAndSortedMovieList(
+             country,
+             genre,
+             sort,
+             ""
+     );
+ }
+
+
+ // =========================================================
+ // 16. 국가 + 장르 + 검색어 + 정렬
+ // =========================================================
+
+ public List<MovieDTO> getFilteredAndSortedMovieList(
+         String country,
+         String genre,
+         String sort,
+         String searchKeyword
+ ) {
+
+     // DB에서 현재 영화 목록 가져오기
+     List<MovieDTO> list = getMovieList();
+
+     List<MovieDTO> result = new ArrayList<>();
+
+
+     // 검색어 앞뒤 공백 제거
+     if (searchKeyword == null) {
+         searchKeyword = "";
+     }
+
+     searchKeyword = searchKeyword.trim();
+
+
+     for (MovieDTO movie : list) {
+
+
+         // =====================================================
+         // ① 국가 조건
+         // =====================================================
+
+         boolean matchCountry =
+                 country == null
+                 || country.isEmpty()
+                 || country.equals("all")
+                 || (
+                     movie.getCountry() != null
+                     && movie.getCountry().contains(country)
+                 );
+
+
+         // =====================================================
+         // ② 장르 조건
+         // =====================================================
+
+         boolean matchGenre = true;
+
+         if (genre != null
+                 && !genre.isEmpty()
+                 && !genre.equals("all")) {
+
+             if (movie.getGenre() == null) {
+
+                 matchGenre = false;
+
+             } else {
+
+                 String dbGenre =
+                         movie.getGenre()
+                                 .replaceAll("\\s+", "")
+                                 .toLowerCase();
+
+                 String targetGenre =
+                         genre
+                                 .replaceAll("\\s+", "")
+                                 .toLowerCase();
+
+                 matchGenre =
+                         dbGenre.contains(targetGenre)
+                         || targetGenre.contains(dbGenre);
+             }
+         }
+
+
+         // =====================================================
+         // ③ 영화 제목 검색
+         // =====================================================
+
+         boolean matchSearch = true;
+
+         if (!searchKeyword.isEmpty()) {
+
+             if (movie.getTitle() == null) {
+
+                 matchSearch = false;
+
+             } else {
+
+                 matchSearch =
+                         movie.getTitle()
+                                 .toLowerCase()
+                                 .contains(searchKeyword.toLowerCase());
+             }
+         }
+
+
+         // =====================================================
+         // ④ 모든 조건을 만족하면 결과에 추가
+         // =====================================================
+
+         if (matchCountry
+                 && matchGenre
+                 && matchSearch) {
+
+             result.add(movie);
+         }
+     }
+
+
+     // =========================================================
+     // ⑤ 최신순
+     // =========================================================
+
+     if ("date".equals(sort)) {
+
+         result.sort(
+                 (m1, m2) -> {
+
+                     String d1 =
+                             m1.getReleaseDate();
+
+                     String d2 =
+                             m2.getReleaseDate();
+
+
+                     if (d1 == null
+                             && d2 == null) {
+
+                         return 0;
+                     }
+
+                     if (d1 == null) {
+
+                         return 1;
+                     }
+
+                     if (d2 == null) {
+
+                         return -1;
+                     }
+
+
+                     return d2.compareTo(d1);
+                 }
+         );
+     }
+
+
+     // =========================================================
+     // ⑥ 제목순
+     // =========================================================
+
+     else if ("title".equals(sort)) {
+
+         result.sort(
+                 (m1, m2) -> {
+
+                     String t1 =
+                             m1.getTitle();
+
+                     String t2 =
+                             m2.getTitle();
+
+
+                     if (t1 == null) {
+
+                         return 1;
+                     }
+
+                     if (t2 == null) {
+
+                         return -1;
+                     }
+
+
+                     return t1.compareTo(t2);
+                 }
+         );
+     }
+
+
+     return result;
+ }
 
 }
