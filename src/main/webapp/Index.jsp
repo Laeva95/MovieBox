@@ -22,6 +22,7 @@ if (centerPage == null || centerPage.trim().isEmpty()) {
 // 현재 page 객체의 "center" 키에 중앙 화면 페이지 주소를 저장
 pageContext.setAttribute("center", centerPage);
 %>
+
 <!-- Top.jsp 영역 -->
   <header class="site-header">
     <jsp:include page="/inc/Top.jsp"/>
@@ -29,10 +30,12 @@ pageContext.setAttribute("center", centerPage);
   
 <!-- center 영역 -->
   <jsp:include page="${center}"/>
-  
+     <jsp:include page="/ai/aiChat.jsp" />
 <!-- Bottom.jsp 영역 -->
-  <footer class="site-footer">
+  <footer class="site-footer"> 
+
   	<jsp:include page="/inc/Bottom.jsp"/>
   </footer>
+
 </body>
 </html>
