@@ -183,11 +183,16 @@ public class SeatController extends HttpServlet {
         // 좌석 선택 화면으로 이동
         // ====================================================
 
-        request.getRequestDispatcher(
-                "/reservation/Seat.jsp"
-        ).forward(
-                request,
-                response
-        );
+        request.setAttribute(
+        	    "center",
+        	    "/reservation/Seat.jsp"
+        	);
+
+        	request.getRequestDispatcher(
+        	    "/Index.jsp"
+        	).forward(
+        	    request,
+        	    response
+        	);
     }
 }

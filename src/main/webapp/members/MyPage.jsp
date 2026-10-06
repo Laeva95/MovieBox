@@ -646,8 +646,8 @@
                                 <!-- 포스터 -->
                                 <div class="reservation-poster">
                                     <c:choose>
-                                        <c:when test="${not empty item.movie.posterUrl}">
-                                            <img src="${item.movie.posterUrl}"
+                                        <c:when test="${not empty item.movie.poster}">
+                                            <img src="${item.movie.poster}"
                                                  alt="${item.movie.title} 포스터">
                                         </c:when>
                                         <c:otherwise>

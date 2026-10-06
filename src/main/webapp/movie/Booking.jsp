@@ -7,127 +7,31 @@
 <%@ page import="movie.MovieDAO" %>
 
 <%
+List<MovieDTO> movieList =
+(List<MovieDTO>) request.getAttribute("movieList");
 
-    // ====================================================
-    // 영화 DAO
-    // ====================================================
+MovieDTO selectedMovie =
+(MovieDTO) request.getAttribute("selectedMovie");
 
-    MovieDAO dao = new MovieDAO();
+String memberId = "";
 
+Object loginMemberId =
+session.getAttribute("id");
 
+if (loginMemberId != null) {
+memberId = loginMemberId.toString();
+}
 
-    // ====================================================
-    // 영화 목록 가져오기
-    // ====================================================
+String contextPath =
+request.getContextPath();
 
-    List<MovieDTO> movieList =
-            dao.getMovieList();
+java.time.LocalDate today =
+java.time.LocalDate.now();
 
-
-
-    // ====================================================
-    // URL에서 선택한 영화 번호 받기
-    // ====================================================
-
-    String movieIdStr =
-            request.getParameter("movie_id");
-
-    MovieDTO selectedMovie = null;
-
-
-    if (movieIdStr != null
-            && !movieIdStr.isEmpty()) {
-
-        try {
-
-            int movieId =
-                    Integer.parseInt(movieIdStr);
-
-            selectedMovie =
-                    dao.getMovieDetails(movieId);
-
-        } catch (NumberFormatException e) {
-
-            selectedMovie = null;
-
-        }
-
-    }
-
-
-
-    // ====================================================
-    // 로그인 회원 ID
-    // ====================================================
-
-    String memberId = "";
-
-    Object loginMemberId =
-            session.getAttribute("id");
-
-
-    if (loginMemberId != null) {
-
-        memberId =
-                loginMemberId.toString();
-
-    }
-
-
-
-    // ====================================================
-    // contextPath
-    // ====================================================
-
-    String contextPath =
-            request.getContextPath();
-
-
-
-    // ====================================================
-    // 예약 날짜
-    // 오늘 날짜를 기본으로 표시
-    // ====================================================
-
-    java.time.LocalDate today =
-            java.time.LocalDate.now();
-
-
-
-    // ====================================================
-    // 예약 가능 날짜
-    // 오늘부터 7일 뒤까지만 예약 가능
-    // ====================================================
-
-    java.time.LocalDate maxDate =
-            today.plusDays(7);
+java.time.LocalDate maxDate =
+today.plusDays(7);
 
 %>
-
-
-<!DOCTYPE html>
-
-<html lang="ko">
-
-<head>
-
-<meta charset="UTF-8">
-
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-
-<title>
-    영화 예매 - Movie Box
-</title>
-
-
-
-<link rel="stylesheet"
-      href="${pageContext.request.contextPath}/css/style.css">
-
-
 
 <style>
 
@@ -1388,15 +1292,6 @@ body {
 }
 
 </style>
-
-</head>
-
-
-
-<body>
-
-
-
 <div class="booking-container">
 
 
@@ -1407,11 +1302,9 @@ body {
 
     <div class="booking-header">
 
-        <div class="sub-title">
-
-            MOVIE BOX
-
-        </div>
+		<br>
+		<br>
+		<br>
 
 
         <h1>
@@ -2284,7 +2177,7 @@ function selectMovie(movieId) {
 
             contextPath
 
-            + "/movie/booking.jsp?movie_id="
+            + "/movies/Booking.do?movie_id="
 
             + movieId;
 
@@ -2920,8 +2813,3 @@ window.onload =
 
 </script>
 
-
-
-</body>
-
-</html>

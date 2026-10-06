@@ -5,14 +5,6 @@
 <%@ page import="java.util.List"%>
 <%@ page import="booking.ReservationVO"%>
 
-<!DOCTYPE html>
-<html lang="ko">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <title>예약 확인</title>
 
     <style>
 
@@ -123,9 +115,7 @@
 
     </style>
 
-</head>
 
-<body>
 
 <div class="container">
 
@@ -225,7 +215,3 @@
     </a>
 
 </div>
-
-</body>
-
-</html>

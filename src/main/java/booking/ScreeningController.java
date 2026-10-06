@@ -16,7 +16,16 @@ public class ScreeningController extends HttpServlet {
 			throws ServletException, IOException {
 
 		// 상영정보 화면으로 이동
-		request.getRequestDispatcher("/reservation/Reservation.jsp")
-				.forward(request, response);
+		request.setAttribute(
+		        "center",
+		        "/reservation/Reservation.jsp"
+		);
+
+		request.getRequestDispatcher(
+		        "/Index.jsp"
+		).forward(
+		        request,
+		        response
+		);
 	}
 }

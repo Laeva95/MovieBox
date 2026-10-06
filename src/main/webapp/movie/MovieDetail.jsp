@@ -142,7 +142,7 @@
                   <!-- 하단 버튼 그룹 -->
                   <div class="detail-btn-group">
                      <a href="${pageContext.request.contextPath}/movies/MovieList.do" class="btn-back">목록으로</a>
-                      <a href="${pageContext.request.contextPath}/movie/booking.jsp?movie_id=<%= movie.getMovieId() %>" class="btn-booking">예매하러 가기</a>
+                      <a href="${pageContext.request.contextPath}/movies/Booking.do.jsp?movie_id=<%= movie.getMovieId() %>" class="btn-booking">예매하러 가기</a>
                   </div>
               </div>
           </div>

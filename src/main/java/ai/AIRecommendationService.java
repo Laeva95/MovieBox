@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import movie.MovieDTO;
 
 public class AIRecommendationService {
@@ -37,10 +41,24 @@ public class AIRecommendationService {
     // Windows 환경변수 OPENAI_API_KEY에서 가져온다.
     // ============================================================
 
-    private static final String API_KEY =
-            System.getenv("OPENAI_API_KEY");
+    private static final String API_KEY = getApiKey();
+    
+    private static String getApiKey() {
 
+        try {
+            Context initContext = new InitialContext();
 
+            Context envContext =
+                (Context) initContext.lookup("java:comp/env");
+
+            return (String) envContext.lookup("OPENAI_API_KEY");
+
+        } catch (NamingException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
     // ============================================================
     // 영화 추천
     //
