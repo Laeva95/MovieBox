@@ -42,6 +42,7 @@ public class MemberController extends HttpServlet {
     private MemberDAO memberDao;
     private ReservationService reservationService;
     private MovieDAO movieDao;
+    private EmailService emailService;
     
     // 카카오 로그인 요청을 위한 변수
     private String restApiKey;
@@ -53,9 +54,10 @@ public class MemberController extends HttpServlet {
         memberDao = new MemberDAO();
         reservationService = new ReservationService();
         movieDao = new MovieDAO();
+       
         
         try {
-
+        	emailService = new EmailService();
             Context initContext = new InitialContext();
             Context envContext = (Context) initContext.lookup("java:comp/env");
 
@@ -361,7 +363,7 @@ public class MemberController extends HttpServlet {
 				
 				String id = (String)session.getAttribute("id");
 				
-				if(id == null || id.trim() == "") {
+				if(id == null || id.trim().isEmpty()) {
 					out.println("<script>");
 	        	    out.println("alert('로그인 전용 기능입니다.');");
 	        	    out.println("location.href='" + request.getContextPath() + "/member/Login.do';");
@@ -633,6 +635,500 @@ public class MemberController extends HttpServlet {
 			    // MyPage로 리다이렉트
 			    response.sendRedirect(request.getContextPath() + "/member/MyPage.do");
 			    return;
+			}else if ("/FindId.do".equals(action)) {
+			    request.setAttribute("center", "/members/FindId.jsp");
+			    nextPage = "/Index.jsp";
+			}else if ("/FindIdSendCode.do".equals(action)) {
+
+			    String name =
+			            request.getParameter("member_name");
+
+			    String email =
+			            request.getParameter("email");
+
+
+			    if (name == null || name.trim().isEmpty()
+			            || email == null || email.trim().isEmpty()) {
+
+			        out.println("<script>");
+			        out.println("alert('이름과 이메일을 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+
+
+			    // 이름 + 이메일로 회원 검색
+			    List<String> memberIds =
+			            memberDao.findMemberIds(
+			                    name,
+			                    email
+			            );
+
+
+			    if (memberIds.isEmpty()) {
+
+			        out.println("<script>");
+			        out.println(
+			            "alert('입력하신 정보와 일치하는 회원을 찾을 수 없습니다.');"
+			        );
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+
+
+			    // 인증번호 생성
+			    String code =
+			            emailService.createVerificationCode();
+
+
+			    // 세션에 인증정보 저장
+			    session.setAttribute(
+			            "findIdName",
+			            name
+			    );
+
+			    session.setAttribute(
+			            "findIdEmail",
+			            email
+			    );
+
+			    session.setAttribute(
+			            "findIdCode",
+			            code
+			    );
+
+			    session.setAttribute(
+			            "findIdCodeExpire",
+			            System.currentTimeMillis()
+			            + 5 * 60 * 1000
+			    );
+
+
+			    // 이메일 발송
+			    try {
+
+			        emailService.sendVerificationCode(
+			                email,
+			                code
+			        );
+
+			    } catch (Exception e) {
+
+			        e.printStackTrace();
+
+			        // 이메일 발송 실패 시 인증정보 제거
+			        session.removeAttribute("findIdName");
+			        session.removeAttribute("findIdEmail");
+			        session.removeAttribute("findIdCode");
+			        session.removeAttribute("findIdCodeExpire");
+
+			        out.println("<script>");
+			        out.println("alert('인증번호 발송에 실패했습니다.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+
+
+			    // 인증번호 입력 화면으로 이동
+			    response.sendRedirect(
+			            request.getContextPath()
+			            + "/member/FindIdVerify.do"
+			    );
+
+			    return;
+			}else if ("/FindIdVerify.do".equals(action)) {
+
+			    request.setAttribute(
+			            "center",
+			            "/members/FindIdVerify.jsp"
+			    );
+
+			    nextPage = "/Index.jsp";
+			}else if ("/FindIdVerifyPro.do".equals(action)) {
+
+			    String inputCode =
+			            request.getParameter("authCode");
+
+			    String savedCode =
+			            (String) session.getAttribute(
+			                    "findIdCode"
+			            );
+
+			    Long expireTime =
+			            (Long) session.getAttribute(
+			                    "findIdCodeExpire"
+			            );
+
+
+			    if (savedCode == null
+			            || expireTime == null
+			            || inputCode == null
+			            || System.currentTimeMillis() > expireTime
+			            || !savedCode.equals(inputCode)) {
+
+			        out.println("<script>");
+			        out.println(
+			            "alert('인증번호가 올바르지 않거나 만료되었습니다.');"
+			        );
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+			    String name =
+			            (String) session.getAttribute(
+			                    "findIdName"
+			            );
+
+			    String email =
+			            (String) session.getAttribute(
+			                    "findIdEmail"
+			            );
+			    // 인증 성공 후 다시 DB 조회
+			    List<String> memberIds =
+			            memberDao.findMemberIds(
+			                    name,
+			                    email
+			            );
+			    request.setAttribute(
+			            "memberIds",
+			            memberIds
+			    );
+			    // 인증 관련 세션 삭제
+			    session.removeAttribute("findIdName");
+			    session.removeAttribute("findIdEmail");
+			    session.removeAttribute("findIdCode");
+			    session.removeAttribute("findIdCodeExpire");
+			    request.setAttribute(
+			            "center",
+			            "/members/FindIdResult.jsp"
+			    );
+
+			    nextPage = "/Index.jsp";
+			}else if ("/ResetPassword.do".equals(action)) {
+
+			    request.setAttribute(
+			            "center",
+			            "/members/ResetPassword.jsp"
+			    );
+
+			    nextPage = "/Index.jsp";
+			}else if ("/ResetPasswordSendCode.do".equals(action)) {
+
+			    String memberId =
+			            request.getParameter("member_id");
+
+			    String name =
+			            request.getParameter("member_name");
+
+			    String email =
+			            request.getParameter("email");
+
+
+			    if (memberId == null
+			            || name == null
+			            || email == null
+			            || memberId.trim().isEmpty()
+			            || name.trim().isEmpty()
+			            || email.trim().isEmpty()) {
+
+			        out.println("<script>");
+			        out.println("alert('모든 정보를 입력해주세요.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+
+
+			    boolean memberExists =
+			            memberDao.verifyMemberForPasswordReset(
+			                    memberId,
+			                    name,
+			                    email
+			            );
+
+
+			    if (!memberExists) {
+
+			        out.println("<script>");
+			        out.println(
+			            "alert('입력하신 회원정보가 일치하지 않습니다.');"
+			        );
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+
+
+			    String code =
+			            emailService.createVerificationCode();
+
+
+			    session.setAttribute(
+			            "resetPasswordMemberId",
+			            memberId
+			    );
+
+			    session.setAttribute(
+			            "resetPasswordEmail",
+			            email
+			    );
+
+			    session.setAttribute(
+			            "resetPasswordCode",
+			            code
+			    );
+
+			    session.setAttribute(
+			            "resetPasswordCodeExpire",
+			            System.currentTimeMillis()
+			            + 5 * 60 * 1000
+			    );
+
+
+			    try {
+
+			        emailService.sendVerificationCode(
+			                email,
+			                code
+			        );
+
+			    } catch (Exception e) {
+
+			        e.printStackTrace();
+
+			        session.removeAttribute(
+			                "resetPasswordMemberId"
+			        );
+
+			        session.removeAttribute(
+			                "resetPasswordEmail"
+			        );
+
+			        session.removeAttribute(
+			                "resetPasswordCode"
+			        );
+
+			        session.removeAttribute(
+			                "resetPasswordCodeExpire"
+			        );
+
+			        out.println("<script>");
+			        out.println("alert('인증번호 발송에 실패했습니다.');");
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+
+
+			    response.sendRedirect(
+			            request.getContextPath()
+			            + "/member/ResetPasswordVerify.do"
+			    );
+
+			    return;
+			}else if ("/ResetPasswordVerify.do".equals(action)) {
+
+			    request.setAttribute(
+			            "center",
+			            "/members/ResetPasswordVerify.jsp"
+			    );
+
+			    nextPage = "/Index.jsp";
+			}else if ("/ResetPasswordVerifyPro.do".equals(action)) {
+
+			    String inputCode =
+			            request.getParameter("authCode");
+
+			    String savedCode =
+			            (String) session.getAttribute(
+			                    "resetPasswordCode"
+			            );
+
+			    Long expireTime =
+			            (Long) session.getAttribute(
+			                    "resetPasswordCodeExpire"
+			            );
+
+
+			    if (savedCode == null
+			            || expireTime == null
+			            || inputCode == null
+			            || System.currentTimeMillis() > expireTime
+			            || !savedCode.equals(inputCode)) {
+
+			        out.println("<script>");
+			        out.println(
+			            "alert('인증번호가 올바르지 않거나 만료되었습니다.');"
+			        );
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+
+
+			    // 이메일 인증 성공
+			    session.setAttribute(
+			            "passwordResetVerified",
+			            true
+			    );
+
+
+			    // 인증번호는 더 이상 필요 없음
+			    session.removeAttribute(
+			            "resetPasswordCode"
+			    );
+
+			    session.removeAttribute(
+			            "resetPasswordCodeExpire"
+			    );
+
+
+			    request.setAttribute(
+			            "center",
+			            "/members/ResetPasswordForm.jsp"
+			    );
+
+			    nextPage = "/Index.jsp";
+			}else if ("/ResetPasswordPro.do".equals(action)) {
+
+			    Boolean verified =
+			            (Boolean) session.getAttribute(
+			                    "passwordResetVerified"
+			            );
+
+			    String memberId =
+			            (String) session.getAttribute(
+			                    "resetPasswordMemberId"
+			            );
+
+
+			    // 이메일 인증을 완료한 경우에만 허용
+			    if (!Boolean.TRUE.equals(verified)
+			            || memberId == null) {
+
+			        out.println("<script>");
+			        out.println(
+			            "alert('비밀번호 재설정 인증이 필요합니다.');"
+			        );
+			        out.println(
+			            "location.href='"
+			            + request.getContextPath()
+			            + "/member/ResetPassword.do';"
+			        );
+			        out.println("</script>");
+
+			        return;
+			    }
+
+
+			    String newPassword =
+			            request.getParameter("member_pass");
+
+			    String confirmPassword =
+			            request.getParameter(
+			                    "member_pass_confirm"
+			            );
+
+
+			    if (newPassword == null
+			            || confirmPassword == null
+			            || !newPassword.equals(confirmPassword)) {
+
+			        out.println("<script>");
+			        out.println(
+			            "alert('비밀번호가 일치하지 않습니다.');"
+			        );
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+
+
+			    // 현재 회원가입과 같은 비밀번호 규칙
+			    if (!newPassword.matches(
+			            "^(?=.*[a-zA-Z])"
+			          + "(?=.*[0-9])"
+			          + "(?=.*[!@#$%^&*])"
+			          + "[a-zA-Z0-9!@#$%^&*]{8,20}$")) {
+
+			        out.println("<script>");
+			        out.println(
+			            "alert('비밀번호는 영문, 숫자, 특수문자를 포함하여 8~20자로 입력해주세요.');"
+			        );
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
+
+
+			    // 기존 PasswordUtil 사용
+			    String hashedPassword =
+			            PasswordUtil.createPasswordHash(
+			                    newPassword
+			            );
+
+
+			    // DB 변경
+			    int result =
+			            memberDao.updatePassword(
+			                    memberId,
+			                    hashedPassword
+			            );
+
+
+			    if (result > 0) {
+
+			        // 인증 관련 세션 제거
+			        session.removeAttribute(
+			                "passwordResetVerified"
+			        );
+
+			        session.removeAttribute(
+			                "resetPasswordMemberId"
+			        );
+
+			        session.removeAttribute(
+			                "resetPasswordEmail"
+			        );
+
+
+			        out.println("<script>");
+			        out.println(
+			            "alert('비밀번호가 변경되었습니다.');"
+			        );
+			        out.println(
+			            "location.href='"
+			            + request.getContextPath()
+			            + "/member/Login.do';"
+			        );
+			        out.println("</script>");
+
+			        return;
+
+			    } else {
+
+			        out.println("<script>");
+			        out.println(
+			            "alert('비밀번호 변경에 실패했습니다.');"
+			        );
+			        out.println("history.back();");
+			        out.println("</script>");
+
+			        return;
+			    }
 			}
         	// 결과 화면으로 이동 (주소창은 그대로, 화면만 바뀐다)
         	request.getRequestDispatcher(nextPage).forward(request, response);
