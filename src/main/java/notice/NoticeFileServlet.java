@@ -23,6 +23,9 @@ public class NoticeFileServlet extends HttpServlet {
 
         String fileName = request.getParameter("fileName");
         String mode = request.getParameter("mode");
+        
+        System.out.println("★ 파일명: " + fileName);
+        System.out.println("★ mode: " + mode);
 
         if (fileName == null || fileName.isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
