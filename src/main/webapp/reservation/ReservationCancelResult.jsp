@@ -30,19 +30,7 @@
 
 <style>
 
-body {
 
-    margin: 0;
-
-    background-color: #111;
-
-    color: white;
-
-    font-family:
-        Arial,
-        "Noto Sans KR",
-        sans-serif;
-}
 
 
 .result-container {

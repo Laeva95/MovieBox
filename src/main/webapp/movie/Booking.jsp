@@ -39,35 +39,7 @@ today.plusDays(7);
    전체
 ========================================================= */
 
-* {
 
-    box-sizing: border-box;
-
-}
-
-
-body {
-
-    margin: 0;
-
-    background:
-        linear-gradient(
-            180deg,
-            #0d0d0d 0%,
-            #151515 45%,
-            #0d0d0d 100%
-        );
-
-    color: #fff;
-
-    font-family:
-        Arial,
-        "Noto Sans KR",
-        sans-serif;
-
-    min-height: 100vh;
-
-}
 
 
 
@@ -2177,7 +2149,7 @@ function selectMovie(movieId) {
 
             contextPath
 
-            + "/movies/Booking.do?movie_id="
+            + "/movie/Booking.do?movie_id="
 
             + movieId;
 
