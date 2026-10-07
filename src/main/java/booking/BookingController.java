@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import movie.MovieDAO;
 import movie.MovieDTO;
 
-@WebServlet("/movies/Booking.do")
+@WebServlet("/movie/Booking.do")
 public class BookingController extends HttpServlet {
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

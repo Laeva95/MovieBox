@@ -22,7 +22,7 @@
     <a href="${pageContext.request.contextPath}/" class="brand-logo">MOVIE<span class="logo-red">BOX</span></a>
     <nav class="main-nav">
       <a href="${pageContext.request.contextPath}/movies/MovieList.do">영화</a>
-      <a href="${pageContext.request.contextPath}/movies/Booking.do">예매</a>
+      <a href="${pageContext.request.contextPath}/movie/Booking.do">예매</a>
       <a href="#">리뷰</a>
       <a href="${pageContext.request.contextPath}/notice/list">공지사항</a>
     </nav>
