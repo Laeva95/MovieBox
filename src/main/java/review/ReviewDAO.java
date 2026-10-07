@@ -120,6 +120,9 @@ public class ReviewDAO {
 				dto.setLikeCount(rs.getInt("Like_count"));
 				dto.setMemberName(rs.getString("member_name")); //JOIN으로 가져온 회원 이름
 				
+				// ★ 각 작성자별 실관람 여부 조회 및 저장
+			    dto.setAudience(checkAudience(dto.getMemberId(), dto.getMovieId()));
+				
 				list.add(dto);
 			}
 		} catch (Exception e) {
@@ -186,24 +189,33 @@ public class ReviewDAO {
 		boolean isAudience = false;
 		
 		//booking 테이블과 showing 테이블을 JOIN 하여 회원이 해당 영화를 예매했는지 검사
-		String sql = "SELECT COUNT(*) AS cnt "
-				   + "FROM booking b "
-				   + "JOIN showing s ON b.showing_id = s.showing_id "
-				   + "WHERE b.member_id = ? AND s.movie_id = ? AND b.status = '예매완료'";
+		String sql1 = "SELECT COUNT(*) AS cnt FROM reservation WHERE member_id = ? AND movie_id = ?";
+		
+		String sql2 = "SELECT COUNT(*) AS cnt FROM booking b JOIN showing s ON b.showing_id = s.showing_id WHERE b.member_id = ? AND s.movie_id = ?";
 		
 		try {
 			conn = getConnection();
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, memberId);
-			pstmt.setInt(2, movieId);
-			rs = pstmt.executeQuery();
-			
-			if (rs.next() && rs.getInt("cnt") > 0 ) {
-				isAudience = true;
+			try {
+				pstmt = conn.prepareStatement(sql1);
+				pstmt.setString(1, memberId);
+				pstmt.setInt(2, movieId);
+				rs = pstmt.executeQuery();
+				if (rs.next() && rs.getInt("cnt") > 0) {
+					isAudience = true;
+				}
+			} catch (SQLException e) {
+				// reservation 테이블이 없으면 fallback으로 booking 쿼리 실행
+				close(null, pstmt, rs);
+				pstmt = conn.prepareStatement(sql2);
+				pstmt.setString(1, memberId);
+				pstmt.setInt(2, movieId);
+				rs = pstmt.executeQuery();
+				if (rs.next() && rs.getInt("cnt") > 0) {
+					isAudience = true;
+				}
 			}
 		} catch (Exception e) {
-			System.err.println("[ReviewDAO] checkAudience 에러 발생 : " + e.getMessage());
-			e.printStackTrace();
+			System.err.println("[ReviewDAO] checkAudience 에러: " + e.getMessage());
 		} finally {
 			close(conn, pstmt, rs);
 		}
@@ -244,6 +256,86 @@ public class ReviewDAO {
 		
 		return result;
 	}
+	
+	//================================================
+	// 7. 전체 최신 리뷰 목록 조회 
+	//================================================
+	public List<ReviewDTO> getRecentReviews(int limit) {
+		List<ReviewDTO> list = new ArrayList<>();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+			
+		String sql = "SELECT r.review_id, r.movie_id, r.member_id, r.rating, r.content, "
+				   + "       r.reg_date, r.like_count, m.member_name, mv.title AS movie_title "
+				   + "FROM review r "
+				   + "JOIN member m ON r.member_id = m.member_id "
+				   + "LEFT JOIN movie mv ON r.movie_id = mv.movie_id "
+				   + "ORDER BY r.review_id DESC LIMIT ?";
+			
+		try {
+				conn = getConnection();
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, limit);
+				rs = pstmt.executeQuery();
+				
+				while (rs.next()) {
+					ReviewDTO dto = new ReviewDTO();
+					dto.setReviewId(rs.getInt("review_id"));
+					dto.setMovieId(rs.getInt("movie_id"));
+					dto.setMemberId(rs.getString("member_id"));
+					dto.setRating(rs.getInt("rating"));
+					dto.setContent(rs.getString("content"));
+					dto.setRegDate(rs.getTimestamp("reg_date"));
+					dto.setLikeCount(rs.getInt("like_count"));
+					dto.setMemberName(rs.getString("member_name"));
+					dto.setMovieTitle(rs.getString("movie_title"));
+					dto.setAudience(checkAudience(dto.getMemberId(), dto.getMovieId()));
+					list.add(dto);
+				}
+		} catch (Exception e) {
+			System.err.println("[ReviewDAO] getRecentReviews 에러: " + e.getMessage());
+		} finally {
+			close(conn, pstmt, rs);
+		}
+		return list;
+		}
+	
+	//=========================
+    // 8. 리뷰 수정 (UPDATE)
+	//=========================
+	
+	/*
+		자신이 작성한 리뷰의 별점과 내용을 수정합니다.
+		@param dto 수정할 리뷰 정보 (reviewId, memberId, rating, content)
+		@return 반영된 행의 수 (1이면 성공)
+	*/
+	public int updateReview(ReviewDTO dto) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		int result = 0;
+		
+		String sql = "UPDATE review SET rating = ?, content = ? WHERE review_id = ? AND member_id = ?";
+		
+		try {
+			conn = getConnection();
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, dto.getRating());
+			pstmt.setString(2, dto.getContent());
+			pstmt.setInt(3, dto.getReviewId());
+			pstmt.setString(4, dto.getMemberId());
+			
+			result = pstmt.executeUpdate();
+		} catch (Exception e) {
+			System.err.println("[ReviewDAO] updateReview 에러 발생 : " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			close(conn, pstmt, null);
+		}
+		
+		return result;
+	}
+	
 	
 }
 

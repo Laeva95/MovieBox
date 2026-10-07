@@ -38,7 +38,7 @@ public class ReviewService {
 				return false;
 		}
 				
-		// 3. 별점 범위 체크 (1 ~ 10점) -> [수정 완료: > 10 으로 변경]
+		// 3. 별점 범위 체크 (1 ~ 10점) 
 		if (dto.getRating() < 1 || dto.getRating() > 10) {
 				System.out.println("[ReviewService] 별점 범위 오류(1~10점만 가능) : " + dto.getRating());
 				return false;
@@ -117,6 +117,28 @@ public class ReviewService {
 		int result = reviewDAO.deleteReview(reviewId, loginMemberId);
 		return result == 1;
 	}
+	
+	public List<ReviewDTO> getRecentReviews(int limit) {
+		return reviewDAO.getRecentReviews(limit);
+	}
+	
+	//====================
+	// 6. 리뷰 수정 검증
+	//====================
+	public boolean modifyReview(ReviewDTO dto) {
+		if (dto == null || dto.getReviewId() <= 0 || dto.getMemberId() == null) {
+			return false;
+		}
+		if (dto.getContent() == null || dto.getContent().trim().isEmpty()) {
+			return false;
+		}
+		if (dto.getRating() < 1 || dto.getRating() > 10) {
+			return false;
+		}
+		int result = reviewDAO.updateReview(dto);
+		return result == 1;
+	}
+	
 	
 	
 }
