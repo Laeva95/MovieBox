@@ -257,9 +257,21 @@
                  </button>
              </form>
              <div class="login-links">
-                 <a href="${pageContext.request.contextPath}/member/Join.do">
-                     회원가입
-                 </a>
+                 <a href="${pageContext.request.contextPath}/member/FindId.do">
+			        아이디 찾기
+			    </a>
+			
+			    <span class="link-divider"></span>
+			
+			    <a href="${pageContext.request.contextPath}/member/ResetPassword.do">
+			        비밀번호 찾기
+			    </a>
+			
+			    <span class="link-divider"></span>
+			
+			    <a href="${pageContext.request.contextPath}/member/Join.do">
+			        회원가입
+			    </a>
              </div>
              <div class="login-divider">
                  <span>또는</span>
