@@ -2,270 +2,568 @@
     contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 
-<%@ page import="booking.ReservationVO" %>
 <%@ page import="movie.MovieDAO" %>
+
 <%@ page import="movie.MovieDTO" %>
 
 <%
-    ReservationVO reservation =
-            (ReservationVO) request.getAttribute("reservation");
 
-    String memberName =
-            (String) session.getAttribute("name");
+    // ====================================================
+    // 예매 정보
+    // ====================================================
 
-    MovieDTO movie = null;
+    String memberId =
+            request.getParameter("memberId");
 
-    String screeningTime = "상영 시간 정보 없음";
+    String movieId =
+            request.getParameter("movieId");
 
-    if (reservation != null) {
+    String screeningId =
+            request.getParameter("screeningId");
 
-        MovieDAO movieDAO = new MovieDAO();
+    String reservationDate =
+            request.getParameter("reservationDate");
 
-        movie = movieDAO.getMovieDetails(
-                reservation.getMovieId()
-        );
+    String seats =
+            request.getParameter("seats");
 
-        // 상영번호에 따른 상영시간
-        switch (reservation.getScreeningId()) {
+    String amount =
+            request.getParameter("amount");
+
+
+    // ====================================================
+    // null 처리
+    // ====================================================
+
+    if (memberId == null) {
+
+        memberId = "";
+
+    }
+
+    if (movieId == null) {
+
+        movieId = "";
+
+    }
+
+    if (screeningId == null) {
+
+        screeningId = "";
+
+    }
+
+    if (reservationDate == null) {
+
+        reservationDate = "";
+
+    }
+
+    if (seats == null) {
+
+        seats = "";
+
+    }
+
+    if (amount == null) {
+
+        amount = "0";
+
+    }
+
+
+    // ====================================================
+    // 영화 제목
+    // ====================================================
+
+    String movieTitle =
+            "영화 정보 없음";
+
+
+    try {
+
+        int movieNo =
+                Integer.parseInt(
+                        movieId
+                );
+
+
+        MovieDAO movieDAO =
+                new MovieDAO();
+
+
+        MovieDTO movie =
+                movieDAO.getMovieDetails(
+                        movieNo
+                );
+
+
+        if (movie != null) {
+
+            movieTitle =
+                    movie.getTitle();
+
+        }
+
+
+    } catch (Exception e) {
+
+        movieTitle =
+                "영화 정보 없음";
+
+    }
+
+
+    // ====================================================
+    // 상영시간
+    // ====================================================
+
+    String screeningTime =
+            "-";
+
+
+    try {
+
+        int screeningNo =
+                Integer.parseInt(
+                        screeningId
+                );
+
+
+        switch (screeningNo) {
 
             case 1:
-                screeningTime = "10:00";
+
+                screeningTime =
+                        "10:00";
+
                 break;
+
 
             case 2:
-                screeningTime = "13:00";
+
+                screeningTime =
+                        "13:00";
+
                 break;
+
 
             case 3:
-                screeningTime = "16:00";
+
+                screeningTime =
+                        "16:00";
+
                 break;
+
 
             case 4:
-                screeningTime = "19:00";
+
+                screeningTime =
+                        "19:00";
+
                 break;
 
-            default:
-                screeningTime = "상영 시간 정보 없음";
-                break;
         }
+
+
+    } catch (Exception e) {
+
+        screeningTime =
+                "-";
+
     }
+
+
+    // ====================================================
+    // 금액
+    // ====================================================
+
+    int totalAmount =
+            0;
+
+
+    try {
+
+        totalAmount =
+                Integer.parseInt(
+                        amount
+                );
+
+    } catch (Exception e) {
+
+        totalAmount =
+                0;
+
+    }
+
+
+    // ====================================================
+    // 회원 이름
+    // ====================================================
+
+    String memberName =
+            memberId;
+
+
+    Object sessionName =
+            session.getAttribute("name");
+
+
+    if (sessionName != null) {
+
+        memberName =
+                sessionName.toString();
+
+    }
+
 %>
+
+
+<!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>예매 완료 - Movie Box</title>
+
 
 <style>
 
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+
+    margin: 0;
+
+    min-height: 100vh;
+
+    background-color: #111;
+
+    color: white;
+
+    font-family:
+        Arial,
+        "Noto Sans KR",
+        sans-serif;
+
+}
 
 
 .result-container {
 
-    width: 650px;
+    width: 600px;
 
-    margin: 80px auto;
+    max-width:
+        calc(100% - 30px);
+
+    margin: 70px auto;
+
+}
+
+
+.result-box {
 
     padding: 40px;
-
-    box-sizing: border-box;
 
     background-color: #1c1c1c;
 
     border-radius: 12px;
 
     text-align: center;
+
 }
 
-.result-container h1 {
 
-    margin-bottom: 35px;
+.success-icon {
+
+    width: 70px;
+
+    height: 70px;
+
+    margin: 0 auto 25px;
+
+    border-radius: 50%;
+
+    background-color: #e50914;
+
+    color: white;
+
+    font-size: 40px;
+
+    line-height: 70px;
+
+    font-weight: bold;
+
 }
 
-.result-info {
 
-    padding: 25px;
+.result-box h1 {
 
-    background-color: #252525;
+    margin: 0 0 10px;
+
+    font-size: 30px;
+
+}
+
+
+.result-box .message {
+
+    margin-bottom: 30px;
+
+    color: #aaa;
+
+}
+
+
+.info-box {
+
+    padding: 20px;
+
+    background-color: #111;
 
     border-radius: 8px;
 
     text-align: left;
+
 }
 
-.result-row {
+
+.info-row {
 
     display: flex;
 
     justify-content: space-between;
 
-    padding: 14px 0;
+    padding: 12px 0;
 
-    border-bottom: 1px solid #444;
+    border-bottom:
+        1px solid #292929;
+
 }
 
-.result-row:last-child {
+
+.info-row:last-child {
 
     border-bottom: none;
+
 }
 
-.result-label {
 
-    color: #999;
+.label {
+
+    color: #777;
+
 }
 
-.result-value {
 
-    font-weight: bold;
-}
-
-.button-area {
-
-    display: flex;
-
-    justify-content: center;
-
-    margin-top: 35px;
-}
-
-.button-area button {
-
-    width: 220px;
-
-    padding: 14px;
-
-    box-sizing: border-box;
-
-    border: none;
-
-    border-radius: 6px;
+.value {
 
     color: white;
 
-    font-size: 15px;
+    font-weight: bold;
+
+}
+
+
+.price {
+
+    color: #e50914;
+
+    font-size: 20px;
+
+}
+
+
+.home-button {
+
+    width: 100%;
+
+    height: 50px;
+
+    margin-top: 30px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    background-color: #e50914;
+
+    color: white;
+
+    font-size: 16px;
 
     font-weight: bold;
 
     cursor: pointer;
+
 }
 
-.home-button {
-    background-color: #e50914;
-}
 
 .home-button:hover {
+
     background-color: #b20710;
+
 }
 
 </style>
 
+</head>
+
+
+<body>
+
 
 <div class="result-container">
 
-    <h1>예매가 완료되었습니다.</h1>
+    <div class="result-box">
 
-<%
-    if (reservation != null) {
-%>
 
-    <div class="result-info">
+        <div class="success-icon">
 
-        <div class="result-row">
-
-            <span class="result-label">
-                이름
-            </span>
-
-            <span class="result-value">
-
-                <%= memberName != null
-                        ? memberName
-                        : reservation.getMemberId() %>
-
-            </span>
+            ✓
 
         </div>
 
 
-        <div class="result-row">
+        <h1>
 
-            <span class="result-label">
-                영화
-            </span>
+            예매가 완료되었습니다.
 
-            <span class="result-value">
-
-                <%= movie != null
-                        ? movie.getTitle()
-                        : "영화 정보 없음" %>
-
-            </span>
-
-        </div>
+        </h1>
 
 
-        <div class="result-row">
+        <div class="message">
 
-            <span class="result-label">
-                예매 날짜
-            </span>
+            <%= memberName %>님,
 
-            <span class="result-value">
-
-                <%= reservation.getReservationDate() %>
-
-            </span>
+            예매해주셔서 감사합니다.
 
         </div>
 
 
-        <div class="result-row">
+        <div class="info-box">
 
-            <span class="result-label">
-                상영 시간
-            </span>
 
-            <span class="result-value">
+            <div class="info-row">
 
-                <%= screeningTime %>
+                <span class="label">
 
-            </span>
+                    영화
+
+                </span>
+
+
+                <span class="value">
+
+                    <%= movieTitle %>
+
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span class="label">
+
+                    예매 날짜
+
+                </span>
+
+
+                <span class="value">
+
+                    <%= reservationDate %>
+
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span class="label">
+
+                    상영시간
+
+                </span>
+
+
+                <span class="value">
+
+                    <%= screeningTime %>
+
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span class="label">
+
+                    좌석
+
+                </span>
+
+
+                <span class="value">
+
+                    <%= seats %>
+
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span class="label">
+
+                    결제 금액
+
+                </span>
+
+
+                <span class="value price">
+
+                    <%= String.format(
+                            "%,d",
+                            totalAmount
+                    ) %>원
+
+                </span>
+
+            </div>
+
 
         </div>
 
 
-        <div class="result-row">
+        <button
+            type="button"
+            class="home-button"
+            onclick="location.href='<%= request.getContextPath() %>/Index.jsp';">
 
-            <span class="result-label">
-                좌석
-            </span>
-
-            <span class="result-value">
-
-                <%= reservation.getSeatNumber() %>
-
-            </span>
-
-        </div>
-
-    </div>
-
-
-    <div class="button-area">
-
-        <button type="button"
-                class="home-button"
-                onclick="location.href='${pageContext.request.contextPath}/Index.jsp'">
-
-            홈
+            홈으로
 
         </button>
 
+
     </div>
 
-<%
-    } else {
-%>
-
-    <h1>예매 정보를 찾을 수 없습니다.</h1>
-
-<%
-    }
-%>
-
 </div>
+
+
+</body>
+
+</html>
