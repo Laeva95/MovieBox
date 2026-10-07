@@ -12,6 +12,8 @@ public class ReviewDTO {
 	private String content;    //content (한줄평 내용)
 	private Timestamp regDate; //reg_date (작성일시)
 	private int likeCount;     //like_count (좋아요 수)
+	private boolean audience;  //실관람객 여부 플래그
+	
 	
 	//2. 화면 출력용 보조 필드 (JOIN 쿼리 결과를 담기 위한 용도)
 	private String memberName; //작성자 이름 (member 테이블과 JOIN 시 사용)
@@ -99,6 +101,14 @@ public class ReviewDTO {
 
 	public void setMovieTitle(String movieTitle) {
 		this.movieTitle = movieTitle;
+	}
+	
+	public boolean isAudience() {
+	    return audience;
+	}
+
+	public void setAudience(boolean audience) {
+	    this.audience = audience;
 	}
 	
 	//6. 디버깅 및 콘솔 확인용 toString()
