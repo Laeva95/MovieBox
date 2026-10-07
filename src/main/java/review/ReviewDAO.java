@@ -187,7 +187,7 @@ public class ReviewDAO {
 		
 		//booking 테이블과 showing 테이블을 JOIN 하여 회원이 해당 영화를 예매했는지 검사
 		String sql = "SELECT COUNT(*) AS cnt "
-				   + "FROM bokking b "
+				   + "FROM booking b "
 				   + "JOIN showing s ON b.showing_id = s.showing_id "
 				   + "WHERE b.member_id = ? AND s.movie_id = ? AND b.status = '예매완료'";
 		
@@ -226,7 +226,7 @@ public class ReviewDAO {
 		PreparedStatement pstmt = null;
 		int result = 0;
 		
-		String sql = "DELETE FROM review WHERE review_id = ? AND memver_id = ?";
+		String sql = "DELETE FROM review WHERE review_id = ? AND member_id = ?";
 		
 		try {
 			conn = getConnection();

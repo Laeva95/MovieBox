@@ -26,25 +26,25 @@ public class ReviewService {
 		@return 등록 성공 시 true, 검증 실패 또는 DB 오류 시 false
 	*/
 	public boolean addReview(ReviewDTO dto) {
-		//1. 필수 파라미터 체크
+		// 1. 필수 파라미터 체크
 		if (dto == null || dto.getMemberId() == null || dto.getMovieId() <= 0) {
-			System.out.println("[ReviewService] 필수 정보 누락 (회원 아이디 또는 영화 번호 없음)");
-			return false;
+				System.out.println("[ReviewService] 필수 정보 누락 (회원 아이디 또는 영화 번호 없음)");
+				return false;
 		}
-		
-		//2. 내용 빈값 체크
+				
+		// 2. 내용 빈값 체크
 		if (dto.getContent() == null || dto.getContent().trim().isEmpty()) {
-			System.out.println("[ReviewService] 리뷰 내용이 비어있습니다.");
-			return false;
+				System.out.println("[ReviewService] 리뷰 내용이 비어있습니다.");
+				return false;
 		}
-		
-		//3. 별점 범위 체크 (1 ~ 10점)
-		if (dto.getRating() < 1 || dto.getRating() < 10) {
-			System.out.println("[ReviewService] 별점 범위 오류(1~10점만 가능) : " + dto.getRating());
-			return false;
+				
+		// 3. 별점 범위 체크 (1 ~ 10점) -> [수정 완료: > 10 으로 변경]
+		if (dto.getRating() < 1 || dto.getRating() > 10) {
+				System.out.println("[ReviewService] 별점 범위 오류(1~10점만 가능) : " + dto.getRating());
+				return false;
 		}
-		
-		//4. 모든 검증을 통과하면 DAO를 통해 DB 저장
+				
+		// 4. 모든 검증을 통과하면 DAO를 통해 DB 저장
 		int result = reviewDAO.insertReview(dto);
 		return result == 1;
 	}
