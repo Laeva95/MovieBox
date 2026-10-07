@@ -1,6 +1,6 @@
 package notice;
 
-import java.sql.Connection; 
+import java.sql.Connection;  
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -343,11 +343,39 @@ public class NoticeDAO {
         }
     }
 
-	public void increaseViewCount(int noticeId) {
-		// TODO Auto-generated method stub
-		
-	}
+    public void increaseViewCount(int noticeId) {
 
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+
+            conn = ds.getConnection();
+
+            String sql = "UPDATE notice "
+                       + "SET view_count = view_count + 1 "
+                       + "WHERE notice_id = ?";
+
+            pstmt = conn.prepareStatement(sql);
+
+            pstmt.setInt(1, noticeId);
+
+            pstmt.executeUpdate();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        } finally {
+
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 	public void updateNotice(NoticeDTO notice) {
 	    Connection conn = null;
 	    PreparedStatement pstmt = null;
@@ -355,23 +383,33 @@ public class NoticeDAO {
 	    try {
 	        conn = ds.getConnection();
 	        // 첨부파일을 새로 올렸을 때와 아닐 때 처리가 필요할 수 있으므로, 기본 title, content, is_pinned 수정 쿼리
-	        String sql = "UPDATE notice SET title = ?, content = ?, is_pinned = ?, updated_at = NOW() WHERE notice_id = ?";
+	        String sql = "UPDATE notice "
+	        		+ "SET title = ?, content = ?, filename = ?, is_pinned = ?, updated_at = NOW() "
+	        		+ "WHERE notice_id = ?";
 
 	        pstmt = conn.prepareStatement(sql);
+	        
 	        pstmt.setString(1, notice.getTitle());
 	        pstmt.setString(2, notice.getContent());
-	        pstmt.setInt(3, notice.getIsPinned());
-	        pstmt.setInt(4, notice.getNoticeId());
+	        pstmt.setString(3, notice.getFileName());    
+	        pstmt.setInt(4, notice.getIsPinned());       
+	        pstmt.setInt(5, notice.getNoticeId());       
 
 	        pstmt.executeUpdate();
 
 	    } catch (Exception e) {
+	    	
 	        e.printStackTrace();
+	        
 	    } finally {
+	    	
 	        try {
+	        	
 	            if (pstmt != null) pstmt.close();
 	            if (conn != null) conn.close();
+	            
 	        } catch (SQLException e) {
+	        	
 	            e.printStackTrace();
 	        }
 	    }
