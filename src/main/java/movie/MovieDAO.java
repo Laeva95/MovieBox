@@ -1457,4 +1457,157 @@ public class MovieDAO {
      return result;
  }
 
+ // =========================================================
+ // 17. 영화 찜 기능
+ // =========================================================
+
+ /**
+  * 영화 찜 추가
+  *
+  * memberId : 현재 로그인한 회원 아이디
+  * movieId  : 찜하려는 영화 번호
+  *
+  * 이미 찜한 영화라면 INSERT IGNORE 때문에 중복 저장되지 않음
+  */
+ public int addFavorite(String memberId, int movieId) {
+
+     String sql =
+             "INSERT IGNORE INTO movie_favorite "
+           + "(member_id, movie_id) "
+           + "VALUES (?, ?)";
+
+     try (
+             Connection conn = dataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)
+     ) {
+
+         pstmt.setString(1, memberId);
+         pstmt.setInt(2, movieId);
+
+         return pstmt.executeUpdate();
+
+     } catch (SQLException e) {
+
+         System.out.println("영화 찜 추가 중 오류 발생");
+         e.printStackTrace();
+     }
+
+     return 0;
+ }
+
+
+ /**
+  * 영화 찜 삭제
+  */
+ public int removeFavorite(String memberId, int movieId) {
+
+     String sql =
+             "DELETE FROM movie_favorite "
+           + "WHERE member_id = ? "
+           + "AND movie_id = ?";
+
+     try (
+             Connection conn = dataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)
+     ) {
+
+         pstmt.setString(1, memberId);
+         pstmt.setInt(2, movieId);
+
+         return pstmt.executeUpdate();
+
+     } catch (SQLException e) {
+
+         System.out.println("영화 찜 삭제 중 오류 발생");
+         e.printStackTrace();
+     }
+
+     return 0;
+ }
+
+
+ /**
+  * 현재 회원이 해당 영화를 찜했는지 확인
+  *
+  * true  = 찜함 ❤️
+  * false = 찜하지 않음 ♡
+  */
+ public boolean isFavorite(String memberId, int movieId) {
+
+     String sql =
+             "SELECT COUNT(*) "
+           + "FROM movie_favorite "
+           + "WHERE member_id = ? "
+           + "AND movie_id = ?";
+
+     try (
+             Connection conn = dataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)
+     ) {
+
+         pstmt.setString(1, memberId);
+         pstmt.setInt(2, movieId);
+
+         try (ResultSet rs = pstmt.executeQuery()) {
+
+             if (rs.next()) {
+
+                 return rs.getInt(1) > 0;
+             }
+         }
+
+     } catch (SQLException e) {
+
+         System.out.println("영화 찜 여부 확인 중 오류 발생");
+         e.printStackTrace();
+     }
+
+     return false;
+ }
+
+
+ /**
+  * 현재 로그인한 회원이 찜한 영화 ID 목록 가져오기
+  *
+  * 영화 목록 화면에서
+  * "이 영화는 찜했는지"를 표시하기 위해 사용
+  */
+ public List<Integer> getFavoriteMovieIds(String memberId) {
+
+     List<Integer> favoriteMovieIds =
+             new ArrayList<>();
+
+     String sql =
+             "SELECT movie_id "
+           + "FROM movie_favorite "
+           + "WHERE member_id = ?";
+
+     try (
+             Connection conn = dataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)
+     ) {
+
+         pstmt.setString(1, memberId);
+
+         try (ResultSet rs = pstmt.executeQuery()) {
+
+             while (rs.next()) {
+
+                 favoriteMovieIds.add(
+                         rs.getInt("movie_id")
+                 );
+             }
+         }
+
+     } catch (SQLException e) {
+
+         System.out.println("찜한 영화 목록 조회 중 오류 발생");
+         e.printStackTrace();
+     }
+
+     return favoriteMovieIds;
+ }
+
+
 }
+ 

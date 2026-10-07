@@ -7,6 +7,16 @@
 <%
     // 컨트롤러에서 request에 담아준 데이터 꺼내오기 (MovieList.do_영화 목록/ 필터링된 국가, 장르, 정렬 기준)
     List<MovieDTO> movieList = (List<MovieDTO>) request.getAttribute("movieList"); // 영화 목록 가져오기
+    
+    // 사용자가 즐겨찾기한 영화 ID 목록 가져오기 (세션에서 전달된 경우)
+    List<Integer> favoriteMovieIds =
+            (List<Integer>) request.getAttribute("favoriteMovieIds");
+
+    if (favoriteMovieIds == null) {
+        favoriteMovieIds = new java.util.ArrayList<Integer>();
+    }
+    
+   	// 필터링된 국가, 장르, 정렬 기준, 검색 키워드 값 가져오기
     String country = (String) request.getAttribute("country"); // 필터링된 국가 값 가져오기
     String genre = (String) request.getAttribute("genre");	// 필터링된 장르 값 가져오기
     String sort = (String) request.getAttribute("sort");	// 정렬 기준 값 가져오기
@@ -43,6 +53,40 @@
       .movie-card:hover {
           transform: translateY(-5px);
       }
+      /* 관심영화 하트 */
+.favorite-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+
+    width: 38px;
+    height: 38px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.55);
+    color: white;
+
+    font-size: 22px;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: 0.2s;
+}
+
+.favorite-btn:hover {
+    transform: scale(1.1);
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.favorite-btn.active {
+    color: #e50914;
+}
       
       /* 영화 검색 영역 */
 .search-container {
@@ -74,6 +118,26 @@
 .search-container button:hover {
     background: #c40812;
 }
+      
+  /* 포스터 영역 기준점 설정 */
+.poster-area {
+    position: relative;
+}
+
+/* NEW 뱃지 스타일 */
+.badge-new {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 10;
+    background-color: #ff4757;
+    color: yellow;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}    
       
       
       
@@ -143,6 +207,12 @@
             </select>
             
             <button type="submit">적용</button> 
+            
+            <!-- ▼ [추가] 필터 초기화 버튼 -->
+            <button type="button"
+             onclick="location.href='${pageContext.request.contextPath}/movies/MovieList.do'" 
+             style="background: #666;">초기화</button>
+            
             <%
             	// 세션에서 로그인한 사용자 ID 확인
             	if(session.getAttribute("id") != null && "admin".equals(session.getAttribute("id"))){
@@ -207,6 +277,45 @@
               
               <!-- 포스터 이미지 영역 -->
               <div class="poster-area">	
+
+				<!-- ▼ [추가] 신규 영화인 경우 NEW 뱃지 출력 (DTO에 isNew() 또는 관련 판별 메서드가 있을 경우) -->
+                
+                <% if(movie.isNew()) { %>
+                    <span class="badge-new">NEW</span>
+                <% } %> 
+                
+                
+                <!-- 만약 별도 메서드가 없다면 최근 등록일 문자열 비교 등을 통해 직접 표현할 수도 있습니다 -->
+
+                <%
+
+
+				    boolean isFavorite =
+				            favoriteMovieIds.contains(movie.getMovieId());
+				%>
+				<!-- 관심영화 추가/삭제 폼 -->
+				<form method="post"
+				      action="${pageContext.request.contextPath}/movies/Favorite.do"
+				      onclick="event.stopPropagation();">
+				
+				    <input type="hidden"
+				           name="movieId"
+				           value="<%= movie.getMovieId() %>">
+				
+				    <input type="hidden"
+				           name="favoriteAction"
+				           value="<%= isFavorite ? "remove" : "add" %>">
+				
+				    <button type="submit"
+				            class="favorite-btn <%= isFavorite ? "active" : "" %>"
+				            onclick="event.stopPropagation();">
+				
+				        <%= isFavorite ? "♥" : "♡" %>
+				
+				    </button>
+				
+				</form>
+
 <%-- 
    [3단계] DB에서 따온 진짜 포스터 주소값 출력 핵심부!
    - movie.getPoster() 메소드가 DB에서 꺼내온 'http://kmdb.or.kr' 문자열을 반환합니다.

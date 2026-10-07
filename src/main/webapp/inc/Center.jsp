@@ -25,6 +25,13 @@
     int movieCount = Math.min(movieList.size(), 5);
     List<MovieDTO> randomMovies = movieList.subList(0, movieCount);
 
+    // 로그인한 회원의 찜한 영화 ID 목록 가져오기
+    String loginId = (String) session.getAttribute("id");
+    List<Integer> favoriteMovieIds = new ArrayList<>();
+    if (loginId != null) {
+        favoriteMovieIds = movieDAO.getFavoriteMovieIds(loginId);
+    }
+
     /*
      * 리뷰 기능이 완성되기 전까지 사용할 더미 리뷰 데이터
      * [작성자, 영화 제목, 평점, 내용, 작성일]
@@ -215,6 +222,56 @@
         font-size: 11px;
         font-weight: 800;
         backdrop-filter: blur(8px);
+    }
+
+	/* 좌하단 NEW 뱃지 스타일 (빨간 바탕 + 노란 글씨) */
+	.badge-new {
+	    position: absolute;
+	    bottom: 10px;
+	    left: 10px;
+	    z-index: 5;
+	    background-color: #e50914; 
+	    color: #f1c40f;            
+	    padding: 4px 8px;
+	    font-size: 11px;
+	    font-weight: 800;
+	    border-radius: 4px;
+	    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+	}
+	
+	/* 우상단 찜(하트) 버튼 스타일 */
+	.home-like-btn {
+	    position: absolute;
+	    top: 10px;
+	    right: 10px;
+	    z-index: 5;
+	    display: flex;
+	    align-items: center;
+	    justify-content: center;
+	    width: 32px;
+	    height: 32px;
+	    border: none;
+	    border-radius: 50%;
+	    background: rgba(13, 14, 19, 0.6);
+	    color: #ffffff;
+	    cursor: pointer;
+	    backdrop-filter: blur(6px);
+	    transition: background 0.2s, transform 0.2s;
+	}
+	
+	.home-like-btn:hover {
+	    background: rgba(229, 9, 20, 0.8);
+	    transform: scale(1.1);
+	}
+	
+	.home-like-btn .material-symbols-outlined {
+	    font-size: 18px;
+	}
+	
+	/* 찜 상태일 때 하트 아이콘 채우기 */
+    .home-like-btn.active .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1;
+        color: #e50914;
     }
 
     .home-movie-info {
@@ -412,36 +469,50 @@
 
                 <% for (int i = 0; i < randomMovies.size(); i++) {
                     MovieDTO movie = randomMovies.get(i);
+                    boolean alreadyFav = favoriteMovieIds.contains(movie.getMovieId());
                 %>
 
                     <div class="home-movie-card">
-                        <a href="${pageContext.request.contextPath}/movies/MovieDetail.do?movie_id=<%= movie.getMovieId() %>">
-                            <div class="home-poster">
+                        <div class="home-poster">
+                            <!-- 포스터 이미지를 누르면 상세페이지로 이동 -->
+                            <a href="${pageContext.request.contextPath}/movies/MovieDetail.do?movieId=<%= movie.getMovieId() %>">
                                 <img
                                     src="<%= movie.getPoster() %>"
                                     alt="<%= movie.getTitle() %>"
                                     onerror="this.src='${pageContext.request.contextPath}/images/no_image.jpg';"
                                 >
+                            </a>
 
-                                <span class="home-random-badge">
-                                    PICK <%= i + 1 %>
-                                </span>
-                            </div>
+                            <span class="home-random-badge">
+                                PICK <%= i + 1 %>
+                            </span>
 
-                            <div class="home-movie-info">
+                            <!-- 우상단 찜(하트) 버튼 -->
+                            <button type="button" class="home-like-btn <%= alreadyFav ? "active" : "" %>" onclick="toggleLike(event, '<%= movie.getMovieId() %>')">
+                                <span class="material-symbols-outlined">favorite</span>
+                            </button>
+
+                            <!-- 좌하단 NEW 뱃지 (빨간 바탕 + 노란 글씨) -->
+                            <% if (movie.isNew()) { %>
+                                <span class="badge-new">NEW</span>
+                            <% } %>
+                        </div>
+
+                        <div class="home-movie-info">
+                            <a href="${pageContext.request.contextPath}/movies/MovieDetail.do?movieId=<%= movie.getMovieId() %>" style="text-decoration: none; color: inherit;">
                                 <h3 class="home-movie-title">
                                     <%= movie.getTitle() %>
                                 </h3>
+                            </a>
 
-                                <p class="home-movie-meta">
-                                    <%= movie.getGenre() %>
-                                    <% if (movie.getCountry() != null && !movie.getCountry().isEmpty()) { %>
-                                        · <%= movie.getCountry() %>
-                                    <% } %>
-                                    · <%= movie.getReleaseDate() %>
-                                </p>
-                            </div>
-                        </a>
+                            <p class="home-movie-meta">
+                                <%= movie.getGenre() %>
+                                <% if (movie.getCountry() != null && !movie.getCountry().isEmpty()) { %>
+                                    · <%= movie.getCountry() %>
+                                <% } %>
+                                · <%= movie.getReleaseDate() %>
+                            </p>
+                        </div>
                     </div>
 
                 <% } %>
@@ -510,3 +581,38 @@
     </section>
 
 </main>
+
+<script>
+function toggleLike(event, movieId) {
+    event.preventDefault(); // a태그 상세페이지 이동 방지
+    const btn = event.currentTarget;
+
+    fetch('${pageContext.request.contextPath}/movies/Favorite.do', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: 'movieId=' + encodeURIComponent(movieId)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'unauthorized') {
+            alert('로그인이 필요한 서비스입니다.');
+            location.href = '${pageContext.request.contextPath}/member/login.do';
+            return;
+        }
+
+        if (data.success) {
+            if (data.status === 'added') {
+                btn.classList.add('active');
+            } else if (data.status === 'removed') {
+                btn.classList.remove('active');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+</script>
