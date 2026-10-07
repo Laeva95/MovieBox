@@ -10,36 +10,87 @@
     // 예매 정보 받기
     // ====================================================
 
+    Object movieIdValue =
+            request.getAttribute("movieId");
+
+    Object memberIdValue =
+            request.getAttribute("memberId");
+
+    Object screeningIdValue =
+            request.getAttribute("screeningId");
+
+    Object reservationDateValue =
+            request.getAttribute("reservationDate");
+
+
     String movieId =
-            (String) request.getAttribute("movieId");
+            movieIdValue != null
+                    ? movieIdValue.toString()
+                    : "";
 
     String memberId =
-            (String) request.getAttribute("memberId");
+            memberIdValue != null
+                    ? memberIdValue.toString()
+                    : "";
 
     String screeningId =
-            (String) request.getAttribute("screeningId");
+            screeningIdValue != null
+                    ? screeningIdValue.toString()
+                    : "";
 
-    // ★ 예약 날짜
     String reservationDate =
-            (String) request.getAttribute("reservationDate");
+            reservationDateValue != null
+                    ? reservationDateValue.toString()
+                    : "";
 
 
     // ====================================================
     // 예약된 좌석 가져오기
     // ====================================================
 
-    List<String> reservedSeats =
-            (List<String>) request.getAttribute("reservedSeats");
+    List<String> reservedSeats = null;
+
+    Object reservedSeatsValue =
+            request.getAttribute("reservedSeats");
+
+    if (reservedSeatsValue instanceof List<?>) {
+
+        reservedSeats =
+                (List<String>) reservedSeatsValue;
+
+    }
 
 
     // ====================================================
-    // 실패 메시지
+    // 메시지
     // ====================================================
 
     String message =
             (String) request.getAttribute("message");
 
+
+    // ====================================================
+    // 좌석 가격
+    // ====================================================
+
+    int seatPrice = 10000;
+
 %>
+
+
+<!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>좌석 선택 - Movie Box</title>
+
 
 <style>
 
@@ -47,7 +98,20 @@
    전체
 ========================================= */
 
+body {
 
+    margin: 0;
+
+    background-color: #111;
+
+    color: white;
+
+    font-family:
+        Arial,
+        "Noto Sans KR",
+        sans-serif;
+
+}
 
 
 /* =========================================
@@ -56,7 +120,7 @@
 
 .seat-container {
 
-    width: 900px;
+    width: 1000px;
 
     margin: 50px auto 80px;
 
@@ -67,6 +131,7 @@
     border-radius: 12px;
 
     box-sizing: border-box;
+
 }
 
 
@@ -158,7 +223,7 @@
 
 .screen {
 
-    width: 650px;
+    width: 700px;
 
     margin: 0 auto 45px;
 
@@ -215,7 +280,7 @@
 
 .row-name {
 
-    width: 25px;
+    width: 30px;
 
     text-align: center;
 
@@ -232,14 +297,14 @@
 
 .seat {
 
-    width: 32px;
+    width: 34px;
 
-    height: 32px;
+    height: 34px;
 
 }
 
 
-/* 실제 radio 숨김 */
+/* 실제 checkbox 숨김 */
 
 .seat input {
 
@@ -260,9 +325,9 @@
 
     align-items: center;
 
-    width: 32px;
+    width: 34px;
 
-    height: 32px;
+    height: 34px;
 
     box-sizing: border-box;
 
@@ -274,7 +339,7 @@
 
     color: white;
 
-    font-size: 11px;
+    font-size: 10px;
 
     cursor: pointer;
 
@@ -316,7 +381,63 @@
 
 
 /* =========================================
-   안내
+   선택 정보
+========================================= */
+
+.selected-info {
+
+    width: 700px;
+
+    margin: 40px auto 0;
+
+    padding: 20px;
+
+    background-color: #252525;
+
+    border-radius: 8px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+
+}
+
+
+.selected-count {
+
+    margin: 0 0 12px;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+}
+
+
+.selected-seats {
+
+    margin: 0;
+
+    color: #ddd;
+
+}
+
+
+.selected-price {
+
+    margin: 12px 0 0;
+
+    font-size: 22px;
+
+    font-weight: bold;
+
+    color: #e50914;
+
+}
+
+
+/* =========================================
+   좌석 안내
 ========================================= */
 
 .seat-guide {
@@ -422,21 +543,61 @@
 
 }
 
+
+.button-area button:disabled {
+
+    background-color: #555;
+
+    color: #999;
+
+    cursor: not-allowed;
+
+}
+
+
+/* =========================================
+   닫기 버튼
+========================================= */
+
+.close-button {
+
+    position: absolute;
+
+    top: 20px;
+
+    right: 25px;
+
+    border: none;
+
+    background: none;
+
+    color: white;
+
+    font-size: 30px;
+
+    cursor: pointer;
+
+}
+
 </style>
 
-<button type="button"
-        onclick="history.back()"
-        style="
-            position: absolute;
-            top: 20px;
-            right: 25px;
-            border: none;
-            background: none;
-            color: white;
-            font-size: 30px;
-            cursor: pointer;
-        ">
+</head>
+
+
+<body>
+
+
+<!-- =========================================
+     닫기
+========================================= -->
+
+<button
+    type="button"
+    class="close-button"
+    onclick="history.back();">
+
     ×
+
 </button>
 
 
@@ -465,20 +626,17 @@
     </div>
 
 
-
     <!-- =========================================
          예매 정보
     ========================================== -->
 
     <div class="booking-info">
 
-
         <span>
 
             날짜 :
-            <%= reservationDate != null
-                    ? reservationDate
-                    : "" %>
+
+            <%= reservationDate %>
 
         </span>
 
@@ -486,15 +644,12 @@
         <span>
 
             상영관 :
-            <%= screeningId != null
-                    ? screeningId
-                    : "" %>
+
+            <%= screeningId %>
 
         </span>
 
-
     </div>
-
 
 
 <%
@@ -504,7 +659,7 @@
     // ====================================================
 
     if (message != null
-            && !message.isEmpty()) {
+            && !message.trim().isEmpty()) {
 
 %>
 
@@ -530,7 +685,6 @@
 %>
 
 
-
     <!-- =========================================
          스크린
     ========================================== -->
@@ -542,15 +696,19 @@
     </div>
 
 
-
     <!-- =========================================
          좌석 선택
     ========================================== -->
 
     <form
-        action="<%= request.getContextPath() %>/reservation"
-        method="post"
-        onsubmit="return checkReservation();">
+
+        id="paymentForm"
+
+        action="<%= request.getContextPath() %>/reservation/Payment.jsp"
+
+        method="get"
+
+        onsubmit="return goPayment();">
 
 
         <!-- =====================================
@@ -558,9 +716,12 @@
         ====================================== -->
 
         <input
+
             type="hidden"
+
             name="memberId"
-            value="<%= memberId != null ? memberId : "" %>">
+
+            value="<%= memberId %>">
 
 
         <!-- =====================================
@@ -568,9 +729,12 @@
         ====================================== -->
 
         <input
+
             type="hidden"
+
             name="movieId"
-            value="<%= movieId != null ? movieId : "" %>">
+
+            value="<%= movieId %>">
 
 
         <!-- =====================================
@@ -578,9 +742,12 @@
         ====================================== -->
 
         <input
+
             type="hidden"
+
             name="screeningId"
-            value="<%= screeningId != null ? screeningId : "" %>">
+
+            value="<%= screeningId %>">
 
 
         <!-- =====================================
@@ -588,13 +755,47 @@
         ====================================== -->
 
         <input
+
             type="hidden"
+
             name="reservationDate"
-            value="<%= reservationDate != null
-                    ? reservationDate
-                    : "" %>">
+
+            value="<%= reservationDate %>">
 
 
+        <!-- =====================================
+             선택 좌석
+        ====================================== -->
+
+        <input
+
+            type="hidden"
+
+            name="seats"
+
+            id="seats"
+
+            value="">
+
+
+        <!-- =====================================
+             결제 금액
+        ====================================== -->
+
+        <input
+
+            type="hidden"
+
+            name="amount"
+
+            id="amount"
+
+            value="">
+
+
+        <!-- =========================================
+             좌석 영역
+        ========================================== -->
 
         <div class="seat-area">
 
@@ -602,7 +803,7 @@
 <%
 
     // ====================================================
-    // A ~ E 좌석
+    // A ~ E
     // ====================================================
 
     String[] rows =
@@ -629,7 +830,7 @@
 <%
 
         // ====================================================
-        // 1 ~ 20 좌석
+        // 1 ~ 20
         // ====================================================
 
         for (int i = 1; i <= 20; i++) {
@@ -639,11 +840,17 @@
                     row + i;
 
 
+            // ====================================================
             // 예약된 좌석인지 확인
+            // ====================================================
 
             boolean reserved =
+
                     reservedSeats != null
-                    && reservedSeats.contains(seatNumber);
+
+                    && reservedSeats.contains(
+                        seatNumber
+                    );
 
 %>
 
@@ -653,7 +860,7 @@
 
                     <input
 
-                        type="radio"
+                        type="checkbox"
 
                         name="seatNumber"
 
@@ -663,13 +870,12 @@
 
                         <%= reserved
                                 ? "disabled"
-                                : "" %>
+                                : "" %>>
 
 
-                    >
+                    <label
 
-
-                    <label for="seat_<%= seatNumber %>">
+                        for="seat_<%= seatNumber %>">
 
 
 <%
@@ -680,7 +886,6 @@
 
                         예약됨
 
-
 <%
 
             } else {
@@ -688,7 +893,6 @@
 %>
 
                         <%= seatNumber %>
-
 
 <%
 
@@ -722,6 +926,58 @@
 
         </div>
 
+
+        <!-- =========================================
+             선택 정보
+        ========================================== -->
+
+        <div class="selected-info">
+
+
+            <p class="selected-count">
+
+                선택 좌석 :
+
+                <span id="selectedCount">
+
+                    0
+
+                </span>
+
+                석
+
+            </p>
+
+
+            <p class="selected-seats">
+
+                좌석 :
+
+                <span id="selectedSeats">
+
+                    없음
+
+                </span>
+
+            </p>
+
+
+            <p class="selected-price">
+
+                총 금액 :
+
+                <span id="totalPrice">
+
+                    0
+
+                </span>
+
+                원
+
+            </p>
+
+
+        </div>
 
 
         <!-- =========================================
@@ -761,18 +1017,25 @@
         </div>
 
 
-
         <!-- =========================================
-             예약 버튼
+             결제 버튼
         ========================================== -->
 
         <div class="button-area">
 
-            <button type="submit">
 
-                예매하기
+            <button
+
+                type="submit"
+
+                id="paymentButton"
+
+                disabled>
+
+                결제하기
 
             </button>
+
 
         </div>
 
@@ -783,30 +1046,222 @@
 </div>
 
 
-
 <script>
+
+/* =========================================
+   좌석 가격
+========================================= */
+
+var SEAT_PRICE = <%= seatPrice %>;
 
 
 /* =========================================
-   좌석 선택 확인
+   좌석 요소
 ========================================= */
 
-function checkReservation() {
+var seatInputs =
+        document.querySelectorAll(
+            'input[name="seatNumber"]'
+        );
 
 
-    var seat =
-            document.querySelector(
-                'input[name="seatNumber"]:checked'
+/* =========================================
+   좌석 선택 이벤트 등록
+========================================= */
+
+for (
+    var i = 0;
+    i < seatInputs.length;
+    i++
+) {
+
+    seatInputs[i].addEventListener(
+        "change",
+        updateSeatInfo
+    );
+
+}
+
+
+/* =========================================
+   선택된 좌석 가져오기
+========================================= */
+
+function getSelectedSeats() {
+
+    var selectedSeats = [];
+
+
+    for (
+        var i = 0;
+        i < seatInputs.length;
+        i++
+    ) {
+
+        if (seatInputs[i].checked) {
+
+            selectedSeats.push(
+                seatInputs[i].value
+            );
+
+        }
+
+    }
+
+
+    return selectedSeats;
+
+}
+
+
+/* =========================================
+   좌석 정보 갱신
+========================================= */
+
+function updateSeatInfo() {
+
+    var selectedSeats =
+            getSelectedSeats();
+
+
+    /* 선택 좌석 수 */
+
+    var selectedCount =
+            document.getElementById(
+                "selectedCount"
             );
 
 
-    if (!seat) {
+    if (selectedCount != null) {
 
-        alert("좌석을 선택해주세요.");
+        selectedCount.innerText =
+                selectedSeats.length;
+
+    }
+
+
+    /* 좌석 이름 */
+
+    var selectedSeatsElement =
+            document.getElementById(
+                "selectedSeats"
+            );
+
+
+    if (selectedSeatsElement != null) {
+
+        selectedSeatsElement.innerText =
+
+                selectedSeats.length > 0
+
+                ? selectedSeats.join(", ")
+
+                : "없음";
+
+    }
+
+
+    /* 총 금액 */
+
+    var totalPrice =
+            selectedSeats.length
+            * SEAT_PRICE;
+
+
+    var totalPriceElement =
+            document.getElementById(
+                "totalPrice"
+            );
+
+
+    if (totalPriceElement != null) {
+
+        totalPriceElement.innerText =
+                totalPrice.toLocaleString();
+
+    }
+
+
+    /* 결제 버튼 */
+
+    var paymentButton =
+            document.getElementById(
+                "paymentButton"
+            );
+
+
+    if (paymentButton != null) {
+
+        paymentButton.disabled =
+                selectedSeats.length === 0;
+
+    }
+
+}
+
+
+/* =========================================
+   결제 페이지 이동
+========================================= */
+
+function goPayment() {
+
+    var selectedSeats =
+            getSelectedSeats();
+
+
+    /* 좌석 선택 확인 */
+
+    if (selectedSeats.length === 0) {
+
+        alert(
+            "좌석을 선택해주세요."
+        );
 
         return false;
 
     }
+
+
+    /* 금액 계산 */
+
+    var totalPrice =
+            selectedSeats.length
+            * SEAT_PRICE;
+
+
+    /* 좌석 정보 전달 */
+
+    var seatsElement =
+            document.getElementById(
+                "seats"
+            );
+
+
+    var amountElement =
+            document.getElementById(
+                "amount"
+            );
+
+
+    if (seatsElement == null
+            || amountElement == null) {
+
+        alert(
+            "결제 정보를 전달할 수 없습니다."
+        );
+
+        return false;
+
+    }
+
+
+    seatsElement.value =
+            selectedSeats.join(",");
+
+
+    amountElement.value =
+            totalPrice;
 
 
     return true;
@@ -814,4 +1269,15 @@ function checkReservation() {
 }
 
 
+/* =========================================
+   최초 상태 확인
+========================================= */
+
+updateSeatInfo();
+
 </script>
+
+
+</body>
+
+</html>

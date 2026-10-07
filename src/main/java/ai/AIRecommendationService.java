@@ -37,28 +37,43 @@ public class AIRecommendationService {
     // ============================================================
     // API KEY
     //
-    // 실제 API KEY를 코드에 직접 작성하지 않는다.
-    // Windows 환경변수 OPENAI_API_KEY에서 가져온다.
+    // Tomcat JNDI 환경에서 OPENAI_API_KEY를 가져온다.
     // ============================================================
 
-    private static final String API_KEY = getApiKey();
-    
+    private static final String API_KEY =
+            getApiKey();
+
+
     private static String getApiKey() {
 
         try {
-            Context initContext = new InitialContext();
+
+            Context initContext =
+                    new InitialContext();
+
 
             Context envContext =
-                (Context) initContext.lookup("java:comp/env");
+                    (Context) initContext.lookup(
+                            "java:comp/env"
+                    );
 
-            return (String) envContext.lookup("OPENAI_API_KEY");
+
+            return (String) envContext.lookup(
+                    "OPENAI_API_KEY"
+            );
+
 
         } catch (NamingException e) {
+
             e.printStackTrace();
+
             return null;
+
         }
+
     }
-    
+
+
     // ============================================================
     // 영화 추천
     //
@@ -80,7 +95,8 @@ public class AIRecommendationService {
                 "Tomcat API KEY 확인 = "
                 + (API_KEY == null
                         ? "없음"
-                        : "정상 / 길이 = " + API_KEY.length())
+                        : "정상 / 길이 = "
+                        + API_KEY.length())
         );
 
 
@@ -92,8 +108,9 @@ public class AIRecommendationService {
                 || API_KEY.trim().isEmpty()) {
 
             throw new Exception(
-                    "OPENAI_API_KEY 환경변수가 설정되지 않았습니다."
+                    "OPENAI_API_KEY가 설정되지 않았습니다."
             );
+
         }
 
 
@@ -107,14 +124,12 @@ public class AIRecommendationService {
             throw new Exception(
                     "DB에 등록된 영화가 없습니다."
             );
+
         }
 
 
         // ========================================================
         // DB 영화 목록 만들기
-        //
-        // 토큰을 줄이기 위해
-        // 영화 ID + 제목 + 장르만 AI에게 전달한다.
         // ========================================================
 
         StringBuilder movieInfo =
@@ -147,7 +162,10 @@ public class AIRecommendationService {
                     movie.getGenre()
             );
 
-            movieInfo.append("\n");
+            movieInfo.append(
+                    "\n"
+            );
+
         }
 
 
@@ -158,10 +176,6 @@ public class AIRecommendationService {
         String userPrompt =
 
                 "당신은 MovieBox 영화 추천 AI입니다.\n\n"
-
-                // ------------------------------------------------
-                // DB 영화만 사용하도록 제한
-                // ------------------------------------------------
 
                 + "아래 영화 목록은 현재 MovieBox DB에 "
                 + "실제로 등록되어 있는 영화입니다.\n\n"
@@ -176,18 +190,8 @@ public class AIRecommendationService {
                 + "일반적인 영화 지식을 이용해서 "
                 + "DB에 없는 영화를 추가하지 마세요.\n\n"
 
-
-                // ------------------------------------------------
-                // 추천 개수
-                // ------------------------------------------------
-
                 + "사용자의 취향을 분석해서 "
                 + "가장 적합한 영화를 최대 3개 추천하세요.\n\n"
-
-
-                // ------------------------------------------------
-                // 출력 형식
-                // ------------------------------------------------
 
                 + "각 영화마다 추천 이유를 한 줄로 설명하세요.\n"
 
@@ -209,21 +213,11 @@ public class AIRecommendationService {
 
                 + "답변은 한국어로 작성하세요.\n\n"
 
-
-                // ------------------------------------------------
-                // DB 영화 목록
-                // ------------------------------------------------
-
                 + "===== MovieBox DB 영화 목록 =====\n"
 
                 + movieInfo.toString()
 
                 + "===== 영화 목록 끝 =====\n\n"
-
-
-                // ------------------------------------------------
-                // 사용자 요청
-                // ------------------------------------------------
 
                 + "사용자 요청:\n"
 
@@ -249,12 +243,10 @@ public class AIRecommendationService {
                 "{"
 
                 + "\"model\":\""
-
                 + MODEL
-
                 + "\","
 
-                + "\"max_tokens\":500,"
+                + "\"max_tokens\":150,"
 
                 + "\"messages\":["
 
@@ -263,9 +255,7 @@ public class AIRecommendationService {
                 + "\"role\":\"user\","
 
                 + "\"content\":\""
-
                 + escapeJson(userPrompt)
-
                 + "\""
 
                 + "}"
@@ -379,20 +369,24 @@ public class AIRecommendationService {
                     "OpenRouter API 오류"
             );
 
+
             System.out.println(
                     "상태 코드 = "
                     + response.statusCode()
             );
+
 
             System.out.println(
                     "응답 = "
                     + response.body()
             );
 
+
             throw new Exception(
                     "OpenRouter API 호출 실패 : "
                     + response.statusCode()
             );
+
         }
 
 
@@ -418,9 +412,11 @@ public class AIRecommendationService {
                     + response.body()
             );
 
+
             throw new Exception(
                     "AI 응답을 가져오지 못했습니다."
             );
+
         }
 
 
@@ -430,6 +426,7 @@ public class AIRecommendationService {
 
 
         return result;
+
     }
 
 
@@ -437,24 +434,43 @@ public class AIRecommendationService {
     // JSON 문자열 특수문자 처리
     // ============================================================
 
-    private String escapeJson(String value) {
+    private String escapeJson(
+            String value) {
 
         if (value == null) {
 
             return "";
+
         }
+
 
         return value
 
-                .replace("\\", "\\\\")
+                .replace(
+                        "\\",
+                        "\\\\"
+                )
 
-                .replace("\"", "\\\"")
+                .replace(
+                        "\"",
+                        "\\\""
+                )
 
-                .replace("\r", "\\r")
+                .replace(
+                        "\r",
+                        "\\r"
+                )
 
-                .replace("\n", "\\n")
+                .replace(
+                        "\n",
+                        "\\n"
+                )
 
-                .replace("\t", "\\t");
+                .replace(
+                        "\t",
+                        "\\t"
+                );
+
     }
 
 
@@ -462,12 +478,14 @@ public class AIRecommendationService {
     // OpenRouter 응답에서 content 추출
     // ============================================================
 
-    private String extractText(String json) {
+    private String extractText(
+            String json) {
 
         if (json == null
                 || json.trim().isEmpty()) {
 
             return null;
+
         }
 
 
@@ -478,11 +496,11 @@ public class AIRecommendationService {
                         "\"content\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"",
 
                         Pattern.DOTALL
+
                 );
 
 
         Matcher matcher =
-
                 pattern.matcher(json);
 
 
@@ -491,10 +509,12 @@ public class AIRecommendationService {
             return unescapeJson(
                     matcher.group(1)
             );
+
         }
 
 
         return null;
+
     }
 
 
@@ -502,23 +522,43 @@ public class AIRecommendationService {
     // JSON 특수문자 복원
     // ============================================================
 
-    private String unescapeJson(String value) {
+    private String unescapeJson(
+            String value) {
 
         if (value == null) {
 
             return null;
+
         }
+
 
         return value
 
-                .replace("\\n", "\n")
+                .replace(
+                        "\\\"",
+                        "\""
+                )
 
-                .replace("\\r", "\r")
+                .replace(
+                        "\\n",
+                        "\n"
+                )
 
-                .replace("\\t", "\t")
+                .replace(
+                        "\\r",
+                        "\r"
+                )
 
-                .replace("\\\"", "\"")
+                .replace(
+                        "\\t",
+                        "\t"
+                )
 
-                .replace("\\\\", "\\");
+                .replace(
+                        "\\\\",
+                        "\\"
+                );
+
     }
+
 }
