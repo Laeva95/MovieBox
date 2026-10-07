@@ -1,5 +1,9 @@
 package movie;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
+
 public class MovieDTO { //
     private int movieId; 		// 영화 고유 ID
     private String title;		// 영화 제목
@@ -98,4 +102,28 @@ public class MovieDTO { //
 	public void setDirector(String director) {this.directors = director;}
 	// 영화 배우를 설정
 	public void setActors(String actors) {this.actors = actors;}
+
+
+	// ▼ 개봉일(releaseDate)을 기준으로 오늘 기준 3일 이내 개봉작인지 판별하는 메서드
+    public boolean isNew() {
+        if (this.releaseDate == null || this.releaseDate.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            // releaseDate 형식이 "YYYY-MM-DD" 형태라고 가정
+            String datePart = this.releaseDate.substring(0, 10);
+            LocalDate release = LocalDate.parse(datePart);
+            LocalDate today = LocalDate.now(); // 현재 날짜 기준
+
+            // 개봉일과 오늘 날짜의 차이 계산 (0일 ~ 3일 이내 개봉작)
+            long daysBetween = ChronoUnit.DAYS.between(release, today);
+            
+            return daysBetween >= 0 && daysBetween <= 3;
+            
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
 }

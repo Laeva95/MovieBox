@@ -68,14 +68,82 @@ public class MovieController extends HttpServlet {
 		        request.setAttribute("genre", genre);
 		        request.setAttribute("sort", sort);
 		        request.setAttribute("searchKeyword", searchKeyword);
-		
+		       
+		        // 로그인한 회원의 찜한 영화 ID 목록 가져오기
+		        if (loginId != null) {
+		            List<Integer> favoriteMovieIds = dao.getFavoriteMovieIds(loginId);
+		            request.setAttribute("favoriteMovieIds", favoriteMovieIds);
+		        }
+		        
 				request.setAttribute("center", "movie/MovieList.jsp");
 				nextPage = "/Index.jsp";
 	        }else if("/MovieDetail.do".equals(action)) {
 	        	// 영화 상세 페이지 요청
 				request.setAttribute("center", "movie/MovieDetail.jsp");
 				nextPage = "/Index.jsp";
-			}else if ("/MovieUpdate.do".equals(action)) {
+	        
+	        }else if ("/Favorite.do".equals(action)) {
+
+	            // =====================================================
+	            // 영화 찜 기능 (AJAX & 동기 겸용 처리)
+	            // =====================================================
+
+	            // 로그인 여부 확인
+	            if (loginId == null) {
+	                // AJAX 요청인지 확인 (헤더에 X-Requested-With: XMLHttpRequest가 포함되어 있는지 체크)
+	                String ajaxHeader = request.getHeader("X-Requested-With");
+	                if ("XMLHttpRequest".equals(ajaxHeader)) {
+	                    response.setContentType("application/json; charset=UTF-8");
+	                    out.write("{\"status\": \"unauthorized\"}");
+	                } else {
+	                    out.println("<script>");
+	                    out.println("alert('로그인 후 이용할 수 있습니다.');");
+	                    out.println("location.href='" + request.getContextPath() + "/member/login.do';");
+	                    out.println("</script>");
+	                }
+	                return;
+	            }
+
+	            // 영화 번호 받기 (파라미터 이름을 movieId 또는 movie_id 모두 대응 가능하게 처리)
+	            String movieIdParam = request.getParameter("movieId");
+	            if (movieIdParam == null) {
+	                movieIdParam = request.getParameter("movie_id");
+	            }
+
+	            if (movieIdParam == null || movieIdParam.trim().equals("")) {
+	                response.setContentType("application/json; charset=UTF-8");
+	                out.write("{\"status\": \"error\", \"message\": \"영화 정보가 없습니다.\"}");
+	                return;
+	            }
+
+	            int movieId = Integer.parseInt(movieIdParam);
+	            MovieDAO dao = new MovieDAO();
+
+	            // 현재 찜 상태 확인 후 토글
+	            boolean isFav = dao.isFavorite(loginId, movieId);
+	            int result = 0;
+
+	            response.setContentType("application/json; charset=UTF-8");
+
+	            if (isFav) {
+	                result = dao.removeFavorite(loginId, movieId);
+	                if (result > 0) {
+	                    out.write("{\"status\": \"removed\", \"success\": true}");
+	                } else {
+	                    out.write("{\"status\": \"removed\", \"success\": false}");
+	                }
+	            } else {
+	                result = dao.addFavorite(loginId, movieId);
+	                if (result > 0) {
+	                    out.write("{\"status\": \"added\", \"success\": true}");
+	                } else {
+	                    out.write("{\"status\": \"added\", \"success\": false}");
+	                }
+	            }
+	            return;
+	        
+				
+	        }else if ("/MovieUpdate.do".equals(action)) {
 				
 				// session에 저장된 id값이 admin인지 확인
 				if (session.getAttribute("id") == null || !session.getAttribute("id").equals("admin")) {
