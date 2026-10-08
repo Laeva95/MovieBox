@@ -7,12 +7,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import movie.MovieDTO;
 
@@ -27,58 +24,90 @@ public class AIRecommendationService {
 
 
     // ============================================================
-    // 사용할 AI 모델
+    // 무료 모델 라우팅
     // ============================================================
 
     private static final String MODEL =
-            "openai/gpt-chat-latest";
+            "openrouter/free";
 
 
     // ============================================================
     // API KEY
-    //
-    // Tomcat JNDI 환경에서 OPENAI_API_KEY를 가져온다.
     // ============================================================
 
     private static final String API_KEY =
             getApiKey();
 
 
+    // ============================================================
+    // API KEY 가져오기
+    //
+    // 1. 환경변수 OPENAI_API_KEY
+    // 2. Tomcat JNDI OPENAI_API_KEY
+    // ============================================================
+
     private static String getApiKey() {
+
+        // --------------------------------------------------------
+        // 1. 환경변수 확인
+        // --------------------------------------------------------
+
+        String apiKey =
+                System.getenv("OPENAI_API_KEY");
+
+        if (apiKey != null
+                && !apiKey.trim().isEmpty()) {
+
+            System.out.println(
+                    "OPENAI_API_KEY 환경변수 사용"
+            );
+
+            return apiKey;
+        }
+
+
+        // --------------------------------------------------------
+        // 2. Tomcat JNDI 확인
+        // --------------------------------------------------------
 
         try {
 
             Context initContext =
                     new InitialContext();
 
-
             Context envContext =
                     (Context) initContext.lookup(
                             "java:comp/env"
                     );
 
+            apiKey =
+                    (String) envContext.lookup(
+                            "OPENAI_API_KEY"
+                    );
 
-            return (String) envContext.lookup(
-                    "OPENAI_API_KEY"
+            if (apiKey != null
+                    && !apiKey.trim().isEmpty()) {
+
+                System.out.println(
+                        "OPENAI_API_KEY JNDI 사용"
+                );
+
+                return apiKey;
+            }
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "JNDI에서 OPENAI_API_KEY를 찾지 못했습니다."
             );
-
-
-        } catch (NamingException e) {
-
-            e.printStackTrace();
-
-            return null;
-
         }
 
+        return null;
     }
 
 
     // ============================================================
     // 영화 추천
-    //
-    // prompt    = 사용자가 입력한 추천 조건
-    // movieList = MovieBox DB에 등록된 영화 목록
     // ============================================================
 
     public String getRecommendation(
@@ -100,22 +129,17 @@ public class AIRecommendationService {
         );
 
 
-        // --------------------------------------------------------
-        // API KEY가 없는 경우
-        // --------------------------------------------------------
-
         if (API_KEY == null
                 || API_KEY.trim().isEmpty()) {
 
             throw new Exception(
                     "OPENAI_API_KEY가 설정되지 않았습니다."
             );
-
         }
 
 
         // --------------------------------------------------------
-        // DB 영화 목록 확인
+        // 영화 목록 확인
         // --------------------------------------------------------
 
         if (movieList == null
@@ -124,103 +148,57 @@ public class AIRecommendationService {
             throw new Exception(
                     "DB에 등록된 영화가 없습니다."
             );
-
         }
 
 
         // ========================================================
-        // DB 영화 목록 만들기
+        // DB 영화 목록
+        //
+        // 비용을 줄이기 위해
+        // 영화 ID / 제목 / 장르만 AI에게 전달
         // ========================================================
 
         StringBuilder movieInfo =
                 new StringBuilder();
 
-
         for (MovieDTO movie : movieList) {
-
-            movieInfo.append(
-                    "ID: "
-            );
 
             movieInfo.append(
                     movie.getMovieId()
             );
 
-            movieInfo.append(
-                    " / 제목: "
-            );
+            movieInfo.append("|");
 
             movieInfo.append(
                     movie.getTitle()
             );
 
-            movieInfo.append(
-                    " / 장르: "
-            );
+            movieInfo.append("|");
 
             movieInfo.append(
                     movie.getGenre()
             );
 
-            movieInfo.append(
-                    "\n"
-            );
-
+            movieInfo.append("\n");
         }
 
 
         // ========================================================
-        // AI에게 전달할 프롬프트
+        // AI 프롬프트
         // ========================================================
 
         String userPrompt =
-
-                "당신은 MovieBox 영화 추천 AI입니다.\n\n"
-
-                + "아래 영화 목록은 현재 MovieBox DB에 "
-                + "실제로 등록되어 있는 영화입니다.\n\n"
-
-                + "반드시 아래 영화 목록에 있는 영화만 추천하세요.\n"
-
-                + "아래 목록에 없는 영화는 절대로 추천하지 마세요.\n"
-
-                + "영화 제목은 아래 목록에 있는 제목을 "
-                + "그대로 사용하세요.\n"
-
-                + "일반적인 영화 지식을 이용해서 "
-                + "DB에 없는 영화를 추가하지 마세요.\n\n"
-
-                + "사용자의 취향을 분석해서 "
-                + "가장 적합한 영화를 최대 3개 추천하세요.\n\n"
-
-                + "각 영화마다 추천 이유를 한 줄로 설명하세요.\n"
-
-                + "추천 결과는 반드시 다음 형식으로 작성하세요.\n"
-
-                + "1. 영화 제목 - 추천 이유\n"
-
-                + "2. 영화 제목 - 추천 이유\n"
-
-                + "3. 영화 제목 - 추천 이유\n"
-
-                + "반드시 영화 제목을 먼저 표시하세요.\n"
-
-                + "추천 영화가 3개보다 적으면 존재하는 영화만 표시하세요.\n"
-
-                + "영화 제목 대신 영화 ID를 표시하지 마세요.\n"
-
-                + "불필요한 설명이나 인사말은 작성하지 마세요.\n"
-
-                + "답변은 한국어로 작성하세요.\n\n"
-
-                + "===== MovieBox DB 영화 목록 =====\n"
-
+                "MovieBox 영화 추천 AI입니다.\n"
+                + "아래 DB 영화 목록에 있는 영화만 추천하세요.\n"
+                + "없는 영화는 절대 추천하지 마세요.\n"
+                + "사용자 요청에 가장 적합한 영화를 최대 3개 추천하세요.\n"
+                + "형식: 1. 영화 제목 - 추천 이유\n"
+                + "추천 이유는 한 줄로 작성하세요.\n"
+                + "불필요한 설명과 인사말은 작성하지 마세요.\n"
+                + "한국어로 답변하세요.\n\n"
+                + "[DB 영화 목록]\n"
                 + movieInfo.toString()
-
-                + "===== 영화 목록 끝 =====\n\n"
-
-                + "사용자 요청:\n"
-
+                + "\n[사용자 요청]\n"
                 + prompt;
 
 
@@ -235,39 +213,24 @@ public class AIRecommendationService {
 
 
         // ========================================================
-        // OpenRouter에 보낼 JSON
+        // OpenRouter JSON
         // ========================================================
 
         String jsonBody =
-
                 "{"
-
                 + "\"model\":\""
                 + MODEL
                 + "\","
-
-                + "\"max_tokens\":150,"
-
+                + "\"max_tokens\":300,"
                 + "\"messages\":["
-
                 + "{"
-
                 + "\"role\":\"user\","
-
                 + "\"content\":\""
                 + escapeJson(userPrompt)
                 + "\""
-
                 + "}"
-
                 + "]"
-
                 + "}";
-
-
-        System.out.println(
-                "OpenRouter 요청 시작"
-        );
 
 
         // ========================================================
@@ -275,13 +238,10 @@ public class AIRecommendationService {
         // ========================================================
 
         HttpClient client =
-
                 HttpClient.newBuilder()
-
                         .connectTimeout(
                                 Duration.ofSeconds(20)
                         )
-
                         .build();
 
 
@@ -290,66 +250,53 @@ public class AIRecommendationService {
         // ========================================================
 
         HttpRequest request =
-
                 HttpRequest.newBuilder()
-
                         .uri(
                                 URI.create(API_URL)
                         )
-
                         .timeout(
                                 Duration.ofSeconds(60)
                         )
-
                         .header(
                                 "Content-Type",
                                 "application/json"
                         )
-
                         .header(
                                 "Authorization",
                                 "Bearer " + API_KEY
                         )
-
                         .header(
                                 "HTTP-Referer",
                                 "http://localhost"
                         )
-
                         .header(
                                 "X-Title",
                                 "MovieBox"
                         )
-
                         .POST(
                                 HttpRequest.BodyPublishers.ofString(
                                         jsonBody,
                                         StandardCharsets.UTF_8
                                 )
                         )
-
                         .build();
 
 
         // ========================================================
-        // OpenRouter API 호출
+        // OpenRouter 호출
         // ========================================================
 
         HttpResponse<String> response =
-
                 client.send(
-
                         request,
-
                         HttpResponse.BodyHandlers.ofString(
                                 StandardCharsets.UTF_8
                         )
-
                 );
 
 
         // ========================================================
-        // 응답 확인
+        // 상태 코드 출력
         // ========================================================
 
         System.out.println(
@@ -359,64 +306,49 @@ public class AIRecommendationService {
 
 
         // ========================================================
-        // API 오류
+        // 실제 OpenRouter 응답 출력
+        // ========================================================
+
+        System.out.println(
+                "OpenRouter 응답 = "
+                + response.body()
+        );
+
+
+        // ========================================================
+        // OpenRouter 오류
         // ========================================================
 
         if (response.statusCode() < 200
                 || response.statusCode() >= 300) {
 
-            System.out.println(
-                    "OpenRouter API 오류"
-            );
-
-
-            System.out.println(
-                    "상태 코드 = "
-                    + response.statusCode()
-            );
-
-
-            System.out.println(
-                    "응답 = "
-                    + response.body()
-            );
-
-
             throw new Exception(
                     "OpenRouter API 호출 실패 : "
                     + response.statusCode()
             );
-
         }
 
 
         // ========================================================
-        // 정상 응답에서 AI 답변 추출
+        // AI 답변 추출
         // ========================================================
 
         String result =
-                extractText(
+                extractContent(
                         response.body()
                 );
 
 
         // ========================================================
-        // AI 답변이 없는 경우
+        // AI 답변 확인
         // ========================================================
 
         if (result == null
                 || result.trim().isEmpty()) {
 
-            System.out.println(
-                    "OpenRouter 원본 응답 = "
-                    + response.body()
-            );
-
-
             throw new Exception(
                     "AI 응답을 가져오지 못했습니다."
             );
-
         }
 
 
@@ -426,51 +358,47 @@ public class AIRecommendationService {
 
 
         return result;
-
     }
 
 
     // ============================================================
-    // JSON 문자열 특수문자 처리
+    // JSON 문자열 처리
     // ============================================================
 
-    private String escapeJson(
-            String value) {
+    private String escapeJson(String value) {
 
         if (value == null) {
-
             return "";
-
         }
 
+        String result = value;
 
-        return value
+        result = result.replace(
+                "\\",
+                "\\\\"
+        );
 
-                .replace(
-                        "\\",
-                        "\\\\"
-                )
+        result = result.replace(
+                "\"",
+                "\\\""
+        );
 
-                .replace(
-                        "\"",
-                        "\\\""
-                )
+        result = result.replace(
+                "\r",
+                "\\r"
+        );
 
-                .replace(
-                        "\r",
-                        "\\r"
-                )
+        result = result.replace(
+                "\n",
+                "\\n"
+        );
 
-                .replace(
-                        "\n",
-                        "\\n"
-                )
+        result = result.replace(
+                "\t",
+                "\\t"
+        );
 
-                .replace(
-                        "\t",
-                        "\\t"
-                );
-
+        return result;
     }
 
 
@@ -478,87 +406,112 @@ public class AIRecommendationService {
     // OpenRouter 응답에서 content 추출
     // ============================================================
 
-    private String extractText(
-            String json) {
+    private String extractContent(String json) {
 
         if (json == null
                 || json.trim().isEmpty()) {
 
             return null;
-
         }
 
 
-        Pattern pattern =
-
-                Pattern.compile(
-
-                        "\"content\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"",
-
-                        Pattern.DOTALL
-
-                );
+        String target =
+                "\"content\":\"";
 
 
-        Matcher matcher =
-                pattern.matcher(json);
+        int start =
+                json.indexOf(target);
 
 
-        if (matcher.find()) {
+        // --------------------------------------------------------
+        // content를 찾지 못한 경우
+        // --------------------------------------------------------
 
-            return unescapeJson(
-                    matcher.group(1)
-            );
+        if (start == -1) {
 
+            target =
+                    "\"content\" : \"";
+
+            start =
+                    json.indexOf(target);
         }
 
 
-        return null;
-
-    }
-
-
-    // ============================================================
-    // JSON 특수문자 복원
-    // ============================================================
-
-    private String unescapeJson(
-            String value) {
-
-        if (value == null) {
+        if (start == -1) {
 
             return null;
-
         }
 
 
-        return value
+        start =
+                start + target.length();
 
-                .replace(
-                        "\\\"",
-                        "\""
-                )
 
-                .replace(
-                        "\\n",
-                        "\n"
-                )
+        StringBuilder result =
+                new StringBuilder();
 
-                .replace(
-                        "\\r",
-                        "\r"
-                )
 
-                .replace(
-                        "\\t",
-                        "\t"
-                )
+        boolean escaped =
+                false;
 
-                .replace(
-                        "\\\\",
-                        "\\"
-                );
 
+        // --------------------------------------------------------
+        // content 문자열 끝까지 읽기
+        // --------------------------------------------------------
+
+        for (int i = start;
+                i < json.length();
+                i++) {
+
+            char ch =
+                    json.charAt(i);
+
+
+            if (escaped) {
+
+                if (ch == 'n') {
+                    result.append('\n');
+
+                } else if (ch == 'r') {
+                    result.append('\r');
+
+                } else if (ch == 't') {
+                    result.append('\t');
+
+                } else if (ch == '"') {
+                    result.append('"');
+
+                } else if (ch == '\\') {
+                    result.append('\\');
+
+                } else {
+                    result.append(ch);
+                }
+
+                escaped = false;
+
+                continue;
+            }
+
+
+            if (ch == '\\') {
+
+                escaped = true;
+
+                continue;
+            }
+
+
+            if (ch == '"') {
+
+                break;
+            }
+
+
+            result.append(ch);
+        }
+
+
+        return result.toString();
     }
-
 }
