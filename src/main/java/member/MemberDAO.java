@@ -9,6 +9,9 @@ import java.util.List;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
+import movie.MovieDTO;
+import review.ReviewDTO;
+
 public class MemberDAO {
 	// 커넥션풀 (DB 연결을 미리 여러 개 만들어 둔 보관함)
 	private DataSource ds;
@@ -305,5 +308,99 @@ public class MemberDAO {
 	    }
 
 	    return 0;
+	}
+	// 회원이 찜한 영화 목록을 조회하는 메소드
+	public List<MovieDTO> getFavoriteMovies(String memberId) {
+
+	    List<MovieDTO> list = new ArrayList<>();
+
+	    String sql =
+	            "SELECT m.movie_id, m.title, m.genre, m.running_time, "
+	          + "       m.release_date, m.poster, m.summary, "
+	          + "       m.director, m.actors, m.country "
+	          + "FROM movie_favorite f "
+	          + "JOIN movie m ON f.movie_id = m.movie_id "
+	          + "WHERE f.member_id = ? "
+	          + "ORDER BY f.created_at DESC";
+
+	    try (Connection conn = ds.getConnection();
+	         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+	        pstmt.setString(1, memberId);
+	        try (ResultSet rs = pstmt.executeQuery()) {
+
+	            while (rs.next()) {
+
+	                MovieDTO movie = new MovieDTO();
+
+	                movie.setMovieId(rs.getInt("movie_id"));
+	                movie.setTitle(rs.getString("title"));
+	                movie.setGenre(rs.getString("genre"));
+	                movie.setRunningTime(rs.getString("running_time"));
+	                movie.setReleaseDate(rs.getString("release_date"));
+	                movie.setPoster(rs.getString("poster"));
+	                movie.setSummary(rs.getString("summary"));
+	                movie.setDirector(rs.getString("director"));
+	                movie.setActors(rs.getString("actors"));
+	                movie.setCountry(rs.getString("country"));
+
+	                list.add(movie);
+	            }
+	        }
+
+	    } catch (Exception e) {
+	        System.out.println("찜한 영화 상세 목록 조회 중 오류 발생");
+	        e.printStackTrace();
+	    }
+
+	    return list;
+	}
+	// 회원이 작성한 리뷰 목록을 조회하는 메소드
+	public List<ReviewDTO> getReviewsByMemberId(String memberId) {
+		
+		// memberId가 null이거나 공백인 경우 빈 리스트를 반환
+		if (memberId == null || memberId.trim().isEmpty()) {
+	        return java.util.Collections.emptyList();
+	    }
+
+	    List<ReviewDTO> list = new ArrayList<>();
+
+	    String sql =
+	            "SELECT r.review_id, r.movie_id, r.member_id, "
+	          + "       r.rating, r.content, r.reg_date, r.like_count, "
+	          + "       mv.title AS movie_title "
+	          + "FROM review r "
+	          + "LEFT JOIN movie mv ON r.movie_id = mv.movie_id "
+	          + "WHERE r.member_id = ? "
+	          + "ORDER BY r.reg_date DESC, r.review_id DESC";
+
+	    try(Connection conn = ds.getConnection();
+	    PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+	        pstmt.setString(1, memberId);
+	        
+	        try(ResultSet rs = pstmt.executeQuery()){
+		        while (rs.next()) {
+	
+		            ReviewDTO dto = new ReviewDTO();
+	
+		            dto.setReviewId(rs.getInt("review_id"));
+		            dto.setMovieId(rs.getInt("movie_id"));
+		            dto.setMemberId(rs.getString("member_id"));
+		            dto.setRating(rs.getInt("rating"));
+		            dto.setContent(rs.getString("content"));
+		            dto.setRegDate(rs.getTimestamp("reg_date"));
+		            dto.setLikeCount(rs.getInt("like_count"));
+		            dto.setMovieTitle(rs.getString("movie_title"));
+	
+		            list.add(dto);
+		        }
+	        }
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+
+	    } 
+	    return list;
 	}
 }

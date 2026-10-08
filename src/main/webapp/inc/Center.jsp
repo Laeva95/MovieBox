@@ -475,7 +475,7 @@
                     <div class="home-movie-card">
                         <div class="home-poster">
                             <!-- 포스터 이미지를 누르면 상세페이지로 이동 -->
-                            <a href="${pageContext.request.contextPath}/movies/MovieDetail.do?movieId=<%= movie.getMovieId() %>">
+                            <a href="${pageContext.request.contextPath}/movies/MovieDetail.do?movie_id=<%= movie.getMovieId() %>">
                                 <img
                                     src="<%= movie.getPoster() %>"
                                     alt="<%= movie.getTitle() %>"
@@ -499,7 +499,7 @@
                         </div>
 
                         <div class="home-movie-info">
-                            <a href="${pageContext.request.contextPath}/movies/MovieDetail.do?movieId=<%= movie.getMovieId() %>" style="text-decoration: none; color: inherit;">
+                            <a href="${pageContext.request.contextPath}/movies/MovieDetail.do?movie_id=<%= movie.getMovieId() %>" style="text-decoration: none; color: inherit;">
                                 <h3 class="home-movie-title">
                                     <%= movie.getTitle() %>
                                 </h3>
@@ -531,7 +531,7 @@
                 </p>
             </div>
 
-            <a href="${pageContext.request.contextPath}/"
+            <a href="${pageContext.request.contextPath}/review/main.do"
                class="home-more-link">
                 리뷰 전체보기 →
             </a>
@@ -599,7 +599,7 @@ function toggleLike(event, movieId) {
     .then(data => {
         if (data.status === 'unauthorized') {
             alert('로그인이 필요한 서비스입니다.');
-            location.href = '${pageContext.request.contextPath}/member/login.do';
+            location.href = '${pageContext.request.contextPath}/member/Login.do';
             return;
         }
 
