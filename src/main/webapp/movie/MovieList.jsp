@@ -176,7 +176,7 @@
         <button type="submit">
             검색
         </button>
-
+</form>
 
 </div>
       <!-- 필터와 정렬 폼 -->
@@ -272,7 +272,8 @@
 -->
         
             <!-- 영화 카드를 클릭하면 해당 영화의 고유 ID(movie_id)를 파라미터로 가지고 상세페이지(MovieDetail.do)로 이동 -->
-            <div class="movie-card" onclick="location.href='MovieDetail.do?movie_id=<%= movie.getMovieId() %>'">
+			<!-- 영화 카드를 클릭하면 movie_id 파라미터로 상세페이지로 이동 -->
+			<div class="movie-card" onclick="location.href='MovieDetail.do?movie_id=<%= movie.getMovieId() %>'">
               
               <!-- 포스터 이미지 영역 -->
               <div class="poster-area">	
@@ -299,7 +300,7 @@
 					        onclick="event.stopPropagation(); toggleFavorite(<%= movie.getMovieId() %>);">
 					    <%= isFavorite ? "♥" : "♡" %>
 					</button>
-									</form>
+								
 
 <%-- 
    [3단계] DB에서 따온 진짜 포스터 주소값 출력 핵심부!

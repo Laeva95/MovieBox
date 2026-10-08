@@ -78,9 +78,26 @@ public class MovieController extends HttpServlet {
 				request.setAttribute("center", "movie/MovieList.jsp");
 				nextPage = "/Index.jsp";
 	        }else if("/MovieDetail.do".equals(action)) {
-	        	// 영화 상세 페이지 요청
-				request.setAttribute("center", "movie/MovieDetail.jsp");
-				nextPage = "/Index.jsp";
+	            // 1. 파라미터 받기 (movieId 또는 movie_id 둘 다 방어적으로 허용)
+	            String movieIdParam = request.getParameter("movieId");
+	            if (movieIdParam == null) {
+	                movieIdParam = request.getParameter("movie_id");
+	            }
+	            
+	            // 2. 컨트롤러에서 직접 DB 조회 수행
+	            if (movieIdParam != null && !movieIdParam.trim().isEmpty()) {
+	                int movieId = Integer.parseInt(movieIdParam);
+	                MovieDAO dao = new MovieDAO();
+	                MovieDTO movie = dao.getMovieDetails(movieId);
+	                
+	                // 3. request 영역에 데이터 담기
+	                request.setAttribute("movie", movie);
+	            }
+	            
+	            // 4. 상세 페이지로 포워딩
+	            request.setAttribute("center", "movie/MovieDetail.jsp");
+	            nextPage = "/Index.jsp";
+	        
 	        
 	        }else if ("/Favorite.do".equals(action)) {
 
