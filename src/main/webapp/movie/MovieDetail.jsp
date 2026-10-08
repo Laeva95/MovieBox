@@ -3,19 +3,22 @@
 <%@ page import="movie.MovieDAO" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-    // 1. 전달받은 movieId 파라미터 가져오기
-    String movieIdStr = request.getParameter("movie_id");
+    // 1. 전달받은 movieId 파라미터 가져오기 (movieId 또는 movie_id 모두 방어적으로 허용)
+    String movieIdStr = request.getParameter("movieId");
+    if (movieIdStr == null || movieIdStr.trim().isEmpty()) {
+        movieIdStr = request.getParameter("movie_id");
+    }
+
     MovieDTO movie = null;
-    
-    if (movieIdStr != null && !movieIdStr.isEmpty()) {
+
+    if (movieIdStr != null && !movieIdStr.trim().isEmpty()) {
         int movieId = Integer.parseInt(movieIdStr);
-        
+
         // 2. DAO를 통해 해당 영화의 상세 정보 조회
         MovieDAO dao = new MovieDAO();
         movie = dao.getMovieDetails(movieId);
     }
 %>
-
   <style>
       /* 상세 페이지 전용 레이아웃 스타일 */
       .detail-container {
