@@ -1,0 +1,1610 @@
+@charset "UTF-8";
+/* =========================================================
+   공통 레이아웃
+   ========================================================= */
+
+.mypage-page {
+    min-height: 100vh;
+    padding: 150px 0 100px;
+}
+
+.mypage-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.mypage-header {
+    position: relative;
+    margin-bottom: 34px;
+    padding: 34px 38px;
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 88% 50%,
+            rgba(229, 9, 20, 0.13),
+            transparent 34%
+        ),
+        linear-gradient(
+            135deg,
+            var(--bg-surface-card) 0%,
+            var(--bg-surface-low) 100%
+        );
+
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
+.mypage-header::after {
+    content: "";
+
+    position: absolute;
+    top: -70px;
+    right: -40px;
+
+    width: 180px;
+    height: 180px;
+
+    border: 1px solid rgba(229, 9, 20, 0.22);
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 0 24px rgba(229, 9, 20, 0.025),
+        0 0 0 48px rgba(229, 9, 20, 0.015);
+
+    pointer-events: none;
+}
+
+.mypage-header h1 {
+    position: relative;
+    z-index: 1;
+
+    margin-bottom: 8px;
+
+    color: var(--text-white);
+
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.15;
+
+    letter-spacing: -1.2px;
+}
+
+.mypage-header p {
+    position: relative;
+    z-index: 1;
+
+    color: var(--text-muted);
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   MyPage 메뉴
+   ========================================================= */
+
+.mypage-nav {
+    position: absolute;
+    top: 126px;
+    z-index: 30;
+
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+
+    margin-bottom: 30px;
+    padding: 6px;
+
+    background-color: rgba(30, 31, 37, 0.92);
+
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+
+    backdrop-filter: blur(14px);
+
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.24);
+}
+
+.mypage-nav-link {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 50px;
+    padding: 0 14px;
+
+    color: var(--text-muted);
+
+    border-radius: 11px;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.mypage-nav-link:hover {
+    color: var(--text-white);
+    background-color: var(--bg-surface-high);
+}
+
+.mypage-nav-link.active {
+    color: var(--text-white);
+
+    background-color: var(--primary-red);
+
+    box-shadow:
+        0 7px 20px rgba(229, 9, 20, 0.28);
+}
+
+.mypage-content {
+    width: 100%;
+}
+
+
+/* =========================================================
+   서브 페이지 공통
+   ========================================================= */
+
+.mypage-sub-header {
+    margin: 4px 0 24px;
+}
+
+.mypage-section-title {
+    margin-bottom: 7px;
+
+    color: var(--text-white);
+
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+
+    letter-spacing: -0.8px;
+}
+
+.mypage-section-description {
+    color: var(--text-muted);
+
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   공통 빈 화면
+   ========================================================= */
+
+.mypage-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 190px;
+    padding: 40px 24px;
+
+    color: var(--text-muted);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(41, 42, 47, 0.55),
+            rgba(30, 31, 37, 0.92)
+        );
+
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+
+    text-align: center;
+
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   1. MyInfo.jsp
+   회원 정보
+   ========================================================= */
+
+.member-info-card {
+    max-width: 760px;
+
+    margin: 0 auto;
+    padding: 36px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(30, 31, 37, 0.98),
+            rgba(26, 27, 33, 0.98)
+        );
+
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.25);
+}
+
+.member-info-section {
+    margin-bottom: 34px;
+    padding-bottom: 28px;
+
+    border-bottom: 1px solid var(--border-color);
+}
+
+.member-info-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+
+    border-bottom: none;
+}
+
+.member-info-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 22px;
+
+    color: var(--text-white);
+
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.member-info-section-title::before {
+    content: "";
+
+    width: 4px;
+    height: 20px;
+
+    border-radius: 9999px;
+
+    background-color: var(--primary-red);
+
+    box-shadow:
+        0 4px 12px rgba(229, 9, 20, 0.35);
+}
+
+.member-info-group {
+    margin-bottom: 18px;
+}
+
+.member-info-group:last-child {
+    margin-bottom: 0;
+}
+
+.member-info-label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--text-on-surface);
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.member-info-input {
+    width: 100%;
+    height: 48px;
+
+    padding: 0 15px;
+
+    box-sizing: border-box;
+
+    color: var(--text-white);
+    background-color: var(--bg-surface-low);
+
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.member-info-input:hover:not([readonly]) {
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+.member-info-input:focus:not([readonly]) {
+    background-color: var(--bg-surface-card);
+
+    border-color: var(--primary-red);
+
+    box-shadow:
+        0 0 0 3px rgba(229, 9, 20, 0.12);
+}
+
+.member-info-input[readonly] {
+    color: var(--text-muted);
+
+    background-color: var(--bg-surface-high);
+
+    cursor: not-allowed;
+}
+
+.member-info-row {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 16px;
+}
+
+.member-info-buttons {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 32px;
+}
+
+.member-info-submit-button,
+.member-info-cancel-button {
+    height: 50px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    border-radius: 9999px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.member-info-submit-button {
+    flex: 1;
+
+    color: var(--text-white);
+
+    background-color: var(--primary-red);
+
+    box-shadow:
+        0 7px 22px rgba(229, 9, 20, 0.25);
+}
+
+.member-info-submit-button:hover {
+    background-color: var(--primary-hover);
+
+    transform: translateY(-1px);
+}
+
+.member-info-cancel-button {
+    width: 130px;
+
+    color: var(--text-on-surface);
+
+    background-color: var(--bg-surface-high);
+}
+
+.member-info-cancel-button:hover {
+    color: var(--text-white);
+
+    background-color: #38393f;
+}
+
+
+/* =========================================================
+   2. MyReservation.jsp
+   예매 내역
+   ========================================================= */
+
+.reservation-page-section {
+    margin-top: 4px;
+}
+
+.reservation-group {
+    margin-bottom: 42px;
+}
+
+.reservation-group:last-child {
+    margin-bottom: 0;
+}
+
+.reservation-group-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 17px;
+
+    color: var(--text-white);
+
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.reservation-group-title::before {
+    content: "";
+
+    width: 4px;
+    height: 20px;
+
+    border-radius: 9999px;
+
+    background-color: var(--primary-red);
+}
+
+.reservation-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 14px;
+}
+
+.reservation-card {
+    display: flex;
+
+    gap: 22px;
+
+    padding: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(30, 31, 37, 0.98),
+            rgba(26, 27, 33, 0.98)
+        );
+
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.18);
+
+    transition:
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.reservation-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+.reservation-card-past {
+    opacity: 0.55;
+}
+
+.reservation-poster {
+    width: 106px;
+    height: 150px;
+
+    flex-shrink: 0;
+
+    overflow: hidden;
+
+    background-color: var(--bg-surface-high);
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 7px 18px rgba(0, 0, 0, 0.28);
+}
+
+.reservation-poster img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+}
+
+.reservation-poster-empty {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--text-muted);
+
+    font-size: 12px;
+    line-height: 1.4;
+
+    text-align: center;
+}
+
+.reservation-info {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 3px 0;
+}
+
+.reservation-movie-title {
+    margin-bottom: 15px;
+
+    color: var(--text-white);
+
+    font-size: 21px;
+    font-weight: 800;
+
+    letter-spacing: -0.4px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reservation-detail {
+    display: grid;
+
+    grid-template-columns: 90px 1fr;
+
+    row-gap: 9px;
+
+    font-size: 13px;
+}
+
+.reservation-detail-label {
+    color: var(--text-muted);
+}
+
+.reservation-detail-value {
+    color: var(--text-on-surface);
+
+    font-weight: 600;
+}
+
+.reservation-number {
+    margin-top: 15px;
+
+    color: #64748b;
+
+    font-size: 11px;
+}
+
+.reservation-action {
+    width: 130px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reservation-action form {
+    width: 100%;
+}
+
+.reservation-cancel-button {
+    width: 100%;
+    height: 42px;
+
+    color: var(--text-white);
+
+    background-color: var(--primary-red);
+
+    border: none;
+    border-radius: 9999px;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.reservation-cancel-button:hover {
+    background-color: var(--primary-hover);
+
+    transform: translateY(-1px);
+}
+
+.reservation-past-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 84px;
+    height: 34px;
+
+    color: var(--text-muted);
+
+    background-color: var(--bg-surface-high);
+
+    border: 1px solid var(--border-color);
+    border-radius: 9999px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.no-reservation {
+    padding: 42px 20px;
+
+    color: var(--text-muted);
+
+    background-color: var(--bg-surface-card);
+
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+
+    text-align: center;
+
+    line-height: 1.7;
+}
+
+.reservation-notice {
+    margin-top: 20px;
+    padding: 15px 17px;
+
+    color: var(--text-muted);
+
+    background-color: rgba(30, 31, 37, 0.78);
+
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   3. MyFavorite.jsp
+   찜한 영화
+   ========================================================= */
+
+.favorite-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 18px;
+}
+
+.favorite-card {
+    position: relative;
+
+    overflow: hidden;
+
+    background-color: var(--bg-surface-card);
+
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+
+    box-shadow:
+        0 9px 24px rgba(0, 0, 0, 0.18);
+
+    transition:
+        transform 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease;
+}
+
+.favorite-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 18px 34px rgba(0, 0, 0, 0.28);
+}
+
+.favorite-poster {
+    position: relative;
+
+    height: 320px;
+
+    overflow: hidden;
+
+    background-color: var(--bg-surface-high);
+}
+
+.favorite-poster::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 35%;
+
+    background:
+        linear-gradient(
+            to top,
+            rgba(13, 14, 19, 0.75),
+            transparent
+        );
+
+    pointer-events: none;
+}
+
+.favorite-poster img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    transition:
+        transform 0.35s ease;
+}
+
+.favorite-card:hover .favorite-poster img {
+    transform: scale(1.04);
+}
+
+.favorite-poster-empty {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--text-muted);
+
+    background-color: var(--bg-surface-high);
+
+    font-size: 13px;
+}
+
+.favorite-info {
+    padding: 17px;
+}
+
+.favorite-title {
+    margin-bottom: 9px;
+
+    color: var(--text-white);
+
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.35;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.favorite-meta {
+    min-height: 40px;
+
+    color: var(--text-muted);
+
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.favorite-actions {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 8px;
+
+    margin-top: 15px;
+}
+
+.favorite-detail-button,
+.favorite-remove-button {
+    min-height: 40px;
+
+    border-radius: 9999px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.favorite-detail-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--text-on-surface);
+
+    background-color: var(--bg-surface-high);
+
+    text-decoration: none;
+}
+
+.favorite-detail-button:hover {
+    color: var(--text-white);
+
+    background-color: #38393f;
+
+    transform: translateY(-1px);
+}
+
+.favorite-remove-button {
+    color: var(--text-white);
+
+    background-color: var(--primary-red);
+
+    border: none;
+}
+
+.favorite-remove-button:hover {
+    background-color: var(--primary-hover);
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   4. MyReview.jsp
+   작성한 리뷰
+   ========================================================= */
+
+.my-review-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 14px;
+}
+
+.my-review-card {
+    position: relative;
+
+    padding: 22px 22px 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(30, 31, 37, 0.98),
+            rgba(26, 27, 33, 0.98)
+        );
+
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+
+    box-shadow:
+        0 9px 24px rgba(0, 0, 0, 0.16);
+
+    transition:
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.my-review-card:hover {
+    border-color: rgba(255, 255, 255, 0.13);
+
+    transform: translateY(-2px);
+}
+
+.my-review-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    margin-bottom: 14px;
+}
+
+.my-review-movie {
+    min-width: 0;
+
+    color: var(--text-white);
+
+    font-size: 18px;
+    font-weight: 800;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-review-rating {
+    flex-shrink: 0;
+
+    padding: 5px 10px;
+
+    color: var(--accent-gold);
+
+    background-color:
+        rgba(254, 183, 0, 0.10);
+
+    border: 1px solid
+        rgba(254, 183, 0, 0.18);
+
+    border-radius: 9999px;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+.my-review-content {
+    margin: 0 0 17px;
+
+    color: var(--text-on-surface);
+
+    font-size: 14px;
+    line-height: 1.75;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.my-review-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding-top: 14px;
+
+    border-top: 1px solid var(--border-color);
+}
+
+.my-review-date {
+    color: var(--text-muted);
+
+    font-size: 11px;
+}
+
+.my-review-actions {
+    display: flex;
+
+    gap: 8px;
+}
+
+.my-review-actions form {
+    margin: 0;
+}
+
+.my-review-link,
+.my-review-delete-button {
+    min-width: 78px;
+    min-height: 36px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 14px;
+
+    border-radius: 9999px;
+
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.my-review-link {
+    color: var(--text-on-surface);
+
+    background-color: var(--bg-surface-high);
+
+    text-decoration: none;
+}
+
+.my-review-link:hover {
+    color: var(--text-white);
+
+    background-color: #38393f;
+
+    transform: translateY(-1px);
+}
+
+.my-review-delete-button {
+    color: var(--text-white);
+
+    background-color: var(--primary-red);
+
+    border: none;
+
+    cursor: pointer;
+}
+
+.my-review-delete-button:hover {
+    background-color: var(--primary-hover);
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   반응형
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .favorite-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 768px) {
+
+    .mypage-page {
+        padding: 130px 0 70px;
+    }
+
+    .mypage-container {
+        padding: 0 16px;
+    }
+
+    .mypage-header {
+        padding: 28px 24px;
+        border-radius: 16px;
+    }
+
+    .mypage-header h1 {
+        font-size: 30px;
+    }
+
+    .mypage-nav {
+        position: static;
+
+        grid-template-columns:
+            1fr 1fr;
+
+        margin-bottom: 12px;
+    }
+
+    .mypage-nav-link {
+        min-height: 46px;
+
+        font-size: 13px;
+    }
+
+    .member-info-card {
+        padding: 28px 22px;
+
+        border-radius: 16px;
+    }
+
+    .member-info-row {
+        grid-template-columns: 1fr;
+
+        gap: 0;
+    }
+
+    .member-info-buttons {
+        flex-direction: column;
+    }
+
+    .member-info-cancel-button {
+        width: 100%;
+    }
+
+    .reservation-card {
+        flex-wrap: wrap;
+    }
+
+    .reservation-action {
+        width: 100%;
+    }
+
+    .reservation-action form {
+        width: 100%;
+    }
+
+    .reservation-detail {
+        grid-template-columns: 82px 1fr;
+    }
+
+    .favorite-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .favorite-poster {
+        height: 300px;
+    }
+}
+
+
+@media (max-width: 520px) {
+
+    .mypage-header {
+        padding: 24px 20px;
+    }
+
+    .mypage-header h1 {
+        font-size: 27px;
+    }
+
+    .mypage-section-title {
+        font-size: 24px;
+    }
+
+    .favorite-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .favorite-poster {
+        height: min(120vw, 420px);
+    }
+
+    .reservation-card {
+        gap: 16px;
+
+        padding: 15px;
+    }
+
+    .reservation-poster {
+        width: 92px;
+        height: 132px;
+    }
+
+    .reservation-movie-title {
+        font-size: 18px;
+    }
+
+    .my-review-top,
+    .my-review-bottom {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .my-review-actions {
+        width: 100%;
+    }
+
+    .my-review-link,
+    .my-review-delete-button {
+        flex: 1;
+    }
+}
+
+/* =========================================================
+   회원 정보 페이지
+   ========================================================= */
+.member-info-page {
+    min-height: 100vh;
+    padding: 150px 0 100px;
+}
+.member-info-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+/* =========================================================
+   페이지 제목
+   ========================================================= */
+.member-info-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+.member-info-header h1 {
+    margin-bottom: 10px;
+    color: var(--text-white);
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+.member-info-header p {
+    color: var(--text-muted);
+    font-size: 15px;
+}
+/* =========================================================
+   회원 정보 카드
+   ========================================================= */
+.member-info-card {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: var(--bg-surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.35);
+}
+/* =========================================================
+   정보 영역
+   ========================================================= */
+.member-info-section {
+    margin-bottom: 32px;
+}
+.member-info-section:last-child {
+    margin-bottom: 0;
+}
+.member-info-section-title {
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+    color: var(--text-white);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 18px;
+    font-weight: 700;
+}
+/* =========================================================
+   입력 그룹
+   ========================================================= */
+.member-info-group {
+    margin-bottom: 20px;
+}
+.member-info-group:last-child {
+    margin-bottom: 0;
+}
+.member-info-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-on-surface);
+    font-size: 14px;
+    font-weight: 600;
+}
+/* =========================================================
+   입력창
+   ========================================================= */
+.member-info-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    box-sizing: border-box;
+    color: var(--text-white);
+    background-color: var(--bg-surface-low);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s ease-in-out;
+}
+/* 수정 가능한 입력창 */
+.member-info-input:not([readonly]):focus {
+    border-color: var(--primary-red);
+    box-shadow:
+        0 0 0 3px rgba(229, 9, 20, 0.12);
+}
+/* readonly 입력창 */
+.member-info-input[readonly] {
+    color: var(--text-muted);
+    background-color: var(--bg-surface-high);
+    cursor: not-allowed;
+}
+/* =========================================================
+   성별 / 2열 입력
+   ========================================================= */
+.member-info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+/* =========================================================
+   버튼
+   ========================================================= */
+.member-info-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 36px;
+}
+.member-info-submit-button,
+.member-info-cancel-button {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 9999px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease-in-out;
+}
+/* 회원정보 수정 */
+.member-info-submit-button {
+    flex: 1;
+    color: var(--text-white);
+    background-color: var(--primary-red);
+    box-shadow:
+        0 8px 24px rgba(229, 9, 20, 0.3);
+}
+.member-info-submit-button:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+/* 취소 */
+.member-info-cancel-button {
+    width: 140px;
+    color: var(--text-white);
+    background-color: var(--bg-surface-high);
+}
+.member-info-cancel-button:hover {
+    background-color: #38393f;
+}
+/* =========================================================
+   예약 내역 영역
+   ========================================================= */
+.reservation-section {
+    margin-top: 60px;
+}
+.reservation-section-title {
+    margin-bottom: 24px;
+    color: var(--text-white);
+    font-size: 28px;
+    font-weight: 800;
+}
+.reservation-section-description {
+    margin-bottom: 30px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+/* =========================================================
+   예약 그룹
+   ========================================================= */
+
+.reservation-group {
+    margin-bottom: 50px;
+}
+.reservation-group-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    color: var(--text-white);
+    font-size: 20px;
+    font-weight: 700;
+}
+.reservation-group-title::before {
+    content: "";
+    width: 5px;
+    height: 22px;
+    border-radius: 999px;
+    background-color: var(--primary-red);
+}
+/* =========================================================
+   예약 없음
+   ========================================================= */
+.no-reservation {
+    padding: 40px 20px;
+    color: var(--text-muted);
+    background-color: var(--bg-surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    text-align: center;
+}
+/* =========================================================
+   예약 카드
+   ========================================================= */
+.reservation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.reservation-card {
+    display: flex;
+    gap: 22px;
+    padding: 20px;
+    background-color: var(--bg-surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.18);
+    transition: 0.2s ease-in-out;
+}
+.reservation-card:hover {
+    transform: translateY(-2px);
+    border-color: #555;
+}
+/* =========================================================
+   지난 예약
+   ========================================================= */
+.reservation-card-past {
+    opacity: 0.55;
+}
+/* =========================================================
+   영화 포스터
+   ========================================================= */
+.reservation-poster {
+    width: 110px;
+    height: 155px;
+    flex-shrink: 0;
+    overflow: hidden;
+    background-color: var(--bg-surface-high);
+    border-radius: 8px;
+}
+.reservation-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.reservation-poster-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+/* =========================================================
+   예약 정보
+   ========================================================= */
+.reservation-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+.reservation-movie-title {
+    margin-bottom: 14px;
+    color: var(--text-white);
+    font-size: 21px;
+    font-weight: 700;
+    word-break: keep-all;
+}
+.reservation-detail {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    row-gap: 8px;
+    font-size: 14px;
+}
+.reservation-detail-label {
+    color: var(--text-muted);
+}
+.reservation-detail-value {
+    color: var(--text-on-surface);
+}
+.reservation-number {
+    margin-top: 14px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+/* =========================================================
+   예약 상태 영역
+   ========================================================= */
+.reservation-action {
+    width: 130px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* 예약 취소 버튼 */
+.reservation-cancel-button {
+    width: 100%;
+    height: 44px;
+    color: var(--text-white);
+    background-color: var(--primary-red);
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease-in-out;
+}
+.reservation-cancel-button:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* 지난 예약 표시 */
+.reservation-past-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    height: 36px;
+    color: var(--text-muted);
+    background-color: var(--bg-surface-high);
+    border: 1px solid var(--border-color);
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+/* =========================================================
+   예약 취소 안내
+   ========================================================= */
+.reservation-notice {
+    margin-top: 20px;
+    padding: 16px 18px;
+    color: var(--text-muted);
+    background-color: var(--bg-surface-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+/* =========================================================
+   반응형
+   ========================================================= */
+@media (max-width: 768px) {
+    .member-info-page {
+        padding-top: 130px;
+    }
+    .member-info-container {
+        padding: 0 16px;
+    }
+    .member-info-card {
+        padding: 28px 20px;
+    }
+    .member-info-header h1 {
+        font-size: 30px;
+    }
+    .member-info-row {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .member-info-buttons {
+        flex-direction: column;
+    }
+    .member-info-cancel-button {
+        width: 100%;
+        order: 2;
+    }
+    /* 예약 카드 */
+    .reservation-card {
+        flex-direction: column;
+
+        gap: 18px;
+    }
+    .reservation-poster {
+        width: 120px;
+        height: 170px;
+    }
+    .reservation-action {
+        width: 100%;
+    }
+    .reservation-cancel-button {
+        height: 46px;
+    }
+    .reservation-detail {
+        grid-template-columns: 85px 1fr;
+    }
+}

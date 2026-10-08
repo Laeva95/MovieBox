@@ -81,32 +81,19 @@ public class EmailService {
         
         mailSession.setDebug(true);
         // 이메일 메시지 작성
-        Message message =
-            new MimeMessage(mailSession);
+        Message message = new MimeMessage(mailSession);
 
         // 보내는 사람, 받는 사람, 제목, 내용 설정
-        message.setFrom(
-            new InternetAddress(smtpUsername)
-        );
+        message.setFrom(new InternetAddress(smtpUsername));
 
         // 받는 사람 설정
-        message.setRecipients(
-            Message.RecipientType.TO,
-            InternetAddress.parse(receiver)
-        );
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(receiver));
 
         // 제목 설정
-        message.setSubject(
-            "[MovieBox] 이메일 인증번호"
-        );
+        message.setSubject("[MovieBox] 이메일 인증번호");
 
         // 내용 설정
-        message.setText(
-            "MovieBox 인증번호는 ["
-            + code
-            + "] 입니다.\n\n"
-            + "인증번호는 5분 동안 유효합니다."
-        );
+        message.setText("MovieBox 인증번호는 [" + code + "] 입니다.\n\n" + "인증번호는 5분 동안 유효합니다.");
 
         Transport.send(message);
     }

@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import member.MemberDTO;
 import movie.MovieDAO;
 import movie.MovieDTO;
+import review.ReviewDTO;
 import member.MemberDAO;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -324,40 +325,61 @@ public class MemberController extends HttpServlet {
 				        return;
 				    }
 
-				    // 회원 정보
-				    MemberDTO dto = memberDao.getMember(id);
-				    request.setAttribute("member", dto);
+				    String menu = request.getParameter("menu");
 
-
-				    // 예약 목록
-				    List<ReservationVO> reservationList =
-				            reservationService.getReservationList(id);
-
-
-				    // MyPage 화면용 데이터
-				    List<MyPageReservationVO> myPageReservationList =
-				            new ArrayList<>();
-
-				    // 예약 목록을 돌면서 영화 정보와 상영 시간, 과거 여부를 가져와 MyPageReservationVO 객체를 생성
-				    for (ReservationVO reservation : reservationList) {
-
-				        MovieDTO movie = movieDao.getMovieDetails(reservation.getMovieId());
-
-				        String screeningTime = getScreeningTime(reservation.getScreeningId());
-
-				        boolean past = isPast(reservation.getReservationDate(), screeningTime);
-
-				        MyPageReservationVO item = new MyPageReservationVO(reservation, movie, screeningTime, past);
-				        
-				        myPageReservationList.add(item);
+				    if (menu == null || menu.trim().isEmpty()) {	
+				        menu = "info";
 				    }
 
-				    // 리스트를 request에 저장하여 JSP에서 접근
-				    request.setAttribute("myPageReservationList", myPageReservationList);
+				    // menu 값이 "info", "reservation", "favorite", "review" 중 하나가 아니면 기본값으로 설정
+				    if (!"info".equals(menu) && !"reservation".equals(menu)
+				            && !"favorite".equals(menu) && !"review".equals(menu)) {
+				        menu = "info";
+				    }
 
+				    request.setAttribute("myPageMenu", menu);
+
+				    // 메뉴에 따라 다른 데이터를 조회하여 request에 저장
+				    if ("info".equals(menu)) {
+
+				    	// 회원 정보 조회 코드
+				        MemberDTO dto = memberDao.getMember(id);
+				        request.setAttribute("member", dto);
+
+				    } else if ("reservation".equals(menu)) {
+
+				        // 기존 예매 조회 코드
+				        List<ReservationVO> reservationList = reservationService.getReservationList(id);
+				        List<MyPageReservationVO> myPageReservationList = new ArrayList<>();
+				        for (ReservationVO reservation : reservationList) {
+
+				        	// 영화 정보 조회
+				            MovieDTO movie = movieDao.getMovieDetails(reservation.getMovieId());
+
+				            String screeningTime = getScreeningTime(reservation.getScreeningId());
+
+				            boolean past = isPast(reservation.getReservationDate(), screeningTime);
+
+				            // MyPageReservationVO 객체 생성 후 리스트에 추가
+				            myPageReservationList.add(new MyPageReservationVO(reservation, movie, screeningTime, past));
+				        }
+
+				        request.setAttribute("myPageReservationList", myPageReservationList);
+
+				    } else if ("favorite".equals(menu)) {
+				    	// 즐겨찾기 영화 조회 코드
+				        List<MovieDTO> favoriteMovies = memberDao.getFavoriteMovies(id);
+
+				        request.setAttribute("favoriteMovies", favoriteMovies);
+
+				    } else if ("review".equals(menu)) {
+				    	// 리뷰 조회 코드
+				        List<ReviewDTO> myReviewList = memberDao.getReviewsByMemberId(id);
+
+				        request.setAttribute("myReviewList", myReviewList);
+				    }
 
 				    request.setAttribute("center", "members/MyPage.jsp");
-
 				    nextPage = "/Index.jsp";
 			}else if ("/UpdatePro.do".equals(action)) {
 				
@@ -581,7 +603,7 @@ public class MemberController extends HttpServlet {
 			    	// reservationIdStr이 정수가 아니면 예외 처리
 			        session.setAttribute("reservationMessage", "잘못된 예매번호입니다.");
 
-			        response.sendRedirect(request.getContextPath()+ "/member/MyPage.do");
+			        response.sendRedirect(request.getContextPath()+ "/member/MyPage.do?menu=reservation");
 			        return;
 			    }
 
@@ -605,7 +627,7 @@ public class MemberController extends HttpServlet {
 
 			        session.setAttribute("reservationMessage", "취소할 수 없는 예매입니다.");
 
-			        response.sendRedirect(request.getContextPath() + "/member/MyPage.do");
+			        response.sendRedirect(request.getContextPath() + "/member/MyPage.do?menu=reservation");
 
 			        return;
 			    }
@@ -617,7 +639,7 @@ public class MemberController extends HttpServlet {
 
 			        session.setAttribute("reservationMessage", "상영 시간이 지난 예매는 취소할 수 없습니다.");
 
-			        response.sendRedirect(request.getContextPath() + "/member/MyPage.do");
+			        response.sendRedirect(request.getContextPath() + "/member/MyPage.do?menu=reservation");
 			        return;
 			    }
 
@@ -633,18 +655,15 @@ public class MemberController extends HttpServlet {
 			    }
 
 			    // MyPage로 리다이렉트
-			    response.sendRedirect(request.getContextPath() + "/member/MyPage.do");
+			    response.sendRedirect(request.getContextPath() + "/member/MyPage.do?menu=reservation");
 			    return;
 			}else if ("/FindId.do".equals(action)) {
 			    request.setAttribute("center", "/members/FindId.jsp");
 			    nextPage = "/Index.jsp";
 			}else if ("/FindIdSendCode.do".equals(action)) {
-
-			    String name =
-			            request.getParameter("member_name");
-
-			    String email =
-			            request.getParameter("email");
+				// 사용자가 입력한 이름과 이메일을 가져온다
+			    String name = request.getParameter("member_name");
+			    String email = request.getParameter("email");
 
 
 			    if (name == null || name.trim().isEmpty()
@@ -660,19 +679,13 @@ public class MemberController extends HttpServlet {
 
 
 			    // 이름 + 이메일로 회원 검색
-			    List<String> memberIds =
-			            memberDao.findMemberIds(
-			                    name,
-			                    email
-			            );
+			    List<String> memberIds = memberDao.findMemberIds(name, email);
 
 
 			    if (memberIds.isEmpty()) {
-
+			    	// 입력한 정보와 일치하는 회원이 없을 경우
 			        out.println("<script>");
-			        out.println(
-			            "alert('입력하신 정보와 일치하는 회원을 찾을 수 없습니다.');"
-			        );
+			        out.println("alert('입력하신 정보와 일치하는 회원을 찾을 수 없습니다.');");
 			        out.println("history.back();");
 			        out.println("</script>");
 
@@ -681,41 +694,21 @@ public class MemberController extends HttpServlet {
 
 
 			    // 인증번호 생성
-			    String code =
-			            emailService.createVerificationCode();
+			    String code = emailService.createVerificationCode();
 
 
 			    // 세션에 인증정보 저장
-			    session.setAttribute(
-			            "findIdName",
-			            name
-			    );
+			    session.setAttribute("findIdName", name);
+			    session.setAttribute("findIdEmail", email);
+			    session.setAttribute("findIdCode", code);
 
-			    session.setAttribute(
-			            "findIdEmail",
-			            email
-			    );
-
-			    session.setAttribute(
-			            "findIdCode",
-			            code
-			    );
-
-			    session.setAttribute(
-			            "findIdCodeExpire",
-			            System.currentTimeMillis()
-			            + 5 * 60 * 1000
-			    );
+			    // 인증번호 만료 시간 설정 (5분 후)
+			    session.setAttribute("findIdCodeExpire", System.currentTimeMillis() + 5 * 60 * 1000);
 
 
 			    // 이메일 발송
 			    try {
-
-			        emailService.sendVerificationCode(
-			                email,
-			                code
-			        );
-
+			        emailService.sendVerificationCode(email, code);
 			    } catch (Exception e) {
 
 			        e.printStackTrace();
@@ -726,6 +719,7 @@ public class MemberController extends HttpServlet {
 			        session.removeAttribute("findIdCode");
 			        session.removeAttribute("findIdCodeExpire");
 
+			        // 이전 페이지로 이동
 			        out.println("<script>");
 			        out.println("alert('인증번호 발송에 실패했습니다.');");
 			        out.println("history.back();");
@@ -734,192 +728,100 @@ public class MemberController extends HttpServlet {
 			        return;
 			    }
 
-
 			    // 인증번호 입력 화면으로 이동
-			    response.sendRedirect(
-			            request.getContextPath()
-			            + "/member/FindIdVerify.do"
-			    );
-
+			    response.sendRedirect(request.getContextPath()+ "/member/FindIdVerify.do");
 			    return;
 			}else if ("/FindIdVerify.do".equals(action)) {
-
-			    request.setAttribute(
-			            "center",
-			            "/members/FindIdVerify.jsp"
-			    );
-
+			    request.setAttribute("center", "/members/FindIdVerify.jsp");
 			    nextPage = "/Index.jsp";
 			}else if ("/FindIdVerifyPro.do".equals(action)) {
+			    String inputCode = request.getParameter("authCode");
+			    String savedCode = (String)session.getAttribute("findIdCode");
+			    // 세션에서 인증번호 만료 시간 가져오기
+			    Long expireTime = (Long)session.getAttribute("findIdCodeExpire");
 
-			    String inputCode =
-			            request.getParameter("authCode");
-
-			    String savedCode =
-			            (String) session.getAttribute(
-			                    "findIdCode"
-			            );
-
-			    Long expireTime =
-			            (Long) session.getAttribute(
-			                    "findIdCodeExpire"
-			            );
-
-
-			    if (savedCode == null
-			            || expireTime == null
-			            || inputCode == null
-			            || System.currentTimeMillis() > expireTime
+			    // 인증번호가 일치하지 않거나 만료되었는지 확인
+			    if (savedCode == null || expireTime == null
+			            || inputCode == null || System.currentTimeMillis() > expireTime
 			            || !savedCode.equals(inputCode)) {
 
 			        out.println("<script>");
-			        out.println(
-			            "alert('인증번호가 올바르지 않거나 만료되었습니다.');"
-			        );
+			        out.println("alert('인증번호가 올바르지 않거나 만료되었습니다.');");
 			        out.println("history.back();");
 			        out.println("</script>");
-
 			        return;
 			    }
-			    String name =
-			            (String) session.getAttribute(
-			                    "findIdName"
-			            );
-
-			    String email =
-			            (String) session.getAttribute(
-			                    "findIdEmail"
-			            );
+			    // 인증 성공 후 회원 아이디 조회
+			    String name = (String)session.getAttribute("findIdName");
+			    String email =(String)session.getAttribute("findIdEmail");
+			    
 			    // 인증 성공 후 다시 DB 조회
-			    List<String> memberIds =
-			            memberDao.findMemberIds(
-			                    name,
-			                    email
-			            );
-			    request.setAttribute(
-			            "memberIds",
-			            memberIds
-			    );
+			    List<String> memberIds =memberDao.findMemberIds(name, email);
+			    request.setAttribute("memberIds", memberIds);
+			    
 			    // 인증 관련 세션 삭제
 			    session.removeAttribute("findIdName");
 			    session.removeAttribute("findIdEmail");
 			    session.removeAttribute("findIdCode");
 			    session.removeAttribute("findIdCodeExpire");
-			    request.setAttribute(
-			            "center",
-			            "/members/FindIdResult.jsp"
-			    );
-
+			    
+			    request.setAttribute("center", "/members/FindIdResult.jsp");
 			    nextPage = "/Index.jsp";
 			}else if ("/ResetPassword.do".equals(action)) {
 
-			    request.setAttribute(
-			            "center",
-			            "/members/ResetPassword.jsp"
-			    );
-
+			    request.setAttribute("center", "/members/ResetPassword.jsp");
 			    nextPage = "/Index.jsp";
 			}else if ("/ResetPasswordSendCode.do".equals(action)) {
 
-			    String memberId =
-			            request.getParameter("member_id");
+			    String memberId = request.getParameter("member_id");
 
-			    String name =
-			            request.getParameter("member_name");
+			    String name = request.getParameter("member_name");
 
-			    String email =
-			            request.getParameter("email");
+			    String email = request.getParameter("email");
 
 
-			    if (memberId == null
-			            || name == null
-			            || email == null
-			            || memberId.trim().isEmpty()
-			            || name.trim().isEmpty()
-			            || email.trim().isEmpty()) {
-
+			    if (memberId == null || name == null
+			            || email == null || memberId.trim().isEmpty()
+			            || name.trim().isEmpty() || email.trim().isEmpty()) {
+			    	
 			        out.println("<script>");
 			        out.println("alert('모든 정보를 입력해주세요.');");
 			        out.println("history.back();");
 			        out.println("</script>");
-
 			        return;
 			    }
 
 
-			    boolean memberExists =
-			            memberDao.verifyMemberForPasswordReset(
-			                    memberId,
-			                    name,
-			                    email
-			            );
-
+			    boolean memberExists = memberDao.verifyMemberForPasswordReset(memberId, name, email);
 
 			    if (!memberExists) {
-
 			        out.println("<script>");
-			        out.println(
-			            "alert('입력하신 회원정보가 일치하지 않습니다.');"
-			        );
+			        out.println("alert('입력하신 회원정보가 일치하지 않습니다.');");
 			        out.println("history.back();");
 			        out.println("</script>");
-
 			        return;
 			    }
 
 
-			    String code =
-			            emailService.createVerificationCode();
+			    String code = emailService.createVerificationCode();
 
-
-			    session.setAttribute(
-			            "resetPasswordMemberId",
-			            memberId
-			    );
-
-			    session.setAttribute(
-			            "resetPasswordEmail",
-			            email
-			    );
-
-			    session.setAttribute(
-			            "resetPasswordCode",
-			            code
-			    );
-
-			    session.setAttribute(
-			            "resetPasswordCodeExpire",
-			            System.currentTimeMillis()
-			            + 5 * 60 * 1000
-			    );
+			    // 인증번호와 관련 정보를 세션에 저장
+			    session.setAttribute("resetPasswordMemberId", memberId);
+			    session.setAttribute("resetPasswordEmail", email);
+			    session.setAttribute("resetPasswordCode", code);
+			    session.setAttribute("resetPasswordCodeExpire", System.currentTimeMillis() + 5 * 60 * 1000);
 
 
 			    try {
-
-			        emailService.sendVerificationCode(
-			                email,
-			                code
-			        );
-
+			    	// 이메일 발송
+			        emailService.sendVerificationCode(email, code);
 			    } catch (Exception e) {
-
 			        e.printStackTrace();
-
-			        session.removeAttribute(
-			                "resetPasswordMemberId"
-			        );
-
-			        session.removeAttribute(
-			                "resetPasswordEmail"
-			        );
-
-			        session.removeAttribute(
-			                "resetPasswordCode"
-			        );
-
-			        session.removeAttribute(
-			                "resetPasswordCodeExpire"
-			        );
+			        // 이메일 발송 실패 시 인증정보 제거
+			        session.removeAttribute("resetPasswordMemberId");
+			        session.removeAttribute("resetPasswordEmail");
+			        session.removeAttribute("resetPasswordCode");
+			        session.removeAttribute("resetPasswordCodeExpire");
 
 			        out.println("<script>");
 			        out.println("alert('인증번호 발송에 실패했습니다.');");
@@ -929,88 +831,44 @@ public class MemberController extends HttpServlet {
 			        return;
 			    }
 
-
-			    response.sendRedirect(
-			            request.getContextPath()
-			            + "/member/ResetPasswordVerify.do"
-			    );
-
+			    // 인증번호 입력 화면으로 이동
+			    response.sendRedirect(request.getContextPath() + "/member/ResetPasswordVerify.do");
 			    return;
 			}else if ("/ResetPasswordVerify.do".equals(action)) {
-
-			    request.setAttribute(
-			            "center",
-			            "/members/ResetPasswordVerify.jsp"
-			    );
-
+			    request.setAttribute("center", "/members/ResetPasswordVerify.jsp");
 			    nextPage = "/Index.jsp";
 			}else if ("/ResetPasswordVerifyPro.do".equals(action)) {
+				// 세션에서 인증번호와 만료 시간을 가져온다
+			    String inputCode = request.getParameter("authCode");
+			    String savedCode = (String)session.getAttribute("resetPasswordCode");
+			    Long expireTime = (Long)session.getAttribute("resetPasswordCodeExpire");
 
-			    String inputCode =
-			            request.getParameter("authCode");
-
-			    String savedCode =
-			            (String) session.getAttribute(
-			                    "resetPasswordCode"
-			            );
-
-			    Long expireTime =
-			            (Long) session.getAttribute(
-			                    "resetPasswordCodeExpire"
-			            );
-
-
-			    if (savedCode == null
-			            || expireTime == null
-			            || inputCode == null
-			            || System.currentTimeMillis() > expireTime
+			    // 인증번호가 일치하지 않거나 만료되었는지 확인
+			    if (savedCode == null || expireTime == null
+			            || inputCode == null || System.currentTimeMillis() > expireTime
 			            || !savedCode.equals(inputCode)) {
-
 			        out.println("<script>");
-			        out.println(
-			            "alert('인증번호가 올바르지 않거나 만료되었습니다.');"
-			        );
+			        out.println("alert('인증번호가 올바르지 않거나 만료되었습니다.');");
 			        out.println("history.back();");
 			        out.println("</script>");
-
 			        return;
 			    }
 
 
 			    // 이메일 인증 성공
-			    session.setAttribute(
-			            "passwordResetVerified",
-			            true
-			    );
-
+			    session.setAttribute("passwordResetVerified", true);
 
 			    // 인증번호는 더 이상 필요 없음
-			    session.removeAttribute(
-			            "resetPasswordCode"
-			    );
+			    session.removeAttribute("resetPasswordCode");
+			    session.removeAttribute("resetPasswordCodeExpire");
 
-			    session.removeAttribute(
-			            "resetPasswordCodeExpire"
-			    );
-
-
-			    request.setAttribute(
-			            "center",
-			            "/members/ResetPasswordForm.jsp"
-			    );
-
+			    request.setAttribute("center", "/members/ResetPasswordForm.jsp");
 			    nextPage = "/Index.jsp";
 			}else if ("/ResetPasswordPro.do".equals(action)) {
 
-			    Boolean verified =
-			            (Boolean) session.getAttribute(
-			                    "passwordResetVerified"
-			            );
-
-			    String memberId =
-			            (String) session.getAttribute(
-			                    "resetPasswordMemberId"
-			            );
+				// 세션에서 인증 여부와 회원 아이디를 가져온다
+			    Boolean verified = (Boolean)session.getAttribute("passwordResetVerified");
+			    String memberId = (String)session.getAttribute("resetPasswordMemberId");
 
 
 			    // 이메일 인증을 완료한 경우에만 허용
@@ -1018,40 +876,22 @@ public class MemberController extends HttpServlet {
 			            || memberId == null) {
 
 			        out.println("<script>");
-			        out.println(
-			            "alert('비밀번호 재설정 인증이 필요합니다.');"
-			        );
-			        out.println(
-			            "location.href='"
-			            + request.getContextPath()
-			            + "/member/ResetPassword.do';"
-			        );
+			        out.println("alert('비밀번호 재설정 인증이 필요합니다.');");
+			        out.println("location.href='" + request.getContextPath() + "/member/ResetPassword.do';");
 			        out.println("</script>");
-
 			        return;
 			    }
 
+			    // 새로운 비밀번호와 확인 비밀번호를 가져온다
+			    String newPassword = request.getParameter("member_pass");
+			    String confirmPassword = request.getParameter("member_pass_confirm");
 
-			    String newPassword =
-			            request.getParameter("member_pass");
-
-			    String confirmPassword =
-			            request.getParameter(
-			                    "member_pass_confirm"
-			            );
-
-
-			    if (newPassword == null
-			            || confirmPassword == null
-			            || !newPassword.equals(confirmPassword)) {
-
+			    // 비밀번호 일치 여부 확인
+			    if (newPassword == null || confirmPassword == null || !newPassword.equals(confirmPassword)) {
 			        out.println("<script>");
-			        out.println(
-			            "alert('비밀번호가 일치하지 않습니다.');"
-			        );
+			        out.println("alert('비밀번호가 일치하지 않습니다.');");
 			        out.println("history.back();");
 			        out.println("</script>");
-
 			        return;
 			    }
 
@@ -1064,9 +904,7 @@ public class MemberController extends HttpServlet {
 			          + "[a-zA-Z0-9!@#$%^&*]{8,20}$")) {
 
 			        out.println("<script>");
-			        out.println(
-			            "alert('비밀번호는 영문, 숫자, 특수문자를 포함하여 8~20자로 입력해주세요.');"
-			        );
+			        out.println("alert('비밀번호는 영문, 숫자, 특수문자를 포함하여 8~20자로 입력해주세요.');");
 			        out.println("history.back();");
 			        out.println("</script>");
 
@@ -1075,58 +913,30 @@ public class MemberController extends HttpServlet {
 
 
 			    // 기존 PasswordUtil 사용
-			    String hashedPassword =
-			            PasswordUtil.createPasswordHash(
-			                    newPassword
-			            );
+			    String hashedPassword = PasswordUtil.createPasswordHash(newPassword);
 
 
 			    // DB 변경
-			    int result =
-			            memberDao.updatePassword(
-			                    memberId,
-			                    hashedPassword
-			            );
-
+			    int result = memberDao.updatePassword(memberId, hashedPassword);
 
 			    if (result > 0) {
-
 			        // 인증 관련 세션 제거
-			        session.removeAttribute(
-			                "passwordResetVerified"
-			        );
+			        session.removeAttribute("passwordResetVerified");
+			        session.removeAttribute("resetPasswordMemberId");
+			        session.removeAttribute("resetPasswordEmail");
 
-			        session.removeAttribute(
-			                "resetPasswordMemberId"
-			        );
-
-			        session.removeAttribute(
-			                "resetPasswordEmail"
-			        );
-
-
+			        // 비밀번호 변경 성공 메시지와 로그인 페이지로 이동
 			        out.println("<script>");
-			        out.println(
-			            "alert('비밀번호가 변경되었습니다.');"
-			        );
-			        out.println(
-			            "location.href='"
-			            + request.getContextPath()
-			            + "/member/Login.do';"
-			        );
+			        out.println("alert('비밀번호가 변경되었습니다.');");
+			        out.println("location.href='" + request.getContextPath() + "/member/Login.do';");
 			        out.println("</script>");
-
 			        return;
-
 			    } else {
-
+			    	// 비밀번호 변경 실패
 			        out.println("<script>");
-			        out.println(
-			            "alert('비밀번호 변경에 실패했습니다.');"
-			        );
+			        out.println("alert('비밀번호 변경에 실패했습니다.');");
 			        out.println("history.back();");
 			        out.println("</script>");
-
 			        return;
 			    }
 			}

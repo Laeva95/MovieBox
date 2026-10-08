@@ -238,7 +238,9 @@
                autocomplete="one-time-code"
                required>
     </div>
-
+	<div class="verification-timer">
+	    	인증번호 유효시간 <span id="timer">05:00</span>
+	</div>
     <button type="submit" class="find-form-button">인증번호 확인</button>
 </form>
         </div>
@@ -250,3 +252,32 @@
         </div>
     </div>
 </main>
+<script>
+    let remainingTime = 5 * 60; // 5분
+
+    const timerElement = document.getElementById("timer");
+
+    const timer = setInterval(function() {
+
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
+
+        timerElement.textContent =
+            String(minutes).padStart(2, "0") + ":" +
+            String(seconds).padStart(2, "0");
+
+        if (remainingTime <= 0) {
+            clearInterval(timer);
+
+            timerElement.textContent = "00:00";
+            timerElement.classList.add("expired");
+
+            alert("인증번호 입력 시간이 만료되었습니다.\n인증번호를 다시 요청해주세요.");
+
+            return;
+        }
+
+        remainingTime--;
+
+    }, 1000);
+</script>
