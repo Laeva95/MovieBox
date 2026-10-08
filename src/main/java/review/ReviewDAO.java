@@ -91,7 +91,7 @@ public class ReviewDAO {
 		@return ReviewDTO 리스트
 	*/
 	public List<ReviewDTO> getReviewsByMovieId(int movieId) {
-		List<ReviewDTO> list = new ArrayList();
+		List<ReviewDTO> list = new ArrayList<>();
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -117,7 +117,7 @@ public class ReviewDAO {
 				dto.setRating(rs.getInt("rating"));
 				dto.setContent(rs.getString("content"));
 				dto.setRegDate(rs.getTimestamp("reg_date"));
-				dto.setLikeCount(rs.getInt("Like_count"));
+				dto.setLikeCount(rs.getInt("like_count"));
 				dto.setMemberName(rs.getString("member_name")); //JOIN으로 가져온 회원 이름
 				
 				// ★ 각 작성자별 실관람 여부 조회 및 저장
@@ -179,7 +179,7 @@ public class ReviewDAO {
 	/*
 		해당 회원이 이 영화를 실제로 예매(booking)한 이력이 있는지 검증합니다.
 		@param memberId 회원 아이디
-		@param mocieId 영화 번호
+		@param movieId 영화 번호
 		@return 예매 내역이 1건 이상이면 true, 없으면 false
 	*/
 	public boolean checkAudience(String memberId, int movieId) {

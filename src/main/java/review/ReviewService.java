@@ -118,13 +118,27 @@ public class ReviewService {
 		return result == 1;
 	}
 	
+	//================================================
+	// 6. 전체 최신 리뷰 목록 조회 
+	//================================================
 	public List<ReviewDTO> getRecentReviews(int limit) {
 		return reviewDAO.getRecentReviews(limit);
 	}
 	
 	//====================
-	// 6. 리뷰 수정 검증
+	// 7. 리뷰 수정
 	//====================
+	
+	/*
+	사용자가 수정한 리뷰 데이터를 검증한 후 DB 갱신을 요청합니다.
+	
+	1. 수정 대상 리뷰 번호(reviewId) 또는 작성자 아이디(memberId) 누락 시 수정 불가
+	2. 수정할 내용(content)이 비어있거나 공백만 있으면 수정 불가
+	3. 별점은 1점 이상 10점 이하만 허용
+	
+	@param dto 화면에서 넘어온 수정 리뷰 정보 (reviewId, memberId, rating, content)
+	@return 수정 성공 시 true, 검증 실패 또는 DB 오류 시 false
+	*/
 	public boolean modifyReview(ReviewDTO dto) {
 		if (dto == null || dto.getReviewId() <= 0 || dto.getMemberId() == null) {
 			return false;
