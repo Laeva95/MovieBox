@@ -1,11 +1,15 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Collections" %>
 <%@ page import="java.util.List" %>
 <%@ page import="movie.MovieDAO" %>
 <%@ page import="movie.MovieDTO" %>
+<%@ page import="review.ReviewDAO" %>
+<%@ page import="review.ReviewDTO" %>
 
 <%
     /*
@@ -32,35 +36,11 @@
         favoriteMovieIds = movieDAO.getFavoriteMovieIds(loginId);
     }
 
-    /*
-     * 리뷰 기능이 완성되기 전까지 사용할 더미 리뷰 데이터
-     * [작성자, 영화 제목, 평점, 내용, 작성일]
-     */
-    List<String[]> dummyReviews = new ArrayList<String[]>();
+ 	// 최신 리뷰 3개 조회
+    ReviewDAO reviewDAO = new ReviewDAO();
 
-    dummyReviews.add(new String[]{
-        "movieLover",
-        "어쩔 수 없다",
-        "5.0",
-        "배우들의 연기가 정말 좋았습니다. 몰입감 있게 재미있게 봤어요!",
-        "2026.10.02"
-    });
-
-    dummyReviews.add(new String[]{
-        "cinema22",
-        "프로젝트 헤일메리",
-        "4.5",
-        "원작의 재미를 잘 살린 느낌입니다. 후반부 전개가 특히 인상적이었어요.",
-        "2026.10.01"
-    });
-
-    dummyReviews.add(new String[]{
-        "film_note",
-        "극장판 체인소 맨 - 레제편",
-        "4.0",
-        "액션 장면이 화려하고 음악도 잘 어울렸습니다. 극장에서 보기 좋았어요.",
-        "2026.09.30"
-    });
+    List<ReviewDTO> recentReviews =
+            reviewDAO.getRecentReviews(3);
 %>
 
 <style>
@@ -421,6 +401,43 @@
             flex-direction: column;
         }
     }
+    .home-review-card {
+    display: flex;
+    flex-direction: column;
+
+    min-height: 230px;
+    padding: 24px;
+
+    background: var(--bg-surface-card);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.20);
+
+    text-decoration: none;
+    color: inherit;
+
+    transition:
+        transform 0.22s ease,
+        box-shadow 0.22s ease,
+        border-color 0.22s ease;
+}
+
+.home-review-card:hover {
+    transform: translateY(-4px);
+
+    border-color: rgba(255, 255, 255, 0.10);
+
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28);
+}
+
+.home-review-card .home-review-movie {
+    color: #fff;
+}
+
+.home-review-card:hover .home-review-movie {
+    color: var(--primary-red);
+}
 </style>
 
 <main class="home-page">
@@ -539,43 +556,70 @@
 
         <div class="home-review-grid">
 
-            <% for (String[] review : dummyReviews) { %>
+           <% if (recentReviews != null && !recentReviews.isEmpty()) { %>
 
-                <article class="home-review-card">
-                    <div class="home-review-top">
+        <% for (ReviewDTO review : recentReviews) { %>
 
-                        <div class="home-review-user">
-                            <div class="home-review-avatar">
-                                <%= review[0].substring(0, 1).toUpperCase() %>
-                            </div>
+            <a class="home-review-card"
+   href="${pageContext.request.contextPath}/review/list.do?movieId=<%= review.getMovieId() %>">
 
-                            <div class="home-review-user-info">
-                                <p class="home-review-user-name">
-                                    <%= review[0] %>
-                                </p>
+    <div class="home-review-top">
 
-                                <p class="home-review-date">
-                                    <%= review[4] %>
-                                </p>
-                            </div>
-                        </div>
+        <div class="home-review-user">
 
-                        <span class="home-review-rating">
-                            ★ <%= review[2] %>
-                        </span>
+            <div class="home-review-avatar">
+                <%= review.getMemberName()
+                        .substring(0, 1)
+                        .toUpperCase() %>
+            </div>
 
-                    </div>
+            <div class="home-review-user-info">
 
-                    <h3 class="home-review-movie">
-                        <%= review[1] %>
-                    </h3>
+                <p class="home-review-user-name">
+                    <%= review.getMemberName() %>
+                </p>
 
-                    <p class="home-review-content">
-                        <%= review[3] %>
-                    </p>
-                </article>
+                <p class="home-review-date">
+                    <fmt:formatDate
+                        value="<%= review.getRegDate() %>"
+                        pattern="yyyy.MM.dd" />
+                </p>
 
-            <% } %>
+            </div>
+
+        </div>
+
+        <span class="home-review-rating">
+            ★ <%= review.getRating() %>
+        </span>
+
+    </div>
+
+    <h3 class="home-review-movie">
+        <%= review.getMovieTitle() %>
+    </h3>
+
+    <p class="home-review-content">
+        <%= review.getContent() %>
+    </p>
+
+</a>
+
+        <% } %>
+
+    <% } else { %>
+
+        <div class="home-empty">
+
+            <span class="material-symbols-outlined">
+                rate_review
+            </span>
+
+            <p>아직 등록된 리뷰가 없습니다.</p>
+
+        </div>
+
+    <% } %>
 
         </div>
     </section>

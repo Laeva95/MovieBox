@@ -86,7 +86,7 @@ public class MemberController extends HttpServlet {
 		HttpSession session = request.getSession();
 		String loginId = (String) session.getAttribute("id"); // (String) = 꺼낸 값을 글자 자료형으로 바꿔 받는다
 
-		// 화면 이동할 JSP 주소 (null 이면 아래에서 404 처리)
+		// 화면 이동할 JSP 주소 
 		String nextPage = null;
 		
         try {
