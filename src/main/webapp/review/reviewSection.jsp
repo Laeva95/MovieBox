@@ -590,7 +590,14 @@
     <div class="review-score-board">
         <div class="score-main">
             <div class="score-circle">
-                <span class="score-num">${avgRating > 0 ? avgRating : '0.0'}</span>
+                <span class="score-num">
+    				<c:choose>
+       					<c:when test="${avgRating > 0}">
+          					 <fmt:formatNumber value="${avgRating}" pattern="0.0"/>
+      					</c:when>
+        				<c:otherwise>0.0</c:otherwise>
+   					</c:choose>
+				</span>
                 <span class="score-max">/ 10.0</span>
             </div>
             <div class="score-info">
@@ -627,23 +634,30 @@
                         </div>
                         <div>
                             <select name="rating" class="writer-rating-select">
-                                <option value="10">★ 10점 (인생영화)</option>
-                                <option value="9">★ 9점</option>
-                                <option value="8">★ 8점 (강력추천)</option>
-                                <option value="7">★ 7점</option>
-                                <option value="6">★ 6점 (볼만해요)</option>
-                                <option value="5">★ 5점 (보통)</option>
-                                <option value="3">★ 3점 (아쉬워요)</option>
-                                <option value="1">★ 1점 (비추천)</option>
+                                <option value="10">★★★★★ (10점)</option>
+                                <option value="9">★★★★⯪ (9점)</option>
+                                <option value="8">★★★★☆ (8점)</option>
+                                <option value="7">★★★⯪☆ (7점)</option>
+                                <option value="6">★★★☆☆ (6점)</option>
+                                <option value="5">★★⯪☆☆ (5점)</option>
+                                <option value="4">★★☆☆☆ (4점)</option>
+                                <option value="3">★⯪☆☆☆ (3점)</option>
+                                <option value="2">★☆☆☆☆ (2점)</option>
+                                <option value="1">⯪☆☆☆☆ (1점)</option>
                             </select>
                         </div>
                     </div>
-
-                    <div class="review-input-box">
-                        <textarea name="content" class="review-textarea" rows="2" 
-                                  placeholder="관람객 여러분의 솔직한 감상평을 남겨주세요 (최대 1000자)" required></textarea>
-                        <button type="submit" class="btn-submit-review">관람평 등록</button>
-                    </div>
+                    <div class="review-input-box" style="flex-direction: column;">
+					    <div style="display: flex; gap: 14px;">
+					        <textarea name="content" class="review-textarea" rows="2" 
+					                  placeholder="관람객 여러분의 솔직한 감상평을 남겨주세요 (최대 1000자)" 
+					                  oninput="updateCharCount(this, 'newReviewCount')" maxlength="1000" required></textarea>
+					        <button type="submit" class="btn-submit-review">관람평 등록</button>
+					    </div>
+					    <div style="text-align: right; font-size: 12px; color: #777; margin-top: 6px;">
+					        <span id="newReviewCount">0</span> / 1000자
+					    </div>
+					</div>
                 </form>
             </c:when>
             <c:otherwise>
@@ -699,7 +713,20 @@
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center;">
-                                <div class="card-rating-badge">★ ${rev.rating}점</div>
+                                <div class="card-rating-badge">
+								    <c:choose>
+								        <c:when test="${rev.rating == 10}">★★★★★ 10점</c:when>
+								        <c:when test="${rev.rating == 9}">★★★★⯪ 9점</c:when>
+								        <c:when test="${rev.rating == 8}">★★★★☆ 8점</c:when>
+								        <c:when test="${rev.rating == 7}">★★★⯪☆ 7점</c:when>
+								        <c:when test="${rev.rating == 6}">★★★☆☆ 6점</c:when>
+								        <c:when test="${rev.rating == 5}">★★⯪☆☆ 5점</c:when>
+								        <c:when test="${rev.rating == 4}">★★☆☆☆ 4점</c:when>
+								        <c:when test="${rev.rating == 3}">★⯪☆☆☆ 3점</c:when>
+								        <c:when test="${rev.rating == 2}">★☆☆☆☆ 2점</c:when>
+								        <c:otherwise>⯪☆☆☆☆ 1점</c:otherwise>
+								    </c:choose>
+								</div>
 
                                 <%-- 본인 작성 리뷰일 때만 수정/삭제 버튼 노출 --%>
                                 <c:if test="${currentId eq rev.memberId}">
@@ -725,22 +752,31 @@
                                 
                                 <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
                                     <select name="rating" class="writer-rating-select">
-                                        <option value="10" ${rev.rating == 10 ? 'selected' : ''}>★ 10점 (인생영화)</option>
-                                        <option value="9" ${rev.rating == 9 ? 'selected' : ''}>★ 9점</option>
-                                        <option value="8" ${rev.rating == 8 ? 'selected' : ''}>★ 8점 (강력추천)</option>
-                                        <option value="7" ${rev.rating == 7 ? 'selected' : ''}>★ 7점</option>
-                                        <option value="6" ${rev.rating == 6 ? 'selected' : ''}>★ 6점 (볼만해요)</option>
-                                        <option value="5" ${rev.rating == 5 ? 'selected' : ''}>★ 5점 (보통)</option>
-                                        <option value="3" ${rev.rating == 3 ? 'selected' : ''}>★ 3점 (아쉬워요)</option>
-                                        <option value="1" ${rev.rating == 1 ? 'selected' : ''}>★ 1점 (비추천)</option>
+                                        <option value="10" ${rev.rating == 10 ? 'selected' : ''}>★★★★★ (10점)</option>
+                                        <option value="9" ${rev.rating == 9 ? 'selected' : ''}>★★★★⯪ (9점)</option>
+                                        <option value="8" ${rev.rating == 8 ? 'selected' : ''}>★★★★☆ (8점)</option>
+                                        <option value="7" ${rev.rating == 7 ? 'selected' : ''}>★★★⯪☆ (7점)</option>
+                                        <option value="6" ${rev.rating == 6 ? 'selected' : ''}>★★★☆☆ (6점)</option>
+                                        <option value="5" ${rev.rating == 5 ? 'selected' : ''}>★★⯪☆☆ (5점)</option>
+                                        <option value="4" ${rev.rating == 4 ? 'selected' : ''}>★★☆☆☆ (4점)</option>
+                                        <option value="3" ${rev.rating == 3 ? 'selected' : ''}>★⯪☆☆☆ (3점)</option>
+                                        <option value="2" ${rev.rating == 2 ? 'selected' : ''}>★☆☆☆☆ (2점)</option>
+                                        <option value="1" ${rev.rating == 1 ? 'selected' : ''}>⯪☆☆☆☆ (1점)</option>
                                     </select>
                                 </div>
-                                <textarea name="content" class="edit-textarea" rows="3" placeholder="수정할 관람평 내용을 입력하세요" required>${rev.content}</textarea>
-                                
-                                <div class="edit-btn-group">
-                                    <button type="button" class="btn-edit-cancel" onclick="toggleEditForm(${rev.reviewId});">취소</button>
-                                    <button type="submit" class="btn-edit-submit">수정 완료</button>
-                                </div>
+                                <textarea name="content" class="edit-textarea" rows="3" 
+								          placeholder="수정할 관람평 내용을 입력하세요" 
+								          oninput="updateCharCount(this, 'editCount-${rev.reviewId}')" maxlength="1000" required>${rev.content}</textarea>
+								
+								<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+								    <div style="font-size: 12px; color: #777;">
+								        <span id="editCount-${rev.reviewId}">${fn:length(rev.content)}</span> / 1000자
+								    </div>
+								    <div class="edit-btn-group" style="margin-top: 0;">
+								        <button type="button" class="btn-edit-cancel" onclick="toggleEditForm(${rev.reviewId});">취소</button>
+								        <button type="submit" class="btn-edit-submit">수정 완료</button>
+								    </div>
+								</div>
                             </form>
                         </c:if>
                     </div>
@@ -795,4 +831,20 @@
             content.style.display = "block";
         }
     }
+    
+    /* 글자 수 실시간 계산 공통 함수 */
+    function updateCharCount(textarea, countDisplayId) {
+        var countSpan = document.getElementById(countDisplayId);
+        if (!countSpan) return;
+        
+        var len = textarea.value.length;
+        countSpan.textContent = len;
+        
+        if (len >= 1000) {
+            countSpan.style.color = "#e50914"; // 1000자 도달 시 경고 빨간색
+        } else {
+            countSpan.style.color = "#777";
+        }
+    }
+    
 </script>
