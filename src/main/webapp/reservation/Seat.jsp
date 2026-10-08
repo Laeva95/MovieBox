@@ -381,6 +381,205 @@ body {
 
 
 /* =========================================
+   AI 좌석 추천
+========================================= */
+
+.ai-seat-box {
+
+    width: 700px;
+
+    margin: 35px auto 0;
+
+    padding: 25px;
+
+    box-sizing: border-box;
+
+    background-color: #151515;
+
+    border: 1px solid #2c2c2c;
+
+    border-radius: 8px;
+
+}
+
+
+.ai-seat-title {
+
+    text-align: center;
+
+    color: #e50914;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+}
+
+
+.ai-seat-subtitle {
+
+    margin-top: 8px;
+
+    text-align: center;
+
+    color: #888;
+
+    font-size: 13px;
+
+}
+
+
+.ai-seat-options {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 20px;
+
+    margin-top: 20px;
+
+}
+
+
+.ai-option {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+}
+
+
+.ai-option label {
+
+    color: #aaa;
+
+    font-size: 12px;
+
+}
+
+
+.ai-option select {
+
+    width: 150px;
+
+    height: 38px;
+
+    padding: 0 10px;
+
+    border: 1px solid #333;
+
+    border-radius: 5px;
+
+    background-color: #222;
+
+    color: white;
+
+    outline: none;
+
+}
+
+
+.ai-option select:focus {
+
+    border-color: #e50914;
+
+}
+
+
+.ai-recommend-button {
+
+    display: block;
+
+    width: 220px;
+
+    margin: 20px auto 0;
+
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background-color: #e50914;
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+
+.ai-recommend-button:hover {
+
+    background-color: #b20710;
+
+}
+
+
+.ai-seat-result {
+
+    margin-top: 18px;
+
+    padding: 15px;
+
+    background-color: #202020;
+
+    border-radius: 6px;
+
+    color: #ddd;
+
+    text-align: center;
+
+    font-size: 14px;
+
+}
+
+
+.apply-recommend-button {
+
+    display: none;
+
+    width: 220px;
+
+    margin: 12px auto 0;
+
+    padding: 11px;
+
+    border: 1px solid #e50914;
+
+    border-radius: 6px;
+
+    background-color: transparent;
+
+    color: #e50914;
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+
+.apply-recommend-button:hover {
+
+    background-color: #e50914;
+
+    color: white;
+
+}
+
+
+/* =========================================
    선택 정보
 ========================================= */
 
@@ -579,6 +778,77 @@ body {
 
 }
 
+
+/* =========================================
+   반응형
+========================================= */
+
+@media (max-width: 1050px) {
+
+    .seat-container {
+
+        width: 95%;
+
+    }
+
+
+    .screen,
+    .selected-info,
+    .ai-seat-box {
+
+        width: 100%;
+
+    }
+
+}
+
+
+@media (max-width: 750px) {
+
+    .seat-container {
+
+        padding: 20px;
+
+    }
+
+
+    .seat-row {
+
+        gap: 4px;
+
+    }
+
+
+    .seat {
+
+        width: 28px;
+
+        height: 28px;
+
+    }
+
+
+    .seat label {
+
+        width: 28px;
+
+        height: 28px;
+
+        font-size: 8px;
+
+    }
+
+
+    .ai-seat-options {
+
+        flex-direction: column;
+
+        align-items: center;
+
+    }
+
+}
+
 </style>
 
 </head>
@@ -592,8 +862,11 @@ body {
 ========================================= -->
 
 <button
+
     type="button"
+
     class="close-button"
+
     onclick="history.back();">
 
     ×
@@ -659,6 +932,7 @@ body {
     // ====================================================
 
     if (message != null
+
             && !message.trim().isEmpty()) {
 
 %>
@@ -807,6 +1081,7 @@ body {
     // ====================================================
 
     String[] rows =
+
             {"A", "B", "C", "D", "E"};
 
 
@@ -837,6 +1112,7 @@ body {
 
 
             String seatNumber =
+
                     row + i;
 
 
@@ -922,6 +1198,169 @@ body {
     }
 
 %>
+
+
+        </div>
+
+
+        <!-- =========================================
+             AI 좌석 추천
+        ========================================== -->
+
+        <div class="ai-seat-box">
+
+
+            <div class="ai-seat-title">
+
+                🤖 AI 좌석 추천
+
+            </div>
+
+
+            <div class="ai-seat-subtitle">
+
+                관람 인원과 선호 위치를 선택하면
+                추천 좌석을 알려드립니다.
+
+            </div>
+
+
+            <div class="ai-seat-options">
+
+
+                <div class="ai-option">
+
+                    <label for="peopleCount">
+
+                        관람 인원
+
+                    </label>
+
+
+                    <select id="peopleCount">
+
+                        <option value="1">
+
+                            1명
+
+                        </option>
+
+
+                        <option value="2">
+
+                            2명
+
+                        </option>
+
+
+                        <option value="3">
+
+                            3명
+
+                        </option>
+
+
+                        <option value="4">
+
+                            4명
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="ai-option">
+
+                    <label for="seatPreference">
+
+                        선호 위치
+
+                    </label>
+
+
+                    <select id="seatPreference">
+
+                        <option value="center">
+
+                            가운데
+
+                        </option>
+
+
+                        <option value="front">
+
+                            앞쪽
+
+                        </option>
+
+
+                        <option value="back">
+
+                            뒤쪽
+
+                        </option>
+
+
+                        <option value="left">
+
+                            왼쪽
+
+                        </option>
+
+
+                        <option value="right">
+
+                            오른쪽
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+            </div>
+
+
+            <button
+
+                type="button"
+
+                class="ai-recommend-button"
+
+                onclick="recommendSeats();">
+
+                AI 좌석 추천
+
+            </button>
+
+
+            <div
+
+                id="aiSeatResult"
+
+                class="ai-seat-result">
+
+                추천 좌석이 여기에 표시됩니다.
+
+            </div>
+
+
+            <button
+
+                type="button"
+
+                id="applyRecommendButton"
+
+                class="apply-recommend-button"
+
+                onclick="applyRecommendedSeats();">
+
+                추천 좌석 선택
+
+            </button>
 
 
         </div>
@@ -1060,9 +1499,17 @@ var SEAT_PRICE = <%= seatPrice %>;
 ========================================= */
 
 var seatInputs =
+
         document.querySelectorAll(
             'input[name="seatNumber"]'
         );
+
+
+/* =========================================
+   추천 좌석
+========================================= */
+
+var recommendedSeats = [];
 
 
 /* =========================================
@@ -1070,14 +1517,21 @@ var seatInputs =
 ========================================= */
 
 for (
+
     var i = 0;
+
     i < seatInputs.length;
+
     i++
+
 ) {
 
     seatInputs[i].addEventListener(
+
         "change",
+
         updateSeatInfo
+
     );
 
 }
@@ -1089,14 +1543,20 @@ for (
 
 function getSelectedSeats() {
 
+
     var selectedSeats = [];
 
 
     for (
+
         var i = 0;
+
         i < seatInputs.length;
+
         i++
+
     ) {
+
 
         if (seatInputs[i].checked) {
 
@@ -1120,11 +1580,10 @@ function getSelectedSeats() {
 
 function updateSeatInfo() {
 
+
     var selectedSeats =
             getSelectedSeats();
 
-
-    /* 선택 좌석 수 */
 
     var selectedCount =
             document.getElementById(
@@ -1139,8 +1598,6 @@ function updateSeatInfo() {
 
     }
 
-
-    /* 좌석 이름 */
 
     var selectedSeatsElement =
             document.getElementById(
@@ -1161,8 +1618,6 @@ function updateSeatInfo() {
     }
 
 
-    /* 총 금액 */
-
     var totalPrice =
             selectedSeats.length
             * SEAT_PRICE;
@@ -1182,8 +1637,6 @@ function updateSeatInfo() {
     }
 
 
-    /* 결제 버튼 */
-
     var paymentButton =
             document.getElementById(
                 "paymentButton"
@@ -1201,10 +1654,571 @@ function updateSeatInfo() {
 
 
 /* =========================================
+   추천 좌석 정렬
+========================================= */
+
+function sortSeatCandidates(
+        candidates,
+        preference) {
+
+
+    candidates.sort(
+
+        function(a, b) {
+
+
+            var scoreA =
+                    getSeatScore(
+                        a,
+                        preference
+                    );
+
+
+            var scoreB =
+                    getSeatScore(
+                        b,
+                        preference
+                    );
+
+
+            return scoreB - scoreA;
+
+        }
+
+    );
+
+}
+
+
+/* =========================================
+   좌석 점수 계산
+========================================= */
+
+function getSeatScore(
+        seatNumber,
+        preference) {
+
+
+    var row =
+            seatNumber.charAt(0);
+
+
+    var number =
+            parseInt(
+                seatNumber.substring(1)
+            );
+
+
+    var score = 0;
+
+
+    /* 가운데 */
+
+    if (
+        number >= 8
+        &&
+        number <= 13
+    ) {
+
+        score += 20;
+
+    }
+
+
+    /* 중앙 행 */
+
+    if (row === "C") {
+
+        score += 20;
+
+    }
+
+
+    /* 선호 위치 */
+
+    if (
+        preference === "center"
+        &&
+        number >= 8
+        &&
+        number <= 13
+    ) {
+
+        score += 50;
+
+    }
+
+
+    if (
+        preference === "front"
+        &&
+        (
+            row === "A"
+            ||
+            row === "B"
+        )
+    ) {
+
+        score += 50;
+
+    }
+
+
+    if (
+        preference === "back"
+        &&
+        (
+            row === "D"
+            ||
+            row === "E"
+        )
+    ) {
+
+        score += 50;
+
+    }
+
+
+    if (
+        preference === "left"
+        &&
+        number <= 7
+    ) {
+
+        score += 50;
+
+    }
+
+
+    if (
+        preference === "right"
+        &&
+        number >= 14
+    ) {
+
+        score += 50;
+
+    }
+
+
+    return score;
+
+}
+
+
+/* =========================================
+   연속 좌석 찾기
+========================================= */
+
+function findConsecutiveSeats(
+        availableSeats,
+        peopleCount,
+        preference) {
+
+
+    var rows =
+            ["A", "B", "C", "D", "E"];
+
+
+    var possibleGroups = [];
+
+
+    for (
+        var r = 0;
+        r < rows.length;
+        r++
+    ) {
+
+
+        var rowSeats = [];
+
+
+        for (
+            var i = 0;
+            i < availableSeats.length;
+            i++
+        ) {
+
+
+            if (
+                availableSeats[i].charAt(0)
+                ===
+                rows[r]
+            ) {
+
+                rowSeats.push(
+                    availableSeats[i]
+                );
+
+            }
+
+        }
+
+
+        rowSeats.sort(
+
+            function(a, b) {
+
+                return parseInt(
+                    a.substring(1)
+                )
+                -
+                parseInt(
+                    b.substring(1)
+                );
+
+            }
+
+        );
+
+
+        for (
+            var start = 0;
+            start <= rowSeats.length - peopleCount;
+            start++
+        ) {
+
+
+            var group = [];
+
+            var valid = true;
+
+
+            for (
+                var k = 0;
+                k < peopleCount;
+                k++
+            ) {
+
+
+                var currentNumber =
+
+                        parseInt(
+                            rowSeats[start]
+                                .substring(1)
+                        )
+                        +
+                        k;
+
+
+                var currentSeat =
+
+                        rows[r]
+                        +
+                        currentNumber;
+
+
+                if (
+                    rowSeats.indexOf(
+                        currentSeat
+                    ) === -1
+                ) {
+
+                    valid = false;
+
+                    break;
+
+                }
+
+
+                group.push(
+                    currentSeat
+                );
+
+            }
+
+
+            if (valid) {
+
+                var groupScore = 0;
+
+
+                for (
+                    var j = 0;
+                    j < group.length;
+                    j++
+                ) {
+
+                    groupScore +=
+                            getSeatScore(
+                                group[j],
+                                preference
+                            );
+
+                }
+
+
+                possibleGroups.push({
+
+                    seats:
+                            group,
+
+                    score:
+                            groupScore
+
+                });
+
+            }
+
+        }
+
+    }
+
+
+    possibleGroups.sort(
+
+        function(a, b) {
+
+            return b.score - a.score;
+
+        }
+
+    );
+
+
+    if (
+        possibleGroups.length > 0
+    ) {
+
+        return possibleGroups[0].seats;
+
+    }
+
+
+    return [];
+
+}
+
+
+/* =========================================
+   AI 좌석 추천
+========================================= */
+
+function recommendSeats() {
+
+
+    var peopleCount =
+
+            parseInt(
+                document.getElementById(
+                    "peopleCount"
+                ).value
+            );
+
+
+    var preference =
+
+            document.getElementById(
+                "seatPreference"
+            ).value;
+
+
+    var availableSeats = [];
+
+
+    /* 사용 가능한 좌석 수집 */
+
+    for (
+
+        var i = 0;
+
+        i < seatInputs.length;
+
+        i++
+
+    ) {
+
+
+        if (!seatInputs[i].disabled) {
+
+            availableSeats.push(
+                seatInputs[i].value
+            );
+
+        }
+
+    }
+
+
+    /* 좌석 부족 */
+
+    if (
+        availableSeats.length
+        <
+        peopleCount
+    ) {
+
+
+        recommendedSeats = [];
+
+
+        document.getElementById(
+            "aiSeatResult"
+        ).innerText =
+
+            "현재 선택 가능한 좌석이 부족합니다.";
+
+
+        document.getElementById(
+            "applyRecommendButton"
+        ).style.display =
+
+            "none";
+
+
+        return;
+
+    }
+
+
+    /* 연속 좌석 우선 */
+
+    recommendedSeats =
+
+            findConsecutiveSeats(
+                availableSeats,
+                peopleCount,
+                preference
+            );
+
+
+    /* 연속 좌석이 없는 경우 */
+
+    if (
+        recommendedSeats.length
+        !==
+        peopleCount
+    ) {
+
+
+        var scoredSeats =
+                availableSeats.slice();
+
+
+        sortSeatCandidates(
+            scoredSeats,
+            preference
+        );
+
+
+        recommendedSeats =
+
+                scoredSeats.slice(
+                    0,
+                    peopleCount
+                );
+
+    }
+
+
+    /* 추천 결과 */
+
+    document.getElementById(
+        "aiSeatResult"
+    ).innerText =
+
+        "AI 추천 좌석 : "
+        +
+        recommendedSeats.join(", ");
+
+
+    document.getElementById(
+        "applyRecommendButton"
+    ).style.display =
+
+        "block";
+
+}
+
+
+/* =========================================
+   추천 좌석 실제 선택
+========================================= */
+
+function applyRecommendedSeats() {
+
+
+    if (
+        recommendedSeats.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    /* 기존 선택 해제 */
+
+    for (
+
+        var i = 0;
+
+        i < seatInputs.length;
+
+        i++
+
+    ) {
+
+
+        if (!seatInputs[i].disabled) {
+
+            seatInputs[i].checked =
+                    false;
+
+        }
+
+    }
+
+
+    /* 추천 좌석 선택 */
+
+    for (
+
+        var i = 0;
+
+        i < recommendedSeats.length;
+
+        i++
+
+    ) {
+
+
+        var seatElement =
+
+                document.getElementById(
+                    "seat_"
+                    +
+                    recommendedSeats[i]
+                );
+
+
+        if (
+            seatElement != null
+            &&
+            !seatElement.disabled
+        ) {
+
+            seatElement.checked =
+                    true;
+
+        }
+
+    }
+
+
+    /* 정보 갱신 */
+
+    updateSeatInfo();
+
+}
+
+
+/* =========================================
    결제 페이지 이동
 ========================================= */
 
 function goPayment() {
+
 
     var selectedSeats =
             getSelectedSeats();
@@ -1212,44 +2226,57 @@ function goPayment() {
 
     /* 좌석 선택 확인 */
 
-    if (selectedSeats.length === 0) {
+    if (
+        selectedSeats.length === 0
+    ) {
+
 
         alert(
             "좌석을 선택해주세요."
         );
+
 
         return false;
 
     }
 
 
-    /* 금액 계산 */
+    /* 총 금액 */
 
     var totalPrice =
+
             selectedSeats.length
-            * SEAT_PRICE;
+            *
+            SEAT_PRICE;
 
 
-    /* 좌석 정보 전달 */
+    /* 좌석 정보 */
 
     var seatsElement =
+
             document.getElementById(
                 "seats"
             );
 
 
     var amountElement =
+
             document.getElementById(
                 "amount"
             );
 
 
-    if (seatsElement == null
-            || amountElement == null) {
+    if (
+        seatsElement == null
+        ||
+        amountElement == null
+    ) {
+
 
         alert(
             "결제 정보를 전달할 수 없습니다."
         );
+
 
         return false;
 
@@ -1257,10 +2284,12 @@ function goPayment() {
 
 
     seatsElement.value =
+
             selectedSeats.join(",");
 
 
     amountElement.value =
+
             totalPrice;
 
 
