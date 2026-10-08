@@ -177,7 +177,6 @@
             검색
         </button>
 
-    </form>
 
 </div>
       <!-- 필터와 정렬 폼 -->
@@ -293,28 +292,14 @@
 				    boolean isFavorite =
 				            favoriteMovieIds.contains(movie.getMovieId());
 				%>
-				<!-- 관심영화 추가/삭제 폼 -->
-				<form method="post"
-				      action="${pageContext.request.contextPath}/movies/Favorite.do"
-				      onclick="event.stopPropagation();">
-				
-				    <input type="hidden"
-				           name="movieId"
-				           value="<%= movie.getMovieId() %>">
-				
-				    <input type="hidden"
-				           name="favoriteAction"
-				           value="<%= isFavorite ? "remove" : "add" %>">
-				
-				    <button type="submit"
-				            class="favorite-btn <%= isFavorite ? "active" : "" %>"
-				            onclick="event.stopPropagation();">
-				
-				        <%= isFavorite ? "♥" : "♡" %>
-				
-				    </button>
-				
-				</form>
+					<!-- 관심영화 찜 버튼 (비동기 처리) -->
+					<button type="button"
+					        class="favorite-btn <%= isFavorite ? "active" : "" %>"
+					        id="fav-btn-<%= movie.getMovieId() %>"
+					        onclick="event.stopPropagation(); toggleFavorite(<%= movie.getMovieId() %>);">
+					    <%= isFavorite ? "♥" : "♡" %>
+					</button>
+									</form>
 
 <%-- 
    [3단계] DB에서 따온 진짜 포스터 주소값 출력 핵심부!
@@ -378,5 +363,46 @@
 <!-- 영화 카드 목록 그리드 영역 끝 -->
  
     </section>
+    
+    <script>
+function toggleFavorite(movieId) {
+    const contextPath = "${pageContext.request.contextPath}";
+    
+    fetch(contextPath + "/movies/Favorite.do?movieId=" + movieId, {
+        method: "POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "unauthorized") {
+            alert("로그인 후 이용할 수 있습니다.");
+            location.href = contextPath + "/member/login.do";
+            return;
+        }
+
+        const btn = document.getElementById("fav-btn-" + movieId);
+        if (!btn) return;
+
+        if (data.success) {
+            if (data.status === "added") {
+                btn.classList.add("active");
+                btn.innerText = "♥";
+            } else if (data.status === "removed") {
+                btn.classList.remove("active");
+                btn.innerText = "♡";
+            }
+        } else {
+            alert("처리에 실패했습니다.");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("오류가 발생했습니다.");
+    });
+}
+</script>
+    
   </main>
 
