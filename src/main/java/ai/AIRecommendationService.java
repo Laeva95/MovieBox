@@ -21,6 +21,8 @@ public class AIRecommendationService {
     private static final String MODEL =
             "nvidia/nemotron-3-ultra-550b-a55b:free";
 
+    private static final int MAX_RETRY = 3;
+
     private static final String API_KEY =
             getApiKey();
 
@@ -161,96 +163,244 @@ public class AIRecommendationService {
                         )
                         .build();
 
-        HttpRequest request =
-                HttpRequest.newBuilder()
-                        .uri(
-                                URI.create(API_URL)
-                        )
-                        .timeout(
-                                Duration.ofSeconds(60)
-                        )
-                        .header(
-                                "Content-Type",
-                                "application/json"
-                        )
-                        .header(
-                                "Authorization",
-                                "Bearer " + API_KEY
-                        )
-                        .header(
-                                "HTTP-Referer",
-                                "http://localhost"
-                        )
-                        .header(
-                                "X-Title",
-                                "MovieBox"
-                        )
-                        .POST(
-                                HttpRequest.BodyPublishers.ofString(
-                                        jsonBody,
+        Exception lastException = null;
+
+        for (int attempt = 1;
+                attempt <= MAX_RETRY;
+                attempt++) {
+
+            try {
+
+                System.out.println(
+                        "OpenRouter 요청 시도 = "
+                        + attempt
+                        + "/"
+                        + MAX_RETRY
+                );
+
+                HttpRequest request =
+                        HttpRequest.newBuilder()
+                                .uri(
+                                        URI.create(API_URL)
+                                )
+                                .timeout(
+                                        Duration.ofSeconds(60)
+                                )
+                                .header(
+                                        "Content-Type",
+                                        "application/json"
+                                )
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + API_KEY
+                                )
+                                .header(
+                                        "HTTP-Referer",
+                                        "http://localhost"
+                                )
+                                .header(
+                                        "X-Title",
+                                        "MovieBox"
+                                )
+                                .POST(
+                                        HttpRequest.BodyPublishers.ofString(
+                                                jsonBody,
+                                                StandardCharsets.UTF_8
+                                        )
+                                )
+                                .build();
+
+                HttpResponse<String> response =
+                        client.send(
+                                request,
+                                HttpResponse.BodyHandlers.ofString(
                                         StandardCharsets.UTF_8
                                 )
-                        )
-                        .build();
+                        );
 
-        HttpResponse<String> response =
-                client.send(
-                        request,
-                        HttpResponse.BodyHandlers.ofString(
-                                StandardCharsets.UTF_8
-                        )
+                System.out.println(
+                        "OpenRouter 상태 코드 = "
+                        + response.statusCode()
                 );
 
-        System.out.println(
-                "OpenRouter 상태 코드 = "
-                + response.statusCode()
-        );
-
-        System.out.println(
-                "OpenRouter 응답 = "
-                + response.body()
-        );
-
-        if (response.statusCode() < 200
-                || response.statusCode() >= 300) {
-
-            throw new Exception(
-                    "OpenRouter API 호출 실패 : "
-                    + response.statusCode()
-            );
-        }
-
-        if (response.body() == null
-                || response.body().contains(
-                        "\"error\""
-                )) {
-
-            throw new Exception(
-                    "OpenRouter에서 AI 응답을 받지 못했습니다."
-            );
-        }
-
-        String result =
-                extractContent(
-                        response.body()
+                System.out.println(
+                        "OpenRouter 응답 = "
+                        + response.body()
                 );
 
-        if (result == null
-                || result.trim().isEmpty()) {
+                int statusCode =
+                        response.statusCode();
 
-            throw new Exception(
-                    "AI 응답을 가져오지 못했습니다."
-            );
+                String responseBody =
+                        response.body();
+
+                if (statusCode >= 200
+                        && statusCode < 300) {
+
+                    if (responseBody == null
+                            || responseBody.trim().isEmpty()) {
+
+                        throw new Exception(
+                                "OpenRouter 응답 내용이 없습니다."
+                        );
+                    }
+
+                    if (responseBody.contains(
+                            "\"error\""
+                    )) {
+
+                        if (isRetryableError(
+                                responseBody
+                        )
+                                && attempt < MAX_RETRY) {
+
+                            waitBeforeRetry(attempt);
+
+                            continue;
+                        }
+
+                        throw new Exception(
+                                "OpenRouter에서 AI 응답을 받지 못했습니다."
+                        );
+                    }
+
+                    String result =
+                            extractContent(
+                                    responseBody
+                            );
+
+                    if (result != null
+                            && !result.trim().isEmpty()) {
+
+                        System.out.println(
+                                "OpenRouter AI 응답 성공"
+                        );
+
+                        return result.trim();
+                    }
+
+                    throw new Exception(
+                            "AI 응답을 가져오지 못했습니다."
+                    );
+                }
+
+                if (isRetryableStatus(
+                        statusCode
+                )
+                        && attempt < MAX_RETRY) {
+
+                    waitBeforeRetry(attempt);
+
+                    continue;
+                }
+
+                throw new Exception(
+                        "OpenRouter API 호출 실패 : "
+                        + statusCode
+                );
+
+            } catch (Exception e) {
+
+                lastException = e;
+
+                if (attempt >= MAX_RETRY) {
+                    break;
+                }
+
+                String message =
+                        e.getMessage();
+
+                if (message != null
+                        && (
+                            message.contains("503")
+                            || message.contains("429")
+                            || message.contains("500")
+                            || message.contains("502")
+                            || message.contains("504")
+                        )) {
+
+                    waitBeforeRetry(attempt);
+
+                } else {
+
+                    break;
+                }
+            }
         }
 
-        System.out.println(
-                "OpenRouter AI 응답 성공"
-        );
+        if (lastException != null) {
 
-        return result.trim();
+            throw lastException;
+        }
+
+        throw new Exception(
+                "OpenRouter AI 요청에 실패했습니다."
+        );
     }
 
-    private String escapeJson(String value) {
+    private boolean isRetryableStatus(
+            int statusCode) {
+
+        return statusCode == 429
+                || statusCode == 500
+                || statusCode == 502
+                || statusCode == 503
+                || statusCode == 504;
+    }
+
+    private boolean isRetryableError(
+            String responseBody) {
+
+        if (responseBody == null) {
+            return false;
+        }
+
+        return responseBody.contains(
+                    "provider_overloaded"
+                )
+                || responseBody.contains(
+                    "\"code\":503"
+                )
+                || responseBody.contains(
+                    "\"code\":429"
+                )
+                || responseBody.contains(
+                    "temporarily overloaded"
+                )
+                || responseBody.contains(
+                    "rate limit"
+                );
+    }
+
+    private void waitBeforeRetry(
+            int attempt) {
+
+        try {
+
+            long waitTime =
+                    attempt == 1
+                            ? 2000
+                            : 4000;
+
+            System.out.println(
+                    "OpenRouter 일시적 오류"
+                    + " → "
+                    + (waitTime / 1000)
+                    + "초 후 재시도"
+            );
+
+            Thread.sleep(
+                    waitTime
+            );
+
+        } catch (InterruptedException e) {
+
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private String escapeJson(
+            String value) {
 
         if (value == null) {
             return "";
@@ -286,7 +436,8 @@ public class AIRecommendationService {
         return result;
     }
 
-    private String extractContent(String json) {
+    private String extractContent(
+            String json) {
 
         if (json == null
                 || json.trim().isEmpty()) {
@@ -380,3 +531,4 @@ public class AIRecommendationService {
         return result.toString();
     }
 }
+
