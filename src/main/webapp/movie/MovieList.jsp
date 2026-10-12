@@ -147,7 +147,7 @@
   <main style="padding-top: 112px;">
     <section class="inner-container section-wrap" style="margin-top: 40px; margin-bottom: 80px;">
       <div class="section-head">
-        <h2 class="section-title">현재 상영 중인 영화 (총 <%= movieList != null ? movieList.size() : 0 %>편)</h2>
+        <h2 class="section-title"> 현재 상영 중인 영화 </h2>
       </div>
       <!-- 영화 검색 -->
 <div class="search-container">
