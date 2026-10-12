@@ -51,7 +51,22 @@
                                 예매번호 : ${item.reservation.reservationId}
                             </div>
                         </div>
-
+                        <c:url var="ticketUrl" value="/reservation/MobileTicket.jsp">
+						    <c:param name="memberId" value="${item.reservation.memberId}" />
+						    <c:param name="reservationId" value="${item.reservation.reservationId}" />
+						    <c:param name="movieId" value="${item.movie.movieId}" />
+						    <c:param name="screeningId" value="${item.reservation.screeningId}" />
+						    <c:param name="seats" value="${item.reservation.seatNumber}" />
+						    <c:param name="reservationDate" value="${item.reservation.reservationDate}" />
+						    <c:param name="amount" value="10000" />
+						</c:url>
+                        <div class="reservation-action">
+						    <button type="button"
+						            class="reservation-cancel-button"
+						            onclick="location.href='${ticketUrl}'">
+						        모바일 티켓
+						    </button>
+						</div>
                         <div class="reservation-action">
                             <form action="${pageContext.request.contextPath}/member/CancelReservation.do"
                                   method="post"
