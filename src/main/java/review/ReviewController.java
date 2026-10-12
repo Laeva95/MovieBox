@@ -17,7 +17,7 @@ import javax.servlet.http.HttpSession;
 import movie.MovieDAO;
 import movie.MovieDTO;
 
-@WebServlet({"/review/main.do", "/review/list.do", "/review/write.do", "/review/delete.do", "/review/update.do"})
+@WebServlet({"/review/main.do", "/review/list.do", "/review/write.do", "/review/delete.do", "/review/update.do", "/review/like.do"})
 public class ReviewController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
@@ -88,8 +88,10 @@ public class ReviewController extends HttpServlet {
 
 			String loginId = getLoginMemberId(session);
 			boolean isAudience = false;
+			boolean hasReviewed = false;
 			if (loginId != null) {
 				isAudience = reviewService.isVerifiedAudience(loginId, movieId);
+				hasReviewed = reviewService.hasUserReviewed(loginId, movieId);
 			}
 
 			request.setAttribute("movie", movie);
@@ -97,6 +99,7 @@ public class ReviewController extends HttpServlet {
 			request.setAttribute("reviewList", reviewList);
 			request.setAttribute("avgRating", avgRating);
 			request.setAttribute("isAudience", isAudience);
+			request.setAttribute("hasReviewed", hasReviewed);
 
 			request.setAttribute("center", "/review/reviewSection.jsp");
 			RequestDispatcher rd = request.getRequestDispatcher("/Index.jsp");
@@ -182,6 +185,26 @@ public class ReviewController extends HttpServlet {
 				out.println("<script>alert('수정 권한이 없거나 실패했습니다.'); history.back();</script>");
 			}
 
+		//====================================================
+	    // [기능 5] 관람평 좋아요 비동기(AJAX) 처리 (/review/like.do)
+		//====================================================
+		} else if (servletPath.equals("/review/like.do")) {	
+				String reviewIdParam = request.getParameter("reviewId");
+				int reviewId = (reviewIdParam != null && !reviewIdParam.isEmpty()) ? Integer.parseInt(reviewIdParam) : 0;
+				
+				int newLikes = reviewService.likeReview(reviewId);
+				
+				//JSON 형태로 결과 응답
+				response.setContentType("application/json; charset=UTF-8");
+				PrintWriter out = response.getWriter();
+				if (newLikes >= 0) {
+						out.print("{\"status\":\"success\", \"likeCount\":" + newLikes + "}");
+				} else {
+						out.print("{\"status\":\"fail\"}");
+				}
+				out.flush();
+				return;
+	
 		// ===============================================
 		// 그 외 잘못된 요청 경로
 		// ===============================================
