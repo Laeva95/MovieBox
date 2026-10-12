@@ -23,173 +23,162 @@ public class MovieController extends HttpServlet {
     }
 
     private void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	request.setCharacterEncoding("UTF-8");                 // 손님이 보낸 한글이 깨지지 않게 UTF-8 로 읽는다
-		response.setContentType("text/html;charset=UTF-8");    // 돌려줄 결과는 HTML, 한글은 UTF-8
-		
-		// 2단계 요청 주소  예) /CarProject/member/join.me  ->  "/join.me"
-		String action = request.getPathInfo(); // @WebServlet 의 /member 뒷부분만 꺼낸다
-		System.out.println("[MovieController] 요청 주소 : " + action);
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+        
+        String action = request.getPathInfo();
+        System.out.println("[MovieController] 요청 주소 : " + action);
 
-		PrintWriter out = response.getWriter();                // 브라우저로 글자를 써 보낼 펜
+        PrintWriter out = response.getWriter();
+        HttpSession session = request.getSession();
+        String loginId = (String) session.getAttribute("id");
 
-		// 세션에 저장된 로그인 아이디 (로그인 안 했으면 null)
-		// (덧붙임) 세션 = 서버가 손님마다 하나씩 만들어 주는 보관함. 로그인하면 여기에 "id" 를 넣어 둔다
-		HttpSession session = request.getSession();
-		String loginId = (String) session.getAttribute("id"); // (String) = 꺼낸 값을 글자 자료형으로 바꿔 받는다
-
-		// 화면 이동할 JSP 주소 (null 이면 아래에서 404 처리)
-		String nextPage = null;
+        String nextPage = null;
         
         try {
-	        if("/MovieList.do".equals(action)) {
-		        // 1. 사용자 요청 파라미터 받기
-		        String country = request.getParameter("country");
-		        String genre = request.getParameter("genre");
-		        String sort = request.getParameter("sort");
-		        String searchKeyword = request.getParameter("searchKeyword");
-		     
-		        // 2. DAO를 통해 영화 목록 가져오기
-		        MovieDAO dao = new MovieDAO();
-		
-		        List<MovieDTO> movieList;
-		
-		        // 처음 들어왔을 때는 값이 없거나 "all"일 수 있으므로, 
-		        // 기본값(전체 보기, 기본 정렬)을 세팅해서 필터 메서드를 태웁니다.
-		        if (country == null || country.equals("")) { country = "all"; }
-		        if (genre == null || genre.equals("")) { genre = "all"; }
-		        if (sort == null || sort.equals("")) { sort = "date"; } // 기본값: 개봉순(date)
-		        if (searchKeyword == null) {searchKeyword = "";}
-		        // 무조건 필터 및 정렬 메서드를 호출하여 처음 접속 시에도 영화 목록이 쫙 뜨게 합니다!
-		        movieList = dao.getFilteredAndSortedMovieList(country, genre, sort, searchKeyword);
-		
-		        // 3. View(JSP)로 보낼 데이터를 request 영역에 저장
-		        request.setAttribute("movieList", movieList);
-		        request.setAttribute("country", country);
-		        request.setAttribute("genre", genre);
-		        request.setAttribute("sort", sort);
-		        request.setAttribute("searchKeyword", searchKeyword);
-		       
-		        // 로그인한 회원의 찜한 영화 ID 목록 가져오기
-		        if (loginId != null) {
-		            List<Integer> favoriteMovieIds = dao.getFavoriteMovieIds(loginId);
-		            request.setAttribute("favoriteMovieIds", favoriteMovieIds);
-		        }
-		        
-				request.setAttribute("center", "movie/MovieList.jsp");
-				nextPage = "/Index.jsp";
-	        }else if("/MovieDetail.do".equals(action)) {
-	            // 1. 파라미터 받기 (movieId 또는 movie_id 둘 다 방어적으로 허용)
-	            String movieIdParam = request.getParameter("movieId");
-	            if (movieIdParam == null) {
-	                movieIdParam = request.getParameter("movie_id");
-	            }
-	            
-	            // 2. 컨트롤러에서 직접 DB 조회 수행
-	            if (movieIdParam != null && !movieIdParam.trim().isEmpty()) {
-	                int movieId = Integer.parseInt(movieIdParam);
-	                MovieDAO dao = new MovieDAO();
-	                MovieDTO movie = dao.getMovieDetails(movieId);
-	                
-	                // 3. request 영역에 데이터 담기
-	                request.setAttribute("movie", movie);
-	            }
-	            
-	            // 4. 상세 페이지로 포워딩
-	            request.setAttribute("center", "movie/MovieDetail.jsp");
-	            nextPage = "/Index.jsp";
-	        
-	        
-	        }else if ("/Favorite.do".equals(action)) {
+            if("/MovieList.do".equals(action)) {
+                // 1. 요청 파라미터 받기
+                String country = request.getParameter("country");
+                String genre = request.getParameter("genre");
+                String sort = request.getParameter("sort");
+                String searchKeyword = request.getParameter("searchKeyword");
+                
+                if (country == null || country.equals("")) { country = "all"; }
+                if (genre == null || genre.equals("")) { genre = "all"; }
+                if (sort == null || sort.equals("")) { sort = "date"; }
+                if (searchKeyword == null) { searchKeyword = ""; }
 
-	            // =====================================================
-	            // 영화 찜 기능 (AJAX & 동기 겸용 처리)
-	            // =====================================================
+                // 페이지 번호 받기
+                String pageNumStr = request.getParameter("pageNum");
+                int pageNum = 1;
+                if (pageNumStr != null && !pageNumStr.trim().isEmpty()) {
+                    try {
+                        pageNum = Integer.parseInt(pageNumStr);
+                    } catch (NumberFormatException e) {
+                        pageNum = 1;
+                    }
+                }
+                
+                int pageSize = 8;
+                MovieDAO dao = new MovieDAO();
 
-	            // 로그인 여부 확인
-	            if (loginId == null) {
-	                // AJAX 요청인지 확인 (헤더에 X-Requested-With: XMLHttpRequest가 포함되어 있는지 체크)
-	                String ajaxHeader = request.getHeader("X-Requested-With");
-	                if ("XMLHttpRequest".equals(ajaxHeader)) {
-	                    response.setContentType("application/json; charset=UTF-8");
-	                    out.write("{\"status\": \"unauthorized\"}");
-	                } else {
-	                    out.println("<script>");
-	                    out.println("alert('로그인 후 이용할 수 있습니다.');");
-	                    out.println("location.href='" + request.getContextPath() + "/member/login.do';");
-	                    out.println("</script>");
-	                }
-	                return;
-	            }
+                // 필터링된 전체 목록의 size로 정확한 totalCount 및 totalPage 계산
+                int totalCount = dao.getFilteredAndSortedMovieList(country, genre, sort, searchKeyword).size();
+                int totalPage = (int) Math.ceil((double) totalCount / pageSize);
+                if (totalPage == 0) totalPage = 1;
 
-	            // 영화 번호 받기 (파라미터 이름을 movieId 또는 movie_id 모두 대응 가능하게 처리)
-	            String movieIdParam = request.getParameter("movieId");
-	            if (movieIdParam == null) {
-	                movieIdParam = request.getParameter("movie_id");
-	            }
+                // 페이징된 영화 목록 가져오기
+                List<MovieDTO> movieList = dao.getPagingMovieList(country, genre, sort, searchKeyword, pageNum, pageSize);
 
-	            if (movieIdParam == null || movieIdParam.trim().equals("")) {
-	                response.setContentType("application/json; charset=UTF-8");
-	                out.write("{\"status\": \"error\", \"message\": \"영화 정보가 없습니다.\"}");
-	                return;
-	            }
+                // 데이터 저장
+                request.setAttribute("movieList", movieList);
+                request.setAttribute("country", country);
+                request.setAttribute("genre", genre);
+                request.setAttribute("sort", sort);
+                request.setAttribute("searchKeyword", searchKeyword);
+                request.setAttribute("totalPage", totalPage);
+                request.setAttribute("currentPage", pageNum);
 
-	            int movieId = Integer.parseInt(movieIdParam);
-	            MovieDAO dao = new MovieDAO();
+                if (loginId != null) {
+                    List<Integer> favoriteMovieIds = dao.getFavoriteMovieIds(loginId);
+                    request.setAttribute("favoriteMovieIds", favoriteMovieIds);
+                }
+                
+                request.setAttribute("center", "movie/MovieList.jsp");
+                nextPage = "/Index.jsp";
+                
+            } else if("/MovieDetail.do".equals(action)) {
+                // 1. 파라미터 받기
+                String movieIdParam = request.getParameter("movieId");
+                if (movieIdParam == null) {
+                    movieIdParam = request.getParameter("movie_id");
+                }
+                
+                // 2. DB 조회
+                if (movieIdParam != null && !movieIdParam.trim().isEmpty()) {
+                    int movieId = Integer.parseInt(movieIdParam);
+                    MovieDAO dao = new MovieDAO();
+                    MovieDTO movie = dao.getMovieDetails(movieId);
+                    request.setAttribute("movie", movie);
+                }
+                
+                // 3. 상세 페이지 포워딩 설정
+                request.setAttribute("center", "movie/MovieDetail.jsp");
+                nextPage = "/Index.jsp";
+                
+            } else if("/Favorite.do".equals(action)) {
+                if (loginId == null) {
+                    String ajaxHeader = request.getHeader("X-Requested-With");
+                    if ("XMLHttpRequest".equals(ajaxHeader)) {
+                        response.setContentType("application/json; charset=UTF-8");
+                        out.write("{\"status\": \"unauthorized\"}");
+                    } else {
+                        out.println("<script>");
+                        out.println("alert('로그인 후 이용할 수 있습니다.');");
+                        out.println("location.href='" + request.getContextPath() + "/member/login.do';");
+                        out.println("</script>");
+                    }
+                    return;
+                }
 
-	            // 현재 찜 상태 확인 후 토글
-	            boolean isFav = dao.isFavorite(loginId, movieId);
-	            int result = 0;
+                String movieIdParam = request.getParameter("movieId");
+                if (movieIdParam == null) {
+                    movieIdParam = request.getParameter("movie_id");
+                }
 
-	            response.setContentType("application/json; charset=UTF-8");
+                if (movieIdParam == null || movieIdParam.trim().equals("")) {
+                    response.setContentType("application/json; charset=UTF-8");
+                    out.write("{\"status\": \"error\", \"message\": \"영화 정보가 없습니다.\"}");
+                    return;
+                }
 
-	            if (isFav) {
-	                result = dao.removeFavorite(loginId, movieId);
-	                if (result > 0) {
-	                    out.write("{\"status\": \"removed\", \"success\": true}");
-	                } else {
-	                    out.write("{\"status\": \"removed\", \"success\": false}");
-	                }
-	            } else {
-	                result = dao.addFavorite(loginId, movieId);
-	                if (result > 0) {
-	                    out.write("{\"status\": \"added\", \"success\": true}");
-	                } else {
-	                    out.write("{\"status\": \"added\", \"success\": false}");
-	                }
-	            }
-	            return;
-	        
-				
-	        }else if ("/MovieUpdate.do".equals(action)) {
-				
-				// session에 저장된 id값이 admin인지 확인
-				if (session.getAttribute("id") == null || !session.getAttribute("id").equals("admin")) {
+                int movieId = Integer.parseInt(movieIdParam);
+                MovieDAO dao = new MovieDAO();
+                boolean isFav = dao.isFavorite(loginId, movieId);
+                int result = 0;
 
-				    out.println("<script>");
-				    out.println("alert('잘못된 요청입니다.');");
-				    out.println("history.back();");
-				    out.println("</script>");
-				    return;
-				}
-				MovieDAO dao = new MovieDAO();
+                response.setContentType("application/json; charset=UTF-8");
 
-		        // KMDb API에서 영화를 가져와
-		        // MySQL movie 테이블에 저장
-		        int count = dao.insertMovieListFromAPI();
+                if (isFav) {
+                    result = dao.removeFavorite(loginId, movieId);
+                    if (result > 0) {
+                        out.write("{\"status\": \"removed\", \"success\": true}");
+                    } else {
+                        out.write("{\"status\": \"removed\", \"success\": false}");
+                    }
+                } else {
+                    result = dao.addFavorite(loginId, movieId);
+                    if (result > 0) {
+                        out.write("{\"status\": \"added\", \"success\": true}");
+                    } else {
+                        out.write("{\"status\": \"added\", \"success\": false}");
+                    }
+                }
+                return;
+                
+            } else if("/MovieUpdate.do".equals(action)) {
+                if (session.getAttribute("id") == null || !session.getAttribute("id").equals("admin")) {
+                    out.println("<script>");
+                    out.println("alert('잘못된 요청입니다.');");
+                    out.println("history.back();");
+                    out.println("</script>");
+                    return;
+                }
+                MovieDAO dao = new MovieDAO();
+                int count = dao.insertMovieListFromAPI();
+                System.out.println("DB에 저장된 영화 수 : " + count);
+                
+                response.sendRedirect(request.getContextPath() + "/movies/MovieList.do");
+                return;
+            }
 
-		        System.out.println(
-		            "DB에 저장된 영화 수 : " + count
-		        );
-	        	
-		     // 영화 목록 페이지를 다시 요청
-		        response.sendRedirect(request.getContextPath() + "/movies/MovieList.do");
-
-		        return;
-	        }
-	        // 결과 화면으로 이동 (주소창은 그대로, 화면만 바뀐다)
-	        request.getRequestDispatcher(nextPage).forward(request, response);
-        }catch (Exception e) {
-			e.printStackTrace();
-		}
+            // 결과 화면으로 이동
+            if (nextPage != null) {
+                request.getRequestDispatcher(nextPage).forward(request, response);
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
