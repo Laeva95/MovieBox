@@ -693,7 +693,7 @@ function openMobileTicket() {
 
         "<%= request.getContextPath() %>"
         +
-        "/reservation/MobileTicket.jsp"
+        "/member/MobileTicket.do"
         +
         "?memberId="
         +
