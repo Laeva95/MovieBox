@@ -554,6 +554,31 @@
         border-color: #e50914;
         color: #ff4d4d;
     }
+    
+    /* 최신순 / 공감순 정렬 탭 버튼 스타일 */
+    .sort-tab-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+    }
+    .btn-sort {
+        color: #777;
+        text-decoration: none;
+        padding: 4px 10px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    .btn-sort:hover {
+        color: #ddd;
+    }
+    /* 현재 선택된 정렬 탭 하이라이트 */
+    .btn-sort.active {
+        color: #fff;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
 </style>
 
 <section class="movie-review-area">
@@ -725,11 +750,21 @@
     </div>
 
     <!-- 3. 리뷰 피드 목록 -->
-    <div class="review-list-title">
-        <span>실관람객 관람평</span>
-        <span class="review-count">${empty reviewList ? 0 : reviewList.size()}건</span>
-    </div>
-
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+    	<div class="review-list-title" style="margin-bottom: 0;">
+        	<span>실관람객 관람평</span>
+        	<span class="review-count">${empty reviewList ? 0 : reviewList.size()}건</span>
+   		</div>
+   		
+   		<!-- 최신순 / 공감순 전환 링크 탭 -->
+   		<div class="sort-tab-wrap">
+   			<a href="${pageContext.request.contextPath}/review/list.do?movieId=${movieId}&sort=recent"
+   			   class="btn-sort ${currentSort eq 'recent' ? 'active' : ''}">최신순</a>
+   			<span style="color: #444;">|</span>
+   			<a href="${pageContext.request.contextPath}/review/list.do?movieId=${movieId}&sort=likes"
+   			   class="btn-sort ${currentSort eq 'likes' ? 'active' : ''}">공감순</a>
+   		</div>
+	</div>
     <div class="review-feed">
         <c:choose>
             <c:when test="${empty reviewList}">
@@ -911,14 +946,29 @@
     
     /* 비동기 리뷰 공감(좋아요) 처리 */
     function likeReview(reviewId, btnElement) {
+    	//[광클 방지] 이미 비활성화된 버튼을 또 클릭한 경우 서버 통신을 차단
+    	if (btnElement.disabled) return;
+    	
     	fetch('${pageContext.request.contextPath}/review/like.do?reviewId=' + reviewId,{
     		method : 'GET'
     	})
     	.then(response => response.json())
     	.then(data => {
     		if (data.status === 'success') {
+    			//성공 : 화면의 공감 수 갱신 및 버튼 비활성화
     			document.getElementById('like-count-' + reviewId).innerText = data.likeCount;
     			btnElement.classList.add('liked');
+    			btnElement.disabled = true; //재클릭 방지
+    			btnElement.style.cursor = 'default';
+    		} else if (data.status === 'already_liked'){
+    			//세션 중복 : 이미 누른 리뷰 안내 후 버튼 비활성화
+    			alert('이미 공감하신 관람평입니다.');
+    			btnElement.classList.add('liked');
+    			btnElement.disabled = true;
+    		} else if (data.status === 'need_login'){
+    			//비로그인 : 로그인 페이지 이동
+    			alert('로그인이 필요한 서비스입니다.');
+    			location.href = '${pageContext.request.contextPath}/member/Login.do';
     		} else {
     			alert('좋아요 처리에 실패했습니다.');
     		}

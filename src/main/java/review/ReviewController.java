@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -80,10 +82,16 @@ public class ReviewController extends HttpServlet {
 			String movieIdParam = request.getParameter("movieId");
 			int movieId = (movieIdParam != null && !movieIdParam.isEmpty()) ? Integer.parseInt(movieIdParam) : 1;
 
+			//정렬 피라미터(sort) 수신 (전달값이 없거나 잘못되면 기본값 recent)
+			String sort = request.getParameter("sort");
+			if (sort == null || (!sort.equals("likes") && !sort.equals("recent"))) {
+					sort = "recent";
+			}
+			
 			MovieDAO movieDAO = new MovieDAO();
 			MovieDTO movie = movieDAO.getMovieDetails(movieId);
 
-			List<ReviewDTO> reviewList = reviewService.getMovieReviews(movieId);
+			List<ReviewDTO> reviewList = reviewService.getMovieReviews(movieId, sort);
 			double avgRating = reviewService.getMovieAvgRating(movieId);
 
 			String loginId = getLoginMemberId(session);
@@ -101,6 +109,9 @@ public class ReviewController extends HttpServlet {
 			request.setAttribute("isAudience", isAudience);
 			request.setAttribute("hasReviewed", hasReviewed);
 
+			//화면에서 [최신순]/[공감순] 중 어느 탭이 활성화되어 있는지 알 수 있도록 전달
+			request.setAttribute("currentSort", sort);
+			
 			request.setAttribute("center", "/review/reviewSection.jsp");
 			RequestDispatcher rd = request.getRequestDispatcher("/Index.jsp");
 			rd.forward(request, response);
@@ -189,22 +200,47 @@ public class ReviewController extends HttpServlet {
 	    // [기능 5] 관람평 좋아요 비동기(AJAX) 처리 (/review/like.do)
 		//====================================================
 		} else if (servletPath.equals("/review/like.do")) {	
-				String reviewIdParam = request.getParameter("reviewId");
-				int reviewId = (reviewIdParam != null && !reviewIdParam.isEmpty()) ? Integer.parseInt(reviewIdParam) : 0;
-				
-				int newLikes = reviewService.likeReview(reviewId);
-				
-				//JSON 형태로 결과 응답
-				response.setContentType("application/json; charset=UTF-8");
-				PrintWriter out = response.getWriter();
-				if (newLikes >= 0) {
-						out.print("{\"status\":\"success\", \"likeCount\":" + newLikes + "}");
-				} else {
-						out.print("{\"status\":\"fail\"}");
-				}
+			response.setContentType("application/json; charset=UTF-8");
+			PrintWriter out = response.getWriter();
+
+			//로그인 확인 (비로그인 상태면 차단)
+			String loginMemberId = getLoginMemberId(session);
+			if (loginMemberId == null) {
+				out.print("{\"status\":\"need_login\"}");
 				out.flush();
 				return;
+			}
+
+			String reviewIdParam = request.getParameter("reviewId");
+			int reviewId = (reviewIdParam != null && !reviewIdParam.isEmpty()) ? Integer.parseInt(reviewIdParam) : 0;
 	
+			//세션에서 사용자가 이미 공감을 누른 리뷰 번호 집합(Set)을 꺼냄
+			@SuppressWarnings("unchecked")
+			Set<Integer> likedReviews = (Set<Integer>) session.getAttribute("likedReviews");
+			if (likedReviews == null) {
+				likedReviews = new HashSet<>();
+				session.setAttribute("likedReviews", likedReviews); //처음 누를 때 세션 생성
+			}
+			
+			//이미 누른 적이 있는 리뷰라면 DB 증가 없이 차단
+			if (likedReviews.contains(reviewId)) {
+				out.print("{\"status\":\"already_liked\"}");
+				out.flush();
+				return;
+			}
+			
+			//신규 클릭인 경우 : DB의 좋아요 수 1 증가
+			int newLikes = reviewService.likeReview(reviewId);
+			if (newLikes >= 0) {
+				likedReviews.add(reviewId); //세션에 기록하여 재클릭 방지
+				out.print("{\"status\":\"success\", \"likeCount\":" + newLikes + "}");
+			} else {
+				out.print("{\"status\":\"fail\"}");
+			}
+			
+			out.flush();
+			return;
+			
 		// ===============================================
 		// 그 외 잘못된 요청 경로
 		// ===============================================
