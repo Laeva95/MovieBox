@@ -1,14 +1,11 @@
-
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="movie.MovieDTO" %>
 
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %> <!-- JSTL core 라이브러리 사용 선언 -->
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-    // 컨트롤러에서 request에 담아준 데이터 꺼내오기 (MovieList.do_영화 목록/ 필터링된 국가, 장르, 정렬 기준)
-    List<MovieDTO> movieList = (List<MovieDTO>) request.getAttribute("movieList"); // 영화 목록 가져오기
+    List<MovieDTO> movieList = (List<MovieDTO>) request.getAttribute("movieList");
     
-    // 사용자가 즐겨찾기한 영화 ID 목록 가져오기 (세션에서 전달된 경우)
     List<Integer> favoriteMovieIds =
             (List<Integer>) request.getAttribute("favoriteMovieIds");
 
@@ -16,394 +13,522 @@
         favoriteMovieIds = new java.util.ArrayList<Integer>();
     }
     
-   	// 필터링된 국가, 장르, 정렬 기준, 검색 키워드 값 가져오기
-    String country = (String) request.getAttribute("country"); // 필터링된 국가 값 가져오기
-    String genre = (String) request.getAttribute("genre");	// 필터링된 장르 값 가져오기
-    String sort = (String) request.getAttribute("sort");	// 정렬 기준 값 가져오기
-    String searchKeyword = (String) request.getAttribute("searchKeyword"); // 검색 키워드 값 가져오기
+    String country = (String) request.getAttribute("country");
+    String genre = (String) request.getAttribute("genre");
+    String sort = (String) request.getAttribute("sort");
+    String searchKeyword = (String) request.getAttribute("searchKeyword");
     if (searchKeyword == null) {
         searchKeyword = "";
     }
+    
+    int currentPage = 1;
+    if (request.getAttribute("currentPage") != null) {
+        currentPage = (Integer) request.getAttribute("currentPage");
+    }
+    int pageSize = 8;
 %>
   <style>
-      /* 필터 영역 스타일 (인덱스 스타일과 조화되도록 가볍게 다듬음) */
-      .filter-container {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 30px;
-          justify-content: flex-end;
-          align-items: center;
-      }
-      .filter-container select, .filter-container button {
-          padding: 8px 12px;
-          border-radius: 4px;
-          border: 1px solid #ddd;
-          font-size: 14px;
-      }
-      .filter-container button {
-          background: #e50914;
-          color: #fff;
-          border: none;
-          cursor: pointer;
-      }
-      .movie-card {
-          cursor: pointer;
-          transition: transform 0.2s;
-      }
-      .movie-card:hover {
-          transform: translateY(-5px);
-      }
-      /* 관심영화 하트 */
-.favorite-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
+    /* 필터 전체 영역 */
+    .filter-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 30px;
+        width: 100%;
+    }
 
-    width: 38px;
-    height: 38px;
+    .filter-form {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
 
-    border: none;
-    border-radius: 50%;
+    .filter-select-group {
+        display: flex;
+        gap: 8px;
+        position: relative;
+    }
 
-    background: rgba(0, 0, 0, 0.55);
-    color: white;
+    .filter-btn-group {
+        display: flex;
+        gap: 8px;
+    }
 
-    font-size: 22px;
-    cursor: pointer;
+    /* --------------------------------------------- */
+    /* 커스텀 드롭다운 스타일 (클릭 시 4개 높이 + 스크롤) */
+    /* --------------------------------------------- */
+    .custom-dropdown {
+        position: relative;
+        width: 130px;
+        user-select: none;
+    }
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    .dropdown-selected {
+        background-color: #1f2937;
+        color: #f3f4f6;
+        padding: 8px 14px;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: border-color 0.2s;
+    }
 
-    transition: 0.2s;
-}
+    .dropdown-selected:hover {
+        border-color: #e50914;
+    }
 
-.favorite-btn:hover {
-    transform: scale(1.1);
-    background: rgba(0, 0, 0, 0.75);
-}
+    .dropdown-selected::after {
+        content: "▼";
+        font-size: 10px;
+        color: #9ca3af;
+        margin-left: 6px;
+    }
 
-.favorite-btn.active {
-    color: #e50914;
-}
+    .dropdown-list {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #1f2937;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        margin-top: 4px;
+        z-index: 100;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        
+        /* 핵심: 딱 4개 항목 정도의 높이(약 140px)로 제한하고 스크롤 생성 */
+        max-height: 145px;
+        overflow-y: auto;
+    }
+
+    .dropdown-list.show {
+        display: block;
+    }
+
+    .dropdown-item {
+        padding: 9px 14px;
+        font-size: 14px;
+        color: #f3f4f6;
+        cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+        background-color: #374151;
+        color: #ffffff;
+    }
+
+    .dropdown-item.selected {
+        background-color: #111827;
+        color: #e50914;
+        font-weight: bold;
+    }
+    /* --------------------------------------------- */
+
+    /* 버튼 디자인 */
+    .filter-container button {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+    }
+    .filter-container button[type="submit"] {
+        background: #e50914;
+        color: #fff;
+    }
+    .filter-container button[type="submit"]:hover {
+        background: #f40612;
+    }
+    .btn-reset {
+        background: #374151;
+        color: #d1d5db;
+    }
+    .btn-reset:hover {
+        background: #4b5563;
+        color: #fff;
+    }
+    .btn-refresh {
+        background: #111827;
+        color: #9ca3af;
+        border: 1px solid #374151 !important;
+    }
+
+    .movie-card {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .movie-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .favorite-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+        width: 38px;
+        height: 38px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.55);
+        color: white;
+        font-size: 22px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+    }
+
+    .favorite-btn:hover {
+        transform: scale(1.1);
+        background: rgba(0, 0, 0, 0.75);
+    }
+
+    .favorite-btn.active {
+        color: #e50914;
+    }
       
-      /* 영화 검색 영역 */
-.search-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 25px;
-}
+    .search-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 25px;
+    }
 
-.search-container input {
-    width: 350px;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px 0 0 5px;
-    font-size: 14px;
-    outline: none;
-}
+    .search-container input {
+        width: 350px;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px 0 0 5px;
+        font-size: 14px;
+        outline: none;
+    }
 
-.search-container button {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 0 5px 5px 0;
-    background: #e50914;
-    color: white;
-    font-size: 14px;
-    cursor: pointer;
-}
+    .search-container button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 0 5px 5px 0;
+        background: #e50914;
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+    }
 
-.search-container button:hover {
-    background: #c40812;
-}
+    .search-container button:hover {
+        background: #c40812;
+    }
       
-  /* 포스터 영역 기준점 설정 */
-.poster-area {
-    position: relative;
-}
+    .poster-area {
+        position: relative;
+    }
 
-/* NEW 뱃지 스타일 */
-.badge-new {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    z-index: 10;
-    background-color: #ff4757;
-    color: yellow;
-    padding: 3px 8px;
-    font-size: 11px;
-    font-weight: bold;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}    
-      
-      
-      
+    .badge-new {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        z-index: 10;
+        background-color: #ff4757;
+        color: yellow;
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: bold;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }    
+	    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        margin: 50px 0;
+    }
+	
+    .pagination .page-btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        background-color: #1f2937;
+        color: #9ca3af;
+        border: 1px solid #374151;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+	
+    .pagination .page-btn:hover {
+        background-color: #374151;
+        color: #ffffff;
+        border-color: #4b5563;
+    }
+	
+    .pagination .page-btn.active {
+        background-color: #e50914;
+        color: #ffffff;
+        border-color: #e50914;
+        box-shadow: 0 2px 8px rgba(229, 9, 20, 0.4);
+    }
   </style>
-
 
   <main style="padding-top: 112px;">
     <section class="inner-container section-wrap" style="margin-top: 40px; margin-bottom: 80px;">
       <div class="section-head">
-        <h2 class="section-title"> 현재 상영 중인 영화 </h2>
+		<h2 class="section-title">📽️ 현재 상영 중인 영화 🎥</h2>
       </div>
-      <!-- 영화 검색 -->
-<div class="search-container">
 
-    <form method="post"
-          action="${pageContext.request.contextPath}/movies/MovieList.do"
-          style="display: flex;">
+      <div class="search-container">
+          <form method="post" action="${pageContext.request.contextPath}/movies/MovieList.do" style="display: flex;">
+              <input type="text" name="searchKeyword" value="<%= searchKeyword %>" placeholder="영화 제목을 검색하세요">
+              <input type="hidden" name="country" value="<%= country != null ? country : "" %>">
+              <input type="hidden" name="genre" value="<%= genre != null ? genre : "" %>">
+              <input type="hidden" name="sort" value="<%= sort != null ? sort : "" %>">
+              <button type="submit">검색</button>
+          </form>
+      </div>
 
-        <input type="text"
-               name="searchKeyword"
-               value="<%= searchKeyword %>"
-               placeholder="영화 제목을 검색하세요">
-
-        <input type="hidden"
-               name="country"
-               value="<%= country %>">
-
-        <input type="hidden"
-               name="genre"
-               value="<%= genre %>">
-
-        <input type="hidden"
-               name="sort"
-               value="<%= sort %>">
-
-        <button type="submit">
-            검색
-        </button>
-</form>
-
-</div>
-      <!-- 필터와 정렬 폼 -->
       <div class="filter-container">
-      <!-- method를 get에서 post로 변경 -->
-	  <form method="post" action="${pageContext.request.contextPath}/movies/MovieList.do" style="display: flex; gap: 10px;">
-            <select name="country">
-                <option value="all">전체 국가</option>
-                <option value="대한민국" <%= "대한민국".equals(country) ? "selected" : "" %>>한국</option>
-                <option value="미국" <%= "미국".equals(country) ? "selected" : "" %>>미국</option>
-                <option value="일본" <%= "일본".equals(country) ? "selected" : "" %>>일본</option>
-            </select>
-            
-            <select name="genre">
-                <option value="all">전체 장르</option>
-                <option value="액션" <%= "액션".equals(genre) ? "selected" : "" %>>액션</option>
-                <option value="드라마" <%= "드라마".equals(genre) ? "selected" : "" %>>드라마</option>
-                <option value="스릴러" <%= "스릴러".equals(genre) ? "selected" : "" %>>스릴러</option>
-                <option value="코미디" <%= "코미디".equals(genre) ? "selected" : "" %>>코미디</option>
-                <option value="SF" <%= "SF".equals(genre) ? "selected" : "" %>>SF</option>
+          <form class="filter-form" method="post" action="${pageContext.request.contextPath}/movies/MovieList.do" id="filterForm">
+              
+              <!-- 실제 서버로 전송될 히든 인풋 -->
+              <input type="hidden" name="country" id="inputCountry" value="<%= country != null ? country : "all" %>">
+              <input type="hidden" name="genre" id="inputGenre" value="<%= genre != null ? genre : "all" %>">
+              <input type="hidden" name="sort" id="inputSort" value="<%= sort != null ? sort : "date" %>">
+              <input type="hidden" name="searchKeyword" value="<%= searchKeyword %>">
 
-            </select>
-            
-            <select name="sort">
-                <option value="date" <%= "date".equals(sort) ? "selected" : "" %>>개봉순</option> 
-                <option value="title" <%= "title".equals(sort) ? "selected" : "" %>>가나다순</option>
-            </select>
-            
-            <button type="submit">적용</button> 
-            
-            <!-- ▼ [추가] 필터 초기화 버튼 -->
-            <button type="button"
-             onclick="location.href='${pageContext.request.contextPath}/movies/MovieList.do'" 
-             style="background: #666;">초기화</button>
-            
-            <%
-            	// 세션에서 로그인한 사용자 ID 확인
-            	if(session.getAttribute("id") != null && "admin".equals(session.getAttribute("id"))){
-            %>
-            <!-- 관리자 계정이면 갱신 버튼 표시 -->
-            <button type="button" onclick="location.href='MovieUpdate.do'">갱신</button>
-            <%
-            	}
-            %>
-        </form>
+              <div class="filter-select-group">
+                  
+                  <!-- 1. 국가 커스텀 드롭다운 -->
+                  <div class="custom-dropdown" id="countryDropdown">
+                      <%
+                          String countryText = "전체 국가";
+                          if("대한민국".equals(country)) countryText = "한국";
+                          else if("미국".equals(country)) countryText = "미국";
+                          else if("일본".equals(country)) countryText = "일본";
+                          else if("중국".equals(country)) countryText = "중국";
+                          else if("프랑스".equals(country)) countryText = "프랑스";
+                          else if("기타".equals(country)) countryText = "기타";
+                      %>
+                      <div class="dropdown-selected"><%= countryText %></div>
+                      <div class="dropdown-list">
+                          <div class="dropdown-item <%= "all".equals(country) || country == null ? "selected" : "" %>" data-value="all">전체 국가</div>
+                          <div class="dropdown-item <%= "대한민국".equals(country) ? "selected" : "" %>" data-value="대한민국">한국</div>
+                          <div class="dropdown-item <%= "미국".equals(country) ? "selected" : "" %>" data-value="미국">미국</div>
+                          <div class="dropdown-item <%= "일본".equals(country) ? "selected" : "" %>" data-value="일본">일본</div>
+                          <div class="dropdown-item <%= "중국".equals(country) ? "selected" : "" %>" data-value="중국">중국</div>
+                          <div class="dropdown-item <%= "프랑스".equals(country) ? "selected" : "" %>" data-value="프랑스">프랑스</div>
+                          <div class="dropdown-item <%= "기타".equals(country) ? "selected" : "" %>" data-value="기타">기타</div>
+                      </div>
+                  </div>
+
+                  <!-- 2. 장르 커스텀 드롭다운 -->
+                  <div class="custom-dropdown" id="genreDropdown">
+                      <%
+                          String genreText = "전체 장르";
+                          if(genre != null && !genre.equals("all") && !genre.isEmpty()) {
+                              genreText = genre;
+                          }
+                      %>
+                      <div class="dropdown-selected"><%= genreText %></div>
+                      <div class="dropdown-list">
+                          <div class="dropdown-item <%= "all".equals(genre) || genre == null ? "selected" : "" %>" data-value="all">전체 장르</div>
+                          <div class="dropdown-item <%= "액션".equals(genre) ? "selected" : "" %>" data-value="액션">액션</div>
+                          <div class="dropdown-item <%= "드라마".equals(genre) ? "selected" : "" %>" data-value="드라마">드라마</div>
+                          <div class="dropdown-item <%= "스릴러".equals(genre) ? "selected" : "" %>" data-value="스릴러">스릴러</div>
+                          <div class="dropdown-item <%= "코미디".equals(genre) ? "selected" : "" %>" data-value="코미디">코미디</div>
+                          <div class="dropdown-item <%= "SF".equals(genre) ? "selected" : "" %>" data-value="SF">SF</div>
+                          <div class="dropdown-item <%= "공포".equals(genre) ? "selected" : "" %>" data-value="공포">공포</div>
+                          <div class="dropdown-item <%= "로맨스".equals(genre) ? "selected" : "" %>" data-value="로맨스">로맨스</div>
+                          <div class="dropdown-item <%= "멜로".equals(genre) ? "selected" : "" %>" data-value="멜로">멜로</div>
+                          <div class="dropdown-item <%= "범죄".equals(genre) ? "selected" : "" %>" data-value="범죄">범죄</div>
+                          <div class="dropdown-item <%= "어드벤처".equals(genre) ? "selected" : "" %>" data-value="어드벤처">어드벤처</div>
+                      </div>
+                  </div>
+
+                  <!-- 3. 정렬 커스텀 드롭다운 -->
+                  <div class="custom-dropdown" id="sortDropdown">
+                      <%
+                          String sortText = "개봉순";
+                          if("title".equals(sort)) sortText = "가나다순";
+                      %>
+                      <div class="dropdown-selected"><%= sortText %></div>
+                      <div class="dropdown-list">
+                          <div class="dropdown-item <%= "date".equals(sort) || sort == null ? "selected" : "" %>" data-value="date">개봉순</div>
+                          <div class="dropdown-item <%= "title".equals(sort) ? "selected" : "" %>" data-value="title">가나다순</div>
+                      </div>
+                  </div>
+
+              </div>
+
+              <div class="filter-btn-group">
+                  <button type="submit">적용</button> 
+                  
+                  <button type="button" class="btn-reset"
+                   onclick="location.href='${pageContext.request.contextPath}/movies/MovieList.do'">초기화</button>
+                  
+                  <%
+                      if(session.getAttribute("id") != null && "admin".equals(session.getAttribute("id"))){
+                  %>
+                  <button type="button" class="btn-refresh" onclick="location.href='MovieUpdate.do'">갱신</button>
+                  <%
+                      }
+                  %>
+              </div>
+          </form>
       </div>
 
-<!-- 영화 카드 목록 그리드 영역 시작 -->
-<div class="movie-grid">
-    <!-- [1단계] 컨트롤러(Servlet)가 DB에서 조회해서 전달해준 영화 목록(movieList)이 존재하는지 검증 -->
-    <% if (movieList != null && !movieList.isEmpty()) { %>
-        
-        <!-- [2단계] 반복문(for)을 돌며 리스트에 담긴 영화 DTO 객체들을 하나씩 순차적으로 꺼냄 -->
-        <% for(int i = 0; i < movieList.size(); i++) {  
-            // movieList에서 i번째 영화 정보 가방(MovieDTO)을 가져옴 (이 가방 안에 DB에서 조회한 값들이 들어있음)
-            MovieDTO movie = movieList.get(i); 
-        %>
-<!--     
-    
-/@1. [kMDb API] ──(포스터 URL 수집)──> /@2.[내 Java DB 처리부]@1/ ──(INSERT)──> [MySQL 등 내 DB]@2/
-           																│
-                                                                        ▼ (사용자가 페이지 요청)
-[JSP 화면 (여기)] <──(List에 담아 전달)── [MovieDAO.getMovieList()] <── (SELECT * FROM movie) 
+      <div class="movie-grid">
+          <% if (movieList != null && !movieList.isEmpty()) { %>
+              <% for(int i = 0; i < movieList.size(); i++) {  
+                  MovieDTO movie = movieList.get(i); 
+              %>
+                  <div class="movie-card" onclick="location.href='MovieDetail.do?movie_id=<%= movie.getMovieId() %>'">
+                    <div class="poster-area">	
+                      <% if(movie.isNew()) { %>
+                          <span class="badge-new">NEW</span>
+                      <% } %> 
 
+                      <%
+                          boolean isFavorite = favoriteMovieIds.contains(movie.getMovieId());
+                      %>
+                      <button type="button"
+                              class="favorite-btn <%= isFavorite ? "active" : "" %>"
+                              id="fav-btn-<%= movie.getMovieId() %>"
+                              onclick="event.stopPropagation(); toggleFavorite(<%= movie.getMovieId() %>);">
+                          <%= isFavorite ? "♥" : "♡" %>
+                      </button>
 
-@1. MovieDAO_getMovieListFromAPI()               
-.parseString(jsonResult).getAsJsonObject();
-
-@2. movie.MovieDAO.insertMovie(MovieDTO movie)
- java.sql.PreparedStatement.executeUpdate()
-                  
-                                             
-3구간: [MySQL 등 내 DB] ──(SELECT)──> MovieDAO.getMovieList()
-• movie.MovieDAO.getMovieList()
-	• 역할: 사용자가 웹 페이지에 접속했을 때 호출되며, DB 테이블에 저장된 영화 30개를 SELECT * FROM movie... 쿼리로 조회해오는 메소드입니다.
-• java.sql.PreparedStatement.executeQuery()
-	• 역할: DB 서버에 SELECT 쿼리를 날려 결과 데이터(ResultSet)를 받아오는 메소드입니다.
-• java.sql.ResultSet.next() 및 rs.getString("poster")
-	• 역할: DB 결과 창고에서 한 줄씩 넘겨보며(next()), poster 컬럼에 들어있는 kMDb 이미지 주소 문자열을 추출해 내는 메소드입니다.
-• java.util.List.add(movie)
-	• 역할: DB에서 꺼낸 포스터 주소가 담긴 영화 가방(MovieDTO)들을 JSP에 한 번에 보내기 위해 리스트 바구니(movieList)에 차곡차곡 담아주는 메소드입니다.
-
-
-4구간: MovieDAO.getMovieList() ──(List 전달)──> [JSP 화면]
-• javax.servlet.http.HttpServletRequest.setAttribute("movieList", list)
-	• 역할: 컨트롤러(서블릿) 단계에서 DB로부터 확보한 영화 리스트 바구니를 JSP 화면이 꺼내 쓸 수 있도록 보관함(request)에 묶어두는 메소드입니다.
-• java.util.List.get(i) (JSP 내 movieList.get(i))
-	• 역할: JSP 화면에서 반복문을 돌며 보관함에서 꺼낸 리스트 바구니 속 i번째 영화 가방을 하나씩 끄집어내는 메소드입니다.
-• movie.MovieDTO.getPoster() (JSP 내 < %= movie.getPoster() %>)
-	• 역할: 전체 흐름의 최종 목적지입니다. 영화 가방의 지퍼를 열어 내부에 담겨있던 kMDb 포스터 URL 주소(http://kmdb.or.kr...)를 HTML src="" 자리에 문자로 뱉어내어 브라우저가 화면에 이미지를 그리도록 만드는 메소드입니다
-
-
--->
-        
-            <!-- 영화 카드를 클릭하면 해당 영화의 고유 ID(movie_id)를 파라미터로 가지고 상세페이지(MovieDetail.do)로 이동 -->
-			<!-- 영화 카드를 클릭하면 movie_id 파라미터로 상세페이지로 이동 -->
-			<div class="movie-card" onclick="location.href='MovieDetail.do?movie_id=<%= movie.getMovieId() %>'">
-              
-              <!-- 포스터 이미지 영역 -->
-              <div class="poster-area">	
-
-				<!-- ▼ [추가] 신규 영화인 경우 NEW 뱃지 출력 (DTO에 isNew() 또는 관련 판별 메서드가 있을 경우) -->
-                
-                <% if(movie.isNew()) { %>
-                    <span class="badge-new">NEW</span>
-                <% } %> 
-                
-                
-                <!-- 만약 별도 메서드가 없다면 최근 등록일 문자열 비교 등을 통해 직접 표현할 수도 있습니다 -->
-
-                <%
-
-
-				    boolean isFavorite =
-				            favoriteMovieIds.contains(movie.getMovieId());
-				%>
-					<!-- 관심영화 찜 버튼 (비동기 처리) -->
-					<button type="button"
-					        class="favorite-btn <%= isFavorite ? "active" : "" %>"
-					        id="fav-btn-<%= movie.getMovieId() %>"
-					        onclick="event.stopPropagation(); toggleFavorite(<%= movie.getMovieId() %>);">
-					    <%= isFavorite ? "♥" : "♡" %>
-					</button>
-								
-
-<%-- 
-   [3단계] DB에서 따온 진짜 포스터 주소값 출력 핵심부!
-   - movie.getPoster() 메소드가 DB에서 꺼내온 'http://kmdb.or.kr' 문자열을 반환합니다.
-   -  <%= ... %> 표현식 태그를 통해 그 문자열 주소가 HTML의 src="" 자리에 그대로 쏙 박히게 됩니다.
-   - 브라우저는 이 주소를 읽어서 kMDb 서버에 있는 이미지를 화면에 띄웁니다.
---%>
-                <img class="poster-img" src="<%= movie.getPoster() %>"  	
-                                        alt="<%= movie.getTitle() %>"   
-                                        style="width: 100%;
-                                               height: auto; 
-                                               object-fit: contain; 
-                                               border-radius: 4px; 
-                                               margin-bottom: 10px;"
-                    /* [예외 처리] 만약 DB에 포스터 주소가 없거나, kMDb 서버 문제로 이미지를 불러오지 못하면 내 프로젝트의 기본 노이미지 파일로 대체 */
-                    onerror="this.src='${pageContext.request.contextPath}/images/no_image.jpg';">
-                
-                <!-- 영화 순위 오버레이 (0부터 시작하므로 인덱스 i에 1을 더해 1등, 2등... 표현) -->
-                <div class="rank-overlay"><span class="rank-number"><%= i + 1 %></span></div>
+                      <img class="poster-img" src="<%= movie.getPoster() %>"  	
+                                              alt="<%= movie.getTitle() %>"   
+                                              style="width: 100%; height: auto; object-fit: contain; border-radius: 4px; margin-bottom: 10px;"
+                          onerror="this.src='${pageContext.request.contextPath}/images/no_image.jpg';">
+                      
+                      	<div class="rank-overlay">
+    						<span class="rank-number"><%= ((currentPage - 1) * pageSize) + (i + 1) %></span>
+						</div>
+                    </div>
+                    
+                    <div class="card-info">
+                      <h3 class="movie-card-title"><%= movie.getTitle() %></h3>
+                      <div class="card-meta-line">
+                        <span><%= movie.getGenre() %> | <%= movie.getCountry() %> | <%= movie.getReleaseDate() %> 개봉</span>
+                      </div>
+                    </div>
+                  </div>
+              <% } %>
+          <% } else { %>
+              <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0; color: #666;">
+                  <% if (!searchKeyword.isEmpty()) { %>
+                      <p style="font-size: 18px;">'<%= searchKeyword %>' 검색 결과가 없습니다.</p>
+                      <p>다른 영화 제목으로 검색해 주세요.</p>
+                  <% } else { %>
+                      등록된 영화가 없습니다.
+                  <% } %>
               </div>
-              
-              <!-- 영화 정보 텍스트 영역 -->
-              <div class="card-info">
-                <!-- DB에서 꺼내온 영화 제목 출력 -->
-                <h3 class="movie-card-title"><%= movie.getTitle() %></h3>
-                <div class="card-meta-line">
-                  <!-- DB에서 꺼내온 장르, 제작국가, 개봉일 데이터를 한 줄로 정렬하여 출력 -->
-                  <span><%= movie.getGenre() %> | <%= movie.getCountry() %> | <%= movie.getReleaseDate() %> 개봉</span>
-                </div>
-              </div>
-              
-            </div>
-        <% } // 반복문(for) 끝 %>
-        
- <% } else { %>
-
-    <div style="grid-column: 1 / -1;
-                text-align: center;
-                padding: 60px 0;
-                color: #666;">
-
-        <% if (!searchKeyword.isEmpty()) { %>
-
-            <p style="font-size: 18px;">
-                '<%= searchKeyword %>' 검색 결과가 없습니다.
-            </p>
-
-            <p>
-                다른 영화 제목으로 검색해 주세요.
-            </p>
-
-        <% } else { %>
-
-            등록된 영화가 없습니다.
-
-        <% } %>
-
-    </div>
-
-<% } %>
-<!-- 영화 카드 목록 그리드 영역 끝 -->
+          <% } %>
+      </div>
  
+		<div class="pagination">
+		    <c:forEach var="p" begin="1" end="${totalPage}">
+		        <a href="${pageContext.request.contextPath}/movies/MovieList.do?pageNum=${p}&country=${param.country}&genre=${param.genre}&sort=${param.sort}&searchKeyword=${param.searchKeyword}"
+		           class="page-btn ${p == currentPage ? 'active' : ''}">
+		            ${p}
+		        </a>
+		    </c:forEach>
+		</div>
     </section>
     
     <script>
-function toggleFavorite(movieId) {
-    const contextPath = "${pageContext.request.contextPath}";
-    
-    fetch(contextPath + "/movies/Favorite.do?movieId=" + movieId, {
-        method: "POST",
-        headers: {
-            "X-Requested-With": "XMLHttpRequest"
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === "unauthorized") {
-            alert("로그인 후 이용할 수 있습니다.");
-            location.href = contextPath + "/member/login.do";
-            return;
-        }
-
-        const btn = document.getElementById("fav-btn-" + movieId);
-        if (!btn) return;
-
-        if (data.success) {
-            if (data.status === "added") {
-                btn.classList.add("active");
-                btn.innerText = "♥";
-            } else if (data.status === "removed") {
-                btn.classList.remove("active");
-                btn.innerText = "♡";
+    // 커스텀 드롭다운 동작 제어 스크립트
+    document.addEventListener("click", function(e) {
+        const dropdowns = document.querySelectorAll(".custom-dropdown");
+        dropdowns.forEach(drop => {
+            const list = drop.querySelector(".dropdown-list");
+            const selected = drop.querySelector(".dropdown-selected");
+            if (selected.contains(e.target)) {
+                // 다른 열린 드롭다운 닫기
+                dropdowns.forEach(d => {
+                    if (d !== drop) d.querySelector(".dropdown-list").classList.remove("show");
+                });
+                list.classList.toggle("show");
+            } else if (!drop.contains(e.target)) {
+                list.classList.remove("show");
             }
-        } else {
-            alert("처리에 실패했습니다.");
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("오류가 발생했습니다.");
+        });
     });
-}
-</script>
-    
-  </main>
 
+    // 각 항목 선택 시 값 반영
+    document.querySelectorAll(".custom-dropdown").forEach(drop => {
+        const selectedDiv = drop.querySelector(".dropdown-selected");
+        const listDiv = drop.querySelector(".dropdown-list");
+        const items = drop.querySelectorAll(".dropdown-item");
+
+        items.forEach(item => {
+            item.addEventListener("click", function() {
+                selectedDiv.innerText = this.innerText;
+                items.forEach(i => i.classList.remove("selected"));
+                this.classList.add("selected");
+                listDiv.classList.remove("show");
+
+                const val = this.getAttribute("data-value");
+                if (drop.id === "countryDropdown") {
+                    document.getElementById("inputCountry").value = val;
+                } else if (drop.id === "genreDropdown") {
+                    document.getElementById("inputGenre").value = val;
+                } else if (drop.id === "sortDropdown") {
+                    document.getElementById("inputSort").value = val;
+                }
+            });
+        });
+    });
+
+    function toggleFavorite(movieId) {
+        const contextPath = "${pageContext.request.contextPath}";
+        
+        fetch(contextPath + "/movies/Favorite.do?movieId=" + movieId, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "unauthorized") {
+                alert("로그인 후 이용할 수 있습니다.");
+                location.href = contextPath + "/member/login.do";
+                return;
+            }
+
+            const btn = document.getElementById("fav-btn-" + movieId);
+            if (!btn) return;
+
+            if (data.success) {
+                if (data.status === "added") {
+                    btn.classList.add("active");
+                    btn.innerText = "♥";
+                } else if (data.status === "removed") {
+                    btn.classList.remove("active");
+                    btn.innerText = "♡";
+                }
+            } else {
+                alert("처리에 실패했습니다.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("오류가 발생했습니다.");
+        });
+    }
+    </script>
+  </main>
