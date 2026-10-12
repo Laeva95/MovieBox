@@ -31,20 +31,26 @@ public class ReviewService {
 				System.out.println("[ReviewService] 필수 정보 누락 (회원 아이디 또는 영화 번호 없음)");
 				return false;
 		}
-				
-		// 2. 내용 빈값 체크
+			
+		// 2. 1인 1리뷰 중복 검증 (이미 작성한 이력이 있다면 차단)
+		if (reviewDAO.hasReviewed(dto.getMemberId(), dto.getMovieId())) {
+				System.out.println("[ReviewService] 이미 작성한 리뷰가 존재합니다.");
+				return false;
+		}
+		
+		// 3. 내용 빈값 체크
 		if (dto.getContent() == null || dto.getContent().trim().isEmpty()) {
 				System.out.println("[ReviewService] 리뷰 내용이 비어있습니다.");
 				return false;
 		}
 				
-		// 3. 별점 범위 체크 (1 ~ 10점) 
+		// 4. 별점 범위 체크 (1 ~ 10점) 
 		if (dto.getRating() < 1 || dto.getRating() > 10) {
 				System.out.println("[ReviewService] 별점 범위 오류(1~10점만 가능) : " + dto.getRating());
 				return false;
 		}
 				
-		// 4. 모든 검증을 통과하면 DAO를 통해 DB 저장
+		// 5. 모든 검증을 통과하면 DAO를 통해 DB 저장
 		int result = reviewDAO.insertReview(dto);
 		return result == 1;
 	}
@@ -153,6 +159,21 @@ public class ReviewService {
 		return result == 1;
 	}
 	
+	//================================
+    // 8. 1인 1리뷰 중복 작성 여부 체크
+	//================================
+	public boolean hasUserReviewed(String memberId, int movieId) {
+		if (memberId == null || movieId <= 0) 
+			return false;
+		return reviewDAO.hasReviewed(memberId, movieId);
+	}
 	
-	
+	//============================
+    // 9. 관람평 좋아요(공감) 수 증가
+	//============================
+	public int likeReview(int reviewId) {
+		if (reviewId <= 0) 
+			return -1;
+		return reviewDAO.increaseLikeCount(reviewId);
+	}
 }
