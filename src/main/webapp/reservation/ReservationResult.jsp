@@ -3,7 +3,6 @@
     pageEncoding="UTF-8"%>
 
 <%@ page import="movie.MovieDAO" %>
-
 <%@ page import="movie.MovieDTO" %>
 
 <%
@@ -83,9 +82,7 @@
     try {
 
         int movieNo =
-                Integer.parseInt(
-                        movieId
-                );
+                Integer.parseInt(movieId);
 
 
         MovieDAO movieDAO =
@@ -104,7 +101,6 @@
                     movie.getTitle();
 
         }
-
 
     } catch (Exception e) {
 
@@ -164,7 +160,6 @@
                 break;
 
         }
-
 
     } catch (Exception e) {
 
@@ -315,7 +310,7 @@ body {
 }
 
 
-.result-box .message {
+.result-message {
 
     margin-bottom: 30px;
 
@@ -383,13 +378,17 @@ body {
 }
 
 
-.home-button {
+/* =========================================
+   모바일 티켓 버튼
+========================================= */
+
+.ticket-button {
 
     width: 100%;
 
-    height: 50px;
+    height: 52px;
 
-    margin-top: 30px;
+    margin-top: 25px;
 
     border: none;
 
@@ -408,9 +407,80 @@ body {
 }
 
 
-.home-button:hover {
+.ticket-button:hover {
 
     background-color: #b20710;
+
+}
+
+
+/* =========================================
+   예매 확인 버튼
+========================================= */
+
+.check-button {
+
+    width: 100%;
+
+    height: 48px;
+
+    margin-top: 10px;
+
+    border:
+        1px solid #444;
+
+    border-radius: 7px;
+
+    background-color: #111;
+
+    color: #bbb;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+}
+
+
+.check-button:hover {
+
+    color: white;
+
+    border-color: #666;
+
+}
+
+
+/* =========================================
+   홈 버튼
+========================================= */
+
+.home-button {
+
+    width: 100%;
+
+    height: 48px;
+
+    margin-top: 10px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    background-color: #252525;
+
+    color: #aaa;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+}
+
+
+.home-button:hover {
+
+    color: white;
 
 }
 
@@ -424,8 +494,13 @@ body {
 
 <div class="result-container">
 
+
     <div class="result-box">
 
+
+        <!-- =========================================
+             완료 표시
+        ========================================== -->
 
         <div class="success-icon">
 
@@ -441,7 +516,7 @@ body {
         </h1>
 
 
-        <div class="message">
+        <div class="result-message">
 
             <%= memberName %>님,
 
@@ -449,6 +524,10 @@ body {
 
         </div>
 
+
+        <!-- =========================================
+             예매 정보
+        ========================================== -->
 
         <div class="info-box">
 
@@ -549,9 +628,50 @@ body {
         </div>
 
 
+        <!-- =========================================
+             모바일 티켓
+        ========================================== -->
+
         <button
+
             type="button"
+
+            class="ticket-button"
+
+            onclick="openMobileTicket();">
+
+            모바일 티켓 보기
+
+        </button>
+
+
+        <!-- =========================================
+             예매 확인
+        ========================================== -->
+
+        <button
+
+            type="button"
+
+            class="check-button"
+
+            onclick="location.href='<%= request.getContextPath() %>/reservation/check';">
+
+            예매 확인
+
+        </button>
+
+
+        <!-- =========================================
+             홈
+        ========================================== -->
+
+        <button
+
+            type="button"
+
             class="home-button"
+
             onclick="location.href='<%= request.getContextPath() %>/Index.jsp';">
 
             홈으로
@@ -562,6 +682,61 @@ body {
     </div>
 
 </div>
+
+
+<script>
+
+function openMobileTicket() {
+
+
+    var url =
+
+        "<%= request.getContextPath() %>"
+        +
+        "/reservation/MobileTicket.jsp"
+        +
+        "?memberId="
+        +
+        encodeURIComponent(
+            "<%= memberId %>"
+        )
+        +
+        "&movieId="
+        +
+        encodeURIComponent(
+            "<%= movieId %>"
+        )
+        +
+        "&screeningId="
+        +
+        encodeURIComponent(
+            "<%= screeningId %>"
+        )
+        +
+        "&reservationDate="
+        +
+        encodeURIComponent(
+            "<%= reservationDate %>"
+        )
+        +
+        "&seats="
+        +
+        encodeURIComponent(
+            "<%= seats %>"
+        )
+        +
+        "&amount="
+        +
+        encodeURIComponent(
+            "<%= amount %>"
+        );
+
+
+    location.href = url;
+
+}
+
+</script>
 
 
 </body>
