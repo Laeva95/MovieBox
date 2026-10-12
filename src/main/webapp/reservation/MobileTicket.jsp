@@ -923,26 +923,6 @@ body {
                 </strong>
 
 
-                <div class="ticket-number">
-
-
-                    <span>
-
-                        예매번호
-
-                    </span>
-
-
-                    <strong>
-
-                        <%= ticketNumber %>
-
-                    </strong>
-
-
-                </div>
-
-
             </div>
 
 
@@ -1044,14 +1024,14 @@ body {
 
                     <div class="info-label">
 
-                        상영관
+                        예매 번호
 
                     </div>
 
 
                     <div class="info-value">
 
-                        <%= screeningId %>관
+                        <%= ticketNumber %>
 
                     </div>
 
