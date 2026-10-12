@@ -1,14 +1,19 @@
 package booking;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import movie.MovieDAO;
+import movie.MovieDTO;
 
 @WebServlet("/reservation/check")
 public class ReservationCheckController extends HttpServlet {
@@ -16,216 +21,84 @@ public class ReservationCheckController extends HttpServlet {
     private ReservationService reservationService;
 
     @Override
-    public void init() {
+    public void init() throws ServletException {
         reservationService = new ReservationService();
     }
 
-    // ====================================================
-    // GET
-    // 예매 목록 조회
-    // ====================================================
     @Override
     protected void doGet(
             HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 회원 번호 받기
-        String memberId = request.getParameter("memberId");
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
 
-        // 회원 번호가 없으면 조회 화면으로 이동
+        HttpSession session = request.getSession(false);
+
+        String memberId = null;
+
+        if (session != null) {
+
+            Object loginId = session.getAttribute("id");
+
+            if (loginId == null) {
+                loginId = session.getAttribute("memberId");
+            }
+
+            if (loginId != null) {
+                memberId = loginId.toString();
+            }
+        }
+
         if (memberId == null || memberId.trim().isEmpty()) {
 
-        	forwardReservationCheck(
-        	        request,
-        	        response
-        	);
+            request.setAttribute(
+                    "message",
+                    "로그인이 필요합니다. 로그인 후 다시 이용해주세요."
+            );
+
+            request.getRequestDispatcher(
+                    "/reservation/ReservationCheck.jsp"
+            ).forward(request, response);
 
             return;
         }
 
-        // 해당 회원의 예매 목록 조회
         List<ReservationVO> reservationList =
                 reservationService.getReservationList(memberId);
 
-        // JSP로 전달
-        request.setAttribute(
-                "reservationList",
-                reservationList
-        );
+        Map<Integer, String> movieTitles = new HashMap<>();
 
-        request.setAttribute(
-                "memberId",
-                memberId
-        );
+        if (reservationList != null && !reservationList.isEmpty()) {
 
-        // 예약 확인 화면으로 이동
-        forwardReservationCheck(
-                request,
-                response
-        );
-    }
+            MovieDAO movieDAO = new MovieDAO();
 
-    // ====================================================
-    // POST
-    // 예매 취소
-    // ====================================================
-    @Override
-    protected void doPost(
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws ServletException, IOException {
+            for (ReservationVO reservation : reservationList) {
 
-        request.setCharacterEncoding("UTF-8");
+                int movieId = reservation.getMovieId();
 
-        // 예약번호
-        String reservationIdStr =
-                request.getParameter("reservationId");
+                if (!movieTitles.containsKey(movieId)) {
 
-        // 회원번호
-        String memberId =
-                request.getParameter("memberId");
+                    MovieDTO movie =
+                            movieDAO.getMovieDetails(movieId);
 
-        // ====================================================
-        // 예약번호 확인
-        // ====================================================
-        if (reservationIdStr == null
-                || reservationIdStr.trim().isEmpty()) {
-
-            request.setAttribute(
-                    "message",
-                    "예매번호가 없습니다."
-            );
-
-            request.setAttribute(
-                    "memberId",
-                    memberId
-            );
-
-            forwardReservationCheck(
-                    request,
-                    response
-            );
-
-            return;
+                    if (movie != null) {
+                        movieTitles.put(movieId, movie.getTitle());
+                    } else {
+                        movieTitles.put(movieId, "영화 정보 없음");
+                    }
+                }
+            }
         }
 
-        // ====================================================
-        // 예약번호 숫자 변환
-        // ====================================================
-        int reservationId;
-
-        try {
-
-            reservationId =
-                    Integer.parseInt(reservationIdStr);
-
-        } catch (NumberFormatException e) {
-
-            request.setAttribute(
-                    "message",
-                    "잘못된 예매번호입니다."
-            );
-
-            request.setAttribute(
-                    "memberId",
-                    memberId
-            );
-
-            forwardReservationCheck(
-                    request,
-                    response
-            );
-
-            return;
-        }
-
-        // ====================================================
-        // 회원번호 확인
-        // ====================================================
-        if (memberId == null
-                || memberId.trim().isEmpty()) {
-
-            request.setAttribute(
-                    "message",
-                    "회원 정보가 없습니다."
-            );
-
-            forwardReservationCheck(
-                    request,
-                    response
-            );
-
-            return;
-        }
-
-        // ====================================================
-        // 예매 취소
-        // ====================================================
-        boolean result =
-                reservationService.deleteReservation(
-                        reservationId,
-                        memberId
-                );
-
-        // ====================================================
-        // 취소 결과
-        // ====================================================
-        if (result) {
-
-            request.setAttribute(
-                    "message",
-                    "예매 취소가 완료되었습니다."
-            );
-
-        } else {
-
-            request.setAttribute(
-                    "message",
-                    "예매 취소에 실패했습니다."
-            );
-        }
-
-        // ====================================================
-        // 취소 후 예매 목록 다시 조회
-        // ====================================================
-        List<ReservationVO> reservationList =
-                reservationService.getReservationList(memberId);
-
-        request.setAttribute(
-                "reservationList",
-                reservationList
-        );
-
-        request.setAttribute(
-                "memberId",
-                memberId
-        );
-
-        // ====================================================
-        // 예매 확인 화면
-        // ====================================================
-        forwardReservationCheck(
-                request,
-                response
-        );
-    }
-    
-    private void forwardReservationCheck(
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws ServletException, IOException {
-
-        request.setAttribute(
-                "center",
-                "/reservation/ReservationCheck.jsp"
-        );
+        request.setAttribute("memberId", memberId);
+        request.setAttribute("reservationList", reservationList);
+        request.setAttribute("movieTitles", movieTitles);
 
         request.getRequestDispatcher(
-                "/Index.jsp"
-        ).forward(
-                request,
-                response
-        );
+                "/reservation/ReservationCheck.jsp"
+        ).forward(request, response);
     }
 }
+
