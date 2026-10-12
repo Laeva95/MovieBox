@@ -1304,16 +1304,24 @@ public class MovieDAO {
          // ① 국가 조건
          // =====================================================
 
-         boolean matchCountry =
-                 country == null
-                 || country.isEmpty()
-                 || country.equals("all")
-                 || (
-                     movie.getCountry() != null
-                     && movie.getCountry().contains(country)
-                 );
+    	 boolean matchCountry = false;
 
+         if (country == null || country.isEmpty() || country.equals("all")) {
+             matchCountry = true;
+         } else if (country.equals("기타")) {
+             // '기타'인 경우: 주요 5개국(대한민국, 미국, 일본, 중국, 프랑스)이 모두 포함되지 않아야 함
+             if (movie.getCountry() == null) {
+                 matchCountry = true; // 국가 정보가 없으면 기타로 분류
+             } else {
+                 String c = movie.getCountry();
+                 boolean isMajorCountry = c.contains("대한민국") || c.contains("미국") || c.contains("일본") || c.contains("중국") || c.contains("프랑스");
+                 matchCountry = !isMajorCountry;
+             }
+         } else {
+             // 일반 국가(대한민국, 미국, 일본, 중국, 프랑스)인 경우
+             matchCountry = movie.getCountry() != null && movie.getCountry().contains(country);
 
+         }
          // =====================================================
          // ② 장르 조건
          // =====================================================
@@ -1608,6 +1616,78 @@ public class MovieDAO {
      return favoriteMovieIds;
  }
 
+//=========================================================
+ // 18. 페이지네이션이 적용된 국가 + 장르 + 검색어 + 정렬 조회 메서드 [추가]
+ // =========================================================
+ public List<MovieDTO> getPagingMovieList(
+         String country,
+         String genre,
+         String sort,
+         String searchKeyword,
+         int pageNum,
+         int pageSize
+ ) {
+     // 기존의 필터링 및 정렬된 전체 목록을 가져옴
+     List<MovieDTO> allList = getFilteredAndSortedMovieList(country, genre, sort, searchKeyword);
+     
+     int totalSize = allList.size();
+     
+     // 시작 인덱스 계산 (예: 1페이지면 0, 2페이지면 8...)
+     int startIndex = (pageNum - 1) * pageSize;
+     
+     // 만약 시작 인덱스가 전체 크기보다 크면 빈 리스트 반환
+     if (startIndex >= totalSize) {
+         return new ArrayList<>();
+     }
+     
+     // 끝 인덱스 계산 (시작 인덱스 + 페이지 크기, 단 전체 크기를 넘지 않도록 조정)
+     int endIndex = Math.min(startIndex + pageSize, totalSize);
+     
+     // 전체 리스트에서 해당 페이지의 8개만 잘라서 반환
+     return allList.subList(startIndex, endIndex);
+ }
+
+ // 전체 필터링된 영화의 총 개수를 구하는 메서드 (페이징 번호 계산용)
+ public int getTotalCount(String country, String genre, String searchKeyword) {
+	    int total = 0;
+	    StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM movie WHERE 1=1");
+	    
+	    if (country != null && !country.equals("all") && !country.isEmpty()) {
+	        sql.append(" AND country LIKE ?");
+	    }
+	    if (genre != null && !genre.equals("all") && !genre.isEmpty()) {
+	        sql.append(" AND genre LIKE ?");
+	    }
+	    if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+	        sql.append(" AND title LIKE ?");
+	    }
+
+	    // ★ getMovieDetails와 동일하게 this.dataSource.getConnection() 사용
+	    try (Connection conn = this.dataSource.getConnection();
+	         PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
+	        
+	        int idx = 1;
+	        if (country != null && !country.equals("all") && !country.isEmpty()) {
+	            pstmt.setString(idx++, "%" + country + "%");
+	        }
+	        if (genre != null && !genre.equals("all") && !genre.isEmpty()) {
+	            pstmt.setString(idx++, "%" + genre + "%");
+	        }
+	        if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+	            pstmt.setString(idx++, "%" + searchKeyword + "%");
+	        }
+
+	        ResultSet rs = pstmt.executeQuery();
+	        if (rs.next()) {
+	            total = rs.getInt(1);
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return total;
+	}
+ 
+ 
 
 }
  
