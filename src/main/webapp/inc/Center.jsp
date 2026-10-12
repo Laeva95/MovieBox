@@ -568,7 +568,7 @@
         <div class="home-review-user">
 
             <div class="home-review-avatar">
-                <%= review.getMemberName()
+                <%= review.getMemberId()
                         .substring(0, 1)
                         .toUpperCase() %>
             </div>
@@ -576,7 +576,7 @@
             <div class="home-review-user-info">
 
                 <p class="home-review-user-name">
-                    <%= review.getMemberName() %>
+                    <%= review.getMemberId() %>
                 </p>
 
                 <p class="home-review-date">
