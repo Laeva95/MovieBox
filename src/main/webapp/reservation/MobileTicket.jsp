@@ -13,63 +13,38 @@
     // ====================================================
 
     String memberId =
-            request.getParameter("memberId");
+    (String) request.getAttribute("ticketMemberId");
 
-    String movieId =
-            request.getParameter("movieId");
+String movieId =
+    (String) request.getAttribute("ticketMovieId");
 
-    String screeningId =
-            request.getParameter("screeningId");
+String screeningId =
+    (String) request.getAttribute("ticketScreeningId");
 
-    String reservationDate =
-            request.getParameter("reservationDate");
+String reservationDate =
+    (String) request.getAttribute("ticketReservationDate");
 
-    String seats =
-            request.getParameter("seats");
+String seats =
+    (String) request.getAttribute("ticketSeats");
 
-    String amount =
-            request.getParameter("amount");
+String amount =
+    (String) request.getAttribute("ticketAmount");
 
+// 컨트롤러를 거치지 않고 JSP에 직접 접근한 경우 차단
+if (memberId == null
+        || movieId == null
+        || screeningId == null
+        || reservationDate == null
+        || seats == null
+        || amount == null) {
 
-    // ====================================================
-    // null 처리
-    // ====================================================
+    response.sendRedirect(
+        request.getContextPath()
+        + "/member/MyPage.do?menu=reservation"
+    );
 
-    if (memberId == null) {
-
-        memberId = "";
-
-    }
-
-    if (movieId == null) {
-
-        movieId = "";
-
-    }
-
-    if (screeningId == null) {
-
-        screeningId = "";
-
-    }
-
-    if (reservationDate == null) {
-
-        reservationDate = "";
-
-    }
-
-    if (seats == null) {
-
-        seats = "";
-
-    }
-
-    if (amount == null) {
-
-        amount = "0";
-
-    }
+    return;
+}
 
 
     // ====================================================

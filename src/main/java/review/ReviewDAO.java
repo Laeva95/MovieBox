@@ -336,6 +336,74 @@ public class ReviewDAO {
 		return result;
 	}
 	
+	//=====================================
+    // 9. 1인 1리뷰 중복 확인 (이미 작성했는지 여부)
+	//=====================================
+	public boolean hasReviewed(String memberId, int movieId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		boolean exists = false;
+		
+		String sql = "SELECT COUNT(*) AS cnt FROM review WHERE member_id = ? AND movie_id = ?";
+		
+		try {
+				conn = getConnection();
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, memberId);
+				pstmt.setInt(2, movieId);
+				rs = pstmt.executeQuery();
+				
+				if (rs.next() && rs.getInt("cnt") > 0) {
+						exists = true;
+				}
+		} catch (Exception e) {
+				System.err.println("[ReviewDAO] hasReviewed 에러 : " + e.getMessage());
+		} finally {
+				close(conn, pstmt, rs);
+		}
+		
+		return exists;
+	}
+	
+	//=========================================
+    // 10. 리뷰 좋아요(공감) 수 1 증가 (UPDATE & 조회)
+	//=========================================
+	public int increaseLikeCount(int reviewId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		int updatedLikes = -1;
+		
+		String updateSql = "UPDATE review SET like_count = like_count + 1 WHERE review_id = ?";
+		String selectSql = "SELECT like_count FROM review WHERE review_id = ?";
+		
+		try {
+				conn = getConnection();
+				// 1) 좋아요 수 1 증가
+				pstmt = conn.prepareStatement(updateSql);
+				pstmt.setInt(1, reviewId);
+				int rows = pstmt.executeUpdate();
+				close(null, pstmt, null);
+				
+				// 2) 갱신된 좋아요 수 조회
+				if (rows > 0) {
+						pstmt = conn.prepareStatement(selectSql);
+						pstmt.setInt(1, reviewId);
+						rs = pstmt.executeQuery();
+						if (rs.next()) {
+								updatedLikes = rs.getInt("like_count");
+						}
+				}
+		} catch (Exception e) {
+				System.err.println("[ReviewDAO] increaseLikeCount 에러 : " + e.getMessage());
+		} finally {
+				close(conn, pstmt, rs);
+		}
+		
+		return updatedLikes;
+	}
+	
 	
 }
 

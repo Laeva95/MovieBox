@@ -513,6 +513,47 @@
         background: linear-gradient(135deg, #f40612, #d10711);
         transform: translateY(-1px);
     }
+    
+	/* 이미 작성 완료된 사용자 안내 박스 */
+    .already-reviewed-box {
+        text-align: center;
+        padding: 24px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px dashed rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        color: #aaa;
+        font-size: 14px;
+    }
+    .already-reviewed-box strong {
+        color: #ffd700;
+    }
+
+    /* 좋아요(공감) 버튼 스타일 */
+    .btn-like {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #ccc;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+    }
+    .btn-like:hover {
+        background: rgba(229, 9, 20, 0.15);
+        border-color: #e50914;
+        color: #ff4d4d;
+        transform: scale(1.05);
+    }
+    .btn-like.liked {
+        background: rgba(229, 9, 20, 0.2);
+        border-color: #e50914;
+        color: #ff4d4d;
+    }
 </style>
 
 <section class="movie-review-area">
@@ -624,7 +665,26 @@
         <c:set var="currentName" value="${not empty sessionScope.name ? sessionScope.name : currentId}" />
 
         <c:choose>
-            <c:when test="${not empty currentId}">
+			<%-- 비회원인 경우 : 로그인 안내 --%>
+			<c:when test="${empty currentId}">
+				<div class="login-guide-box">
+					<span>영화를 감상하셨나요? 관람평을 남기시려면 먼저</span>
+					<a href="${pageContext.request.contextPath}/member/Login.do">로그인</a><span>을 해주세요.</span>
+				</div>
+			</c:when>	
+			
+			<%-- 이미 이 영화에 리뷰를 남긴 회원인 경우 --%>
+			<c:when test="${hasReviewed}">
+				<div class="already-reviewed-box">
+					🎬 <strong>${currentName}</strong>님은 이미 이 영화의 관람평을 작성하셨습니다.<br>
+					<span style="font-size: 12.5px; color: #777; margin-top: 4px; display: inline-block;">
+						(내용이나 평점을 변경하시려면 하단 내가 작성한 리뷰의 <strong>[수정]</strong> 버튼을 이용해 주세요.)
+					</span>
+				</div>
+			</c:when>
+			
+			<%-- 아직 작성하지 않은 회원인 경우: 정상 작성 폼 노출 --%>
+			<c:otherwise>
                 <form action="${pageContext.request.contextPath}/review/write.do" method="post">
                     <input type="hidden" name="movieId" value="${param.movieId != null ? param.movieId : movieId}">
                     
@@ -647,24 +707,19 @@
                             </select>
                         </div>
                     </div>
+
                     <div class="review-input-box" style="flex-direction: column;">
-					    <div style="display: flex; gap: 14px;">
-					        <textarea name="content" class="review-textarea" rows="2" 
-					                  placeholder="관람객 여러분의 솔직한 감상평을 남겨주세요 (최대 1000자)" 
-					                  oninput="updateCharCount(this, 'newReviewCount')" maxlength="1000" required></textarea>
-					        <button type="submit" class="btn-submit-review">관람평 등록</button>
-					    </div>
-					    <div style="text-align: right; font-size: 12px; color: #777; margin-top: 6px;">
-					        <span id="newReviewCount">0</span> / 1000자
-					    </div>
-					</div>
+                        <div style="display: flex; gap: 14px;">
+                            <textarea name="content" class="review-textarea" rows="2" 
+                                      placeholder="관람객 여러분의 솔직한 감상평을 남겨주세요 (최대 1000자)" 
+                                      oninput="updateCharCount(this, 'newReviewCount')" maxlength="1000" required></textarea>
+                            <button type="submit" class="btn-submit-review">관람평 등록</button>
+                        </div>
+                        <div style="text-align: right; font-size: 12px; color: #777; margin-top: 6px;">
+                            <span id="newReviewCount">0</span> / 1000자
+                        </div>
+                    </div>
                 </form>
-            </c:when>
-            <c:otherwise>
-                <div class="login-guide-box">
-                    <span>영화를 감상하셨나요? 관람평을 남기시려면 먼저</span>
-                    <a href="${pageContext.request.contextPath}/member/Login.do">로그인</a><span>을 해주세요.</span>
-                </div>
             </c:otherwise>
         </c:choose>
     </div>
@@ -741,6 +796,13 @@
                         <!-- 일반 본문 내용 -->
                         <div class="card-content" id="content-${rev.reviewId}">
                             ${rev.content}
+                        </div>
+                        
+                        <!-- 공감(좋아요) 버튼 영역 -->
+                        <div style="margin-top: 12px; display: flex; align-items: center;">
+                            <button type="button" class="btn-like" onclick="likeReview(${rev.reviewId}, this)">
+                                <span>👍</span> 공감 <span id="like-count-${rev.reviewId}">${rev.likeCount}</span>
+                            </button>
                         </div>
 
                         <!-- 인라인 수정 폼 (카드 너비 100% 확장) -->
@@ -845,6 +907,25 @@
         } else {
             countSpan.style.color = "#777";
         }
+    }
+    
+    /* 비동기 리뷰 공감(좋아요) 처리 */
+    function likeReview(reviewId, btnElement) {
+    	fetch('${pageContext.request.contextPath}/review/like.do?reviewId=' + reviewId,{
+    		method : 'GET'
+    	})
+    	.then(response => response.json())
+    	.then(data => {
+    		if (data.status === 'success') {
+    			document.getElementById('like-count-' + reviewId).innerText = data.likeCount;
+    			btnElement.classList.add('liked');
+    		} else {
+    			alert('좋아요 처리에 실패했습니다.');
+    		}
+    	})
+    	.catch(err => {
+    		console.error('좋아요 에러 : ', err);
+    	});
     }
     
 </script>
