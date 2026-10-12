@@ -6,16 +6,72 @@
     auth="Container"
     type="javax.sql.DataSource"
     driverClassName="com.mysql.cj.jdbc.Driver"
-    username="id"
-    password="pass"
+    username=""
+    password=""
     maxTotal="20"
     maxIdle="10"
     maxWaitMillis="10000"
     url="jdbc:mysql://localhost:3306/moviebox?serverTimezone=Asia/Seoul&amp;characterEncoding=UTF-8&amp;useUnicode=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false"
 	/>
+	<!-- 카카오 로그인 설정 -->
+    <Environment
+        name="kakao/restApiKey"
+        value=""
+        type="java.lang.String"
+        override="false" />
+
+    <Environment
+        name="kakao/clientSecret"
+        value=""
+        type="java.lang.String"
+        override="false" />
+
+    <Environment
+        name="kakao/redirectUri"
+        value=""
+        type="java.lang.String"
+        override="false" />
+        
+        
+	<!-- KMDb API Key 설정 (추가) -->
+    <Environment
+        name="kmdb/serviceKey"
+        value=""
+        type="java.lang.String"
+        override="false" />
+        
+        <!-- AI api 키 -->
+        <Environment
+       name="OPENAI_API_KEY"
+       value=""
+       type="java.lang.String"
+       override="false" />
+       
+       <!-- 네이버 메일 smtp -->
+	<Environment
+	    name="email/smtpHost"
+	    value=""
+	    type="java.lang.String"
+	    override="false" />
+	
+	<Environment
+	    name="email/smtpPort"
+	    value=""
+	    type="java.lang.String"
+	    override="false" />
+	
+	<Environment
+	    name="email/smtpUsername"
+	    value=""
+	    type="java.lang.String"
+	    override="false" />
+	
+	<Environment
+	    name="email/smtpPassword"
+	    value=""
+	    type="java.lang.String"
+	    override="false" />
 </Context>
-
-
 
 
 

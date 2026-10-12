@@ -939,6 +939,187 @@ public class MemberController extends HttpServlet {
 			        out.println("</script>");
 			        return;
 			    }
+			}else if ("/MobileTicket.do".equals(action)) {
+
+			    // 1. 로그인한 회원 확인
+			    String id = (String)session.getAttribute("id");
+
+			    // 로그인 상태가 아니면 로그인 화면으로 이동
+			    if (id == null || id.trim().isEmpty()) {
+			        response.sendRedirect(request.getContextPath() + "/member/Login.do");
+			        return;
+			    }
+
+			    // 2. 로그인한 회원의 실제 예매 내역 조회
+			    List<ReservationVO> reservationList = reservationService.getReservationList(id);
+
+			    String reservationIdStr = request.getParameter("reservationId");
+
+			    int ticketMovieId = 0;
+			    int ticketScreeningId = 0;
+			    int ticketSeatCount = 0;
+
+			    String ticketDate = null;
+			    String ticketSeats = null;
+
+			    boolean ticketValid = false;
+
+			    // 3. 예매번호가 있으면 해당 예매 내역으로 티켓 생성
+			    if (reservationIdStr != null && !reservationIdStr.trim().isEmpty()) {
+
+			        try {
+			            int reservationId = Integer.parseInt(reservationIdStr);
+
+			            for (ReservationVO reservation : reservationList) {
+
+			                // 로그인 회원의 예매 목록에서만 검색
+			                if (reservation.getReservationId() == reservationId) {
+
+			                    ticketMovieId = reservation.getMovieId();
+			                    ticketScreeningId = reservation.getScreeningId();
+			                    ticketDate = reservation.getReservationDate();
+			                    ticketSeats = reservation.getSeatNumber();
+			                    ticketSeatCount = 1;
+
+			                    ticketValid = true;
+			                    break;
+			                }
+			            }
+
+			        } catch (NumberFormatException e) {
+			            ticketValid = false;
+			        }
+
+			    } else {
+
+			        // 4. 예매 완료 페이지에서 접근한 경우
+			        // URL의 정보를 DB와 대조하여 실제 예매인지 확인
+
+			        String requestedMemberId = request.getParameter("memberId");
+			        String movieIdStr = request.getParameter("movieId");
+			        String screeningIdStr = request.getParameter("screeningId");
+			        String reservationDate = request.getParameter("reservationDate");
+			        String seats = request.getParameter("seats");
+
+			        boolean memberMatches = requestedMemberId == null 
+			        		|| requestedMemberId.trim().isEmpty() || id.equals(requestedMemberId);
+
+			        if (memberMatches && movieIdStr != null
+			            && screeningIdStr != null && reservationDate != null
+			            && !reservationDate.trim().isEmpty() && seats != null
+			            && !seats.trim().isEmpty()) {
+
+			            try {
+			            	// URL에서 받은 movieId와 screeningId를 정수로 변환
+			                int requestedMovieId = Integer.parseInt(movieIdStr);
+			                int requestedScreeningId = Integer.parseInt(screeningIdStr);
+
+			                // URL에서 받은 좌석 정보를 쉼표로 분리하여 배열로 변환
+			                String[] requestedSeats = seats.split(",");
+			                
+			                // 좌석 검증을 위해 중복 좌석과 빈 좌석을 허용하지 않음
+			                List<String> verifiedSeats = new ArrayList<>();
+			                
+			                // 첫 번째로 매칭된 ReservationVO를 저장하여 티켓 정보를 가져오기 위함
+			                ReservationVO firstMatched = null;
+			                
+			                boolean allSeatsValid = true;
+
+			                for (String seatValue : requestedSeats) {
+
+			                    String seat = seatValue.trim();
+
+			                    // 빈 좌석이나 중복 좌석은 허용하지 않음
+			                    if (seat.isEmpty() || verifiedSeats.contains(seat)) {
+			                        allSeatsValid = false;
+			                        break;
+			                    }
+
+			                    ReservationVO matched = null;
+
+			                    // 해당 회원의 DB 예매 내역과 모든 조건 비교
+			                    for (ReservationVO reservation : reservationList) {
+			                    	// movieId, screeningId, reservationDate, seatNumber가 모두 일치하는지 확인
+			                        if (reservation.getMovieId() == requestedMovieId
+			                        		&& reservation.getScreeningId() == requestedScreeningId
+			                                && reservationDate.equals( reservation.getReservationDate())
+			                                && seat.equals(reservation.getSeatNumber())) {
+
+			                            matched = reservation;
+			                            break;
+			                        }
+			                    }
+
+			                    // 실제 예매 내역에 없는 좌석이면 티켓 생성 불가
+			                    if (matched == null) {
+			                        allSeatsValid = false;
+			                        break;
+			                    }
+			                    
+			                    // 첫 번째로 매칭된 ReservationVO를 저장하여 티켓 정보를 가져오기 위함
+			                    if (firstMatched == null) {
+			                        firstMatched = matched;
+			                    }
+
+			                    // URL에서 받은 좌석명이 아니라
+			                    // DB에서 확인한 좌석명을 사용
+			                    verifiedSeats.add(matched.getSeatNumber());
+			                }
+			                
+			                // 모든 좌석이 유효하고, 첫 번째 매칭된 예약이 존재하며, 
+			                // 검증된 좌석 목록이 비어있지 않다면 티켓 정보를 설정
+			                if (allSeatsValid
+			                        && firstMatched != null
+			                        && !verifiedSeats.isEmpty()) {
+			                	// 티켓 정보를 설정
+			                    ticketMovieId = firstMatched.getMovieId();
+			                    ticketScreeningId = firstMatched.getScreeningId();
+			                    ticketDate = firstMatched.getReservationDate();
+			                    ticketSeats = String.join(",", verifiedSeats);
+			                    ticketSeatCount = verifiedSeats.size();
+			                    ticketValid = true;
+			                }
+
+			            } catch (NumberFormatException e) {
+			                ticketValid = false;
+			            }
+			        }
+			    }
+
+			    // 5. 검증 실패 또는 DB에 없는 영화라면 접근 차단
+			    MovieDTO ticketMovie = null;
+			    
+			    // ticketValid이 true이면 movieDao를 통해 영화 정보를 가져온다
+			    if (ticketValid) {
+			        ticketMovie = movieDao.getMovieDetails(ticketMovieId);
+			    }
+			    
+			    // 5. 검증 실패 또는 DB에 없는 영화라면 접근 차단
+			    if (!ticketValid || ticketMovie == null) {
+			        out.println("<script>");
+			        out.println("alert('유효한 예매 내역을 찾을 수 없습니다.');");
+			        out.println("location.href='"
+			            + request.getContextPath()
+			            + "/member/MyPage.do?menu=reservation';");
+			        out.println("</script>");
+			        return;
+			    }
+
+			    // 6. 화면에 필요한 정보는 서버에서 검증한 값으로 전달
+			    request.setAttribute("ticketMemberId", id);
+			    request.setAttribute("ticketMovieId", String.valueOf(ticketMovieId));
+			    request.setAttribute("ticketScreeningId", String.valueOf(ticketScreeningId));
+			    request.setAttribute("ticketReservationDate", ticketDate);
+			    request.setAttribute("ticketSeats", ticketSeats);
+
+			    // 현재 프로젝트의 티켓 가격 10,000원 기준
+			    request.setAttribute("ticketAmount", String.valueOf(ticketSeatCount * 10000));
+			    request.setAttribute("ticketMovieTitle", ticketMovie.getTitle());
+
+			    // 검증이 끝난 정보만 JSP로 전달
+			    request.getRequestDispatcher("/reservation/MobileTicket.jsp").forward(request, response);
+
+			    return;
 			}
         	// 결과 화면으로 이동 (주소창은 그대로, 화면만 바뀐다)
         	request.getRequestDispatcher(nextPage).forward(request, response);
