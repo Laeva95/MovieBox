@@ -59,16 +59,16 @@ public class ReviewService {
 	//2. 특정 영화의 리뷰 목록 조회
 	//===========================
 	
-	/*
-		특정 영화에 달린 리뷰 목록을 가져옵니다.
-		@param movieId 영화 고유 번호
-		@return 리뷰 리스트 (리뷰가 없으면 빈 리스트 반환)
-	*/
-	public List<ReviewDTO> getMovieReviews(int movieId) {
+	//기본 호출 (최신순)
+	public List<ReviewDTO> getMovieReviews(int movieId){
+		return getMovieReviews(movieId, "recent");
+	}
+	
+	public List<ReviewDTO> getMovieReviews(int movieId, String sort) {
 		if (movieId <= 0) {
 			return null;
 		}
-		return reviewDAO.getReviewsByMovieId(movieId);
+		return reviewDAO.getReviewsByMovieId(movieId, sort);
 	}
 	
 	//=======================

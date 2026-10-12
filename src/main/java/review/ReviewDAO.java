@@ -85,23 +85,31 @@ public class ReviewDAO {
 	//=====================================
 	
 	/*
-		특정 영화(movieId)에 등록된 리뷰 목록을 최신 등록순으로 가져옵니다.
 		작성자 이름(member_name)을 화면에 함께 띄우기 위해 member 테이블과 JOIN 합니다.
 		@param movieId 조회하려는 영화 고유 번호
-		@return ReviewDTO 리스트
+		@param sort 정렬 기준 ('recent' : 최신순, 'likes' : 공감 많은 순)
 	*/
-	public List<ReviewDTO> getReviewsByMovieId(int movieId) {
+	public List<ReviewDTO> getReviewsByMovieId(int movieId, String sort) {
 		List<ReviewDTO> list = new ArrayList<>();
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
+		
+		// 1) 기본 정렬 구문 : 최신순 (review_id 내림차순)
+		String orderBy = "ORDER BY r.review_id DESC ";
+		
+		// 2) 클라이언트가 'likes'를 요청했을 경우 : 공감 높은 순 우선, 공감 수가 같으면 최신순
+		if ("likes".equalsIgnoreCase(sort)) {
+				orderBy = " ORDER BY r.like_count DESC, r.review_id DESC ";
+		}
+		
 		
 		String sql = "SELECT r.review_id, r.movie_id, r.member_id, r.rating, r.content, "
 				   + "       r.reg_date, r.like_count, m.member_name "
 				   + "FROM review r "
 				   + "JOIN member m ON r.member_id = m.member_id "
 				   + "WHERE r.movie_id = ? "
-				   + "ORDER BY r.review_id DESC"; //최신순 정렬
+				   + orderBy;
 		
 		try {
 			conn = getConnection();
