@@ -1,29 +1,35 @@
 package review;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 //리뷰 테이블과 연동하여 CRUD(Create, Read, Update, Delete) 작업을 수행하는 클래스
 public class ReviewDAO {
 	
 	//====================================================
-	//1. 데이터베이스 접속 설정 정보
-	//(DB 스키마 : moviebox / 계정 : teamid / 암호 : teampass)
+	//1. 커넥션 풀(DataSource) 설정 (context.xml 연동)
 	//====================================================
-	private final String DRIVER = "com.mysql.cj.jdbc.Driver";
-	private final String URL = "jdbc:mysql://localhost:3306/moviebox?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8";
-	private final String USER = "teamid";
-	private final String PASS = "teampass";
-	
-	//데이터베이스 연결 객체(Connection)를 반환하는 공통 메소드
-	private Connection getConnection() throws  Exception {
-		Class.forName(DRIVER);
-		return DriverManager.getConnection(URL, USER, PASS);
+	private DataSource ds;
+
+	// 생성자: 객체 생성 시 context.xml에 설정된 커넥션 풀을 JNDI로 조회
+	public ReviewDAO() {
+		try {
+			InitialContext ctx = new InitialContext();
+			ds = (DataSource) ctx.lookup("java:comp/env/jdbc/moviebox");
+		} catch (Exception e) {
+			System.err.println("[ReviewDAO] 커넥션 풀 lookup 실패 : " + e.getMessage());
+		}
+	}
+
+	// 커넥션 풀에서 Connection 객체를 대여해오는 공통 메소드
+	private Connection getConnection() throws Exception {
+		return ds.getConnection();
 	}
 	
 	/*
@@ -89,6 +95,11 @@ public class ReviewDAO {
 		@param movieId 조회하려는 영화 고유 번호
 		@param sort 정렬 기준 ('recent' : 최신순, 'likes' : 공감 많은 순)
 	*/
+	// [기본 호출용 오버로딩] sort 값이 없으면 기본 최신순('recent')으로 조회
+	public List<ReviewDTO> getReviewsByMovieId(int movieId) {
+	    return getReviewsByMovieId(movieId, "recent");
+	}
+	
 	public List<ReviewDTO> getReviewsByMovieId(int movieId, String sort) {
 		List<ReviewDTO> list = new ArrayList<>();
 		Connection conn = null;
