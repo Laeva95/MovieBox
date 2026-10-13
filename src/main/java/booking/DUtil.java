@@ -1,30 +1,35 @@
 package booking;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 public class DUtil {
 
-	public static Connection getConnection() {
+    public static Connection getConnection() {
 
-		Connection conn = null;
+        Connection conn = null;
 
-		try {
+        try {
 
-			Class.forName("com.mysql.cj.jdbc.Driver");
+            Context initContext = new InitialContext();
 
-			conn = DriverManager.getConnection(
-					"jdbc:mysql://localhost:3306/moviebox",
-					"root",
-					"0000"
-			);
+            DataSource dataSource =
+                    (DataSource) initContext.lookup(
+                            "java:comp/env/jdbc/moviebox"
+                    );
 
-		} catch (Exception e) {
+            conn = dataSource.getConnection();
 
-			e.printStackTrace();
+        } catch (Exception e) {
 
-		}
+            e.printStackTrace();
 
-		return conn;
-	}
+        }
+
+        return conn;
+    }
 }
+
