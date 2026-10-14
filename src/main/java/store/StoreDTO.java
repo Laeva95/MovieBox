@@ -7,6 +7,8 @@ public class StoreDTO {
     private int price;
     private String description;
     private String image;
+    private String category; // 상품 카테고리 필드 추가
+ // Getter, Setter 작성
 
     // id
     public int getId() {
@@ -51,5 +53,13 @@ public class StoreDTO {
 
     public void setImage(String image) {
         this.image = image;
+    }
+    
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }
