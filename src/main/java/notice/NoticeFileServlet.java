@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 public class NoticeFileServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private static final String UPLOAD_PATH = "C:\\file_repo";
+    private static final String UPLOAD_PATH = "/var/www/file_repo";
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
