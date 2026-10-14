@@ -219,7 +219,7 @@
                 <span style="color: #ff4757; font-weight: bold; border: 1px solid #ff4757; border-radius: 50%; padding: 1px 6px; font-size: 12px;">!</span>
             </td>
             <td class="notice-list-title" style="text-align: left;">
-                <a href="<%=request.getContextPath()%>/notice/detail?id=<%=notice.getNoticeId()%>" 
+                <a href="<%=request.getContextPath()%>/notice/NoticeDetail.do?id=<%=notice.getNoticeId()%>"
                    style="color: #ff4757; font-weight: bold;">
                     <%= notice.getTitle() %>
                 </a>
@@ -238,9 +238,9 @@
 		<tr>
             <td><%= notice.getNoticeId() %></td>
             <td class="notice-list-title" style="text-align: left;">
-                <a href="<%=request.getContextPath()%>/notice/detail?id=<%=notice.getNoticeId()%>" style="color: white;">
-                    <%= notice.getTitle() %>
-                </a>
+                <a href="${pageContext.request.contextPath}/notice/NoticeDetail.do?id=<%=notice.getNoticeId()%>" style="color: white;">
+				    <%= notice.getTitle() %>
+				</a>
             </td>
             <td style="color: white;"><%= notice.getCreatedAt() %></td>
             <td style="color: white;"><%= notice.getViewCount() %></td>
@@ -301,30 +301,49 @@
                         String searchParam = (keyword != null && !keyword.isEmpty()) ? "&keyword=" + java.net.URLEncoder.encode(keyword, "UTF-8") : "";
                     %>
                 
-                    <!-- Pagination -->
-                    <div class="notice-list-pagination">
-                        <!-- 이전 블록 버튼 -->
-                        <a href="<%=request.getContextPath()%>/notice/list?page=<%=prevPage%><%=searchParam%>" 
-                           class="<%= !prev ? "notice-list-disabled" : "" %>">&lt;</a>
-
-                        <!-- 페이지 번호 반복 -->
-                        <% for (int i = startPage; i <= endPage; i++) { %>
-                            <a href="<%=request.getContextPath()%>/notice/list?page=<%=i%><%=searchParam%>"
-                               class="<%= currentPage == i ? "notice-list-active" : "" %>">
-                                <%=i%>
-                            </a>
-                        <% } %>
-
-                        <!-- 다음 블록 버튼 -->
-                        <a href="<%=request.getContextPath()%>/notice/list?page=<%=nextPage%><%=searchParam%>" 
-                           class="<%= !next ? "notice-list-disabled" : "" %>">&gt;</a>
-                    </div>
-                
+                   
+					<!-- Pagination -->
+					<div class="notice-list-pagination">
+					
+					    <!-- 이전 블록 버튼 -->
+					    <% if (prev) { %>
+					        <a href="<%=request.getContextPath()%>/notice/Notice.do?page=<%=prevPage%><%=searchParam%>">
+					            &lt;
+					        </a>
+					    <% } else { %>
+					        <a class="notice-list-disabled" href="#">
+					            &lt;
+					        </a>
+					    <% } %>
+					
+					    <!-- 페이지 번호 반복 -->
+					    <% for (int i = startPage; i <= endPage; i++) { %>
+					        <a href="<%=request.getContextPath()%>/notice/Notice.do?page=<%=i%><%=searchParam%>"
+					           class="<%= currentPage == i ? "notice-list-active" : "" %>">
+					            <%=i%>
+					        </a>
+					    <% } %>
+					
+					    <!-- 다음 블록 버튼 -->
+					    <% if (next) { %>
+					        <a href="<%=request.getContextPath()%>/notice/Notice.do?page=<%=nextPage%><%=searchParam%>">
+					            &gt;
+					        </a>
+					    <% } else { %>
+					        <a class="notice-list-disabled" href="#">
+					            &gt;
+					        </a>
+					    <% } %>
+					
+					</div>
+					                
                     <!-- 관리자에게만 글쓰기 버튼 표시 (우측 절대 위치 배치) -->
                     <c:if test="${sessionScope.id == 'admin'}">
-                        <button class="notice-list-write-btn" onclick="location.href='${pageContext.request.contextPath}/notice/write'" style="position: absolute; right: 0;">
-                            글쓰기
-                        </button>
+                        <button class="notice-list-write-btn"
+						        onclick="location.href='${pageContext.request.contextPath}/notice/NoticeWrite.do'"
+						        style="position: absolute; right: 0;">
+						    글쓰기
+						</button>
                     </c:if>   
                     
                 </div>
@@ -333,16 +352,16 @@
 
             <!-- Search -->
             <div class="notice-list-search-box">
-                <form action="${pageContext.request.contextPath}/notice/list" method="get">
-                    <!-- 검색 시 첫 페이지(1페이지)부터 보여주도록 설정 -->
-                    <input type="hidden" name="page" value="1">
-                    
-                    <!-- name="keyword"를 추가해야 백엔드로 검색어가 전달됩니다 -->
-                    <input type="text" name="keyword" value="${param.keyword != null ? param.keyword : ''}" placeholder="공지사항 검색">
-                    
-                    <!-- type="button"을 type="submit"으로 변경하거나 유지하되 폼이 제출되도록 합니다 -->
-                    <button type="submit">검색</button>
-                </form>
+               <form action="${pageContext.request.contextPath}/notice/Notice.do" method="get">
+				    <input type="hidden" name="page" value="1">
+				
+				    <input type="text"
+				           name="keyword"
+				           value="${param.keyword != null ? param.keyword : ''}"
+				           placeholder="공지사항 검색">
+				
+				    <button type="submit">검색</button>
+				</form>
             </div>
 
         </div>

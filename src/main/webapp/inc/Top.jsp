@@ -24,7 +24,8 @@
       <a href="${pageContext.request.contextPath}/movies/MovieList.do">영화</a>
       <a href="${pageContext.request.contextPath}/movie/Booking.do">예매</a>
       <a href="${pageContext.request.contextPath}/review/main.do">리뷰</a>
-      <a href="${pageContext.request.contextPath}/notice/list">공지사항</a>
+      <a href="${pageContext.request.contextPath}/store/Main.do">매점</a>
+      <a href="${pageContext.request.contextPath}/notice/Notice.do">공지사항</a>
     </nav>
   </div>
 </div>
