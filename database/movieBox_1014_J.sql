@@ -49,9 +49,9 @@ CREATE TABLE movie (
     director        VARCHAR(100),
     actors          VARCHAR(500),
     country			varchar(20)
-   
-);
-
+ );  
+ALTER TABLE movie ADD COLUMN vod_url VARCHAR(500) DEFAULT NULL;
+ALTER TABLE movie ADD COLUMN stills TEXT DEFAULT NULL;
 
 /* =========================================================
 	리뷰
@@ -159,3 +159,34 @@ CREATE TABLE store (
 ALTER TABLE notice ADD COLUMN is_pinned INT DEFAULT 0;
 insert into member(member_id, member_pass, member_name, age, gender, email, address, tel, mtel) 
 values('admin', '8M/3EtqZcgKKfrjcP3NPjw==:l14pfmX7RibfJh2RH+BkOsMRfaCIQezmUrpor1jjdwM=', '관리자', 20, '남', 'test@naver.com', '서울시 강남구 역삼동 역삼빌딩 2층 21호', '0511231239', '01022314234');
+
+/* =========================================================
+매점 주문
+========================================================= */
+
+CREATE TABLE store_orders (
+order_id INT AUTO_INCREMENT PRIMARY KEY,
+member_id VARCHAR(12) NOT NULL,
+total_price INT NOT NULL,
+order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+order_status VARCHAR(20) DEFAULT '주문완료',
+FOREIGN KEY (member_id)
+REFERENCES member(member_id)
+);
+
+/* =========================================================
+매점 주문 상품
+========================================================= */
+
+CREATE TABLE store_order_items (
+order_item_id INT AUTO_INCREMENT PRIMARY KEY,
+order_id INT NOT NULL,
+product_id INT NOT NULL,
+product_name VARCHAR(100) NOT NULL,
+quantity INT NOT NULL,
+price INT NOT NULL,
+FOREIGN KEY (order_id)
+REFERENCES store_orders(order_id),
+FOREIGN KEY (product_id)
+REFERENCES store(id)
+);
