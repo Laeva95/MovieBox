@@ -158,7 +158,7 @@ private void process(HttpServletRequest request,
             throws ServletException, IOException {
 
         // 파일을 저장할 폴더
-        String uploadPath = "C:\\file_repo";
+        String uploadPath = "/var/www/file_repo";
 
         // 폴더가 없으면 자동으로 생성
         File uploadDir = new File(uploadPath);
@@ -246,7 +246,7 @@ private void process(HttpServletRequest request,
         private void editOk(HttpServletRequest request, HttpServletResponse response)
                 throws ServletException, IOException {
 
-            String uploadPath = "C:\\file_repo";
+            String uploadPath = "/var/www/file_repo";
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
