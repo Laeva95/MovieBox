@@ -137,7 +137,7 @@
     </p>
     
     <!-- 파일 업로드를 위해 enctype 속성 필수 -->
-    <form action="${pageContext.request.contextPath}/notice/editOk" 
+    <form action="${pageContext.request.contextPath}/notice/NoticeEditOk.do"
 	      method="post"
 	      enctype="multipart/form-data">
 	      
@@ -223,23 +223,25 @@
         </div>
 
 
-        <!-- 버튼 -->
-        <div class="notice-edit-button-area">
+            <!-- 버튼 -->
+    <div class="notice-edit-button-area">
 
-            <button
-                type="button"
-                class="notice-edit-btn notice-edit-btn-secondary"
-                onclick="location.href='${pageContext.request.contextPath}/notice/list'">
-                목록
-            </button>
+        <!-- 목록 버튼 -->
+        <button
+            type="button"
+            class="notice-edit-btn notice-edit-btn-secondary"
+            onclick="location.href='${pageContext.request.contextPath}/notice/Notice.do'">
+            목록
+        </button>
 
-            <button
-                type="submit"
-                class="notice-edit-btn notice-edit-btn-primary">
-                등록
-            </button>
+        <!-- 수정 완료 버튼 -->
+        <button
+            type="submit"
+            class="notice-edit-btn notice-edit-btn-primary">
+            수정 완료
+        </button>
 
-        </div>
+    </div>
 
         
     </form>

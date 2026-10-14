@@ -106,9 +106,9 @@
     </p>
     
     <!-- 파일 업로드를 위해 enctype 속성 필수 -->
-    <form action="${pageContext.request.contextPath}/notice/writeOk" 
-		  method="post"
-		  enctype="multipart/form-data">
+     <form action="${pageContext.request.contextPath}/notice/NoticeWriteOk.do"
+	      method="post"
+	      enctype="multipart/form-data"> 
 		  
         <!-- 제목 -->
         <div class="notice-write-form-group">
@@ -189,23 +189,27 @@
         </div>
 
 
-        <!-- 버튼 -->
-        <div class="notice-write-button-area">
+        
+		<!-- 버튼 -->
+		<div class="notice-write-button-area">
+		
+		    <!-- 목록 버튼 -->
+		    <button
+		        type="button"
+		        class="notice-write-btn notice-write-btn-secondary"
+		        onclick="location.href='${pageContext.request.contextPath}/notice/Notice.do'">
+		        목록
+		    </button>
+		
+		    <!-- 등록 버튼 -->
+		    <button
+		        type="submit"
+		        class="notice-write-btn notice-write-btn-primary">
+		        등록
+		    </button>
+		
+		</div>
 
-            <button
-                type="button"
-                class="notice-write-btn notice-write-btn-secondary"
-                onclick="location.href='${pageContext.request.contextPath}/notice/list'">
-                목록
-            </button>
-
-            <button
-                type="submit"
-                class="notice-write-btn notice-write-btn-primary">
-                등록
-            </button>
-
-        </div>
 
         
     </form>

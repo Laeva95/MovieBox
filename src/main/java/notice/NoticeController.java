@@ -1,6 +1,6 @@
 package notice;
 
-import java.io.File;   
+import java.io.File;    
 import java.io.IOException;
 import java.util.List;
 
@@ -26,54 +26,70 @@ public class NoticeController extends HttpServlet {
         process(request, response);
     }
 
-    private void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // 한글 인코딩 처리 (모든 요청 공통)
-        request.setCharacterEncoding("UTF-8");
 
-        // 요청 경로 파악 (예: /notice/list -> /list, /notice/detail -> /detail)
-        String command = request.getPathInfo();
-        
-        System.out.println("command : " + command);
-        
-        
-        if (command == null) {
-            command = "/list"; // 기본값은 목록 화면
-        }
+private void process(HttpServletRequest request,
+                     HttpServletResponse response)
+        throws ServletException, IOException {
 
-        switch (command) {
-            case "/list": // 공지사항 목록
-                listNotice(request, response);
-                break;
-                
-            case "/detail": // 상세 보기
-                detailNotice(request, response);
-                break;
-                
-            case "/write": // 글쓰기 화면 이동
-                writeForm(request, response);
-                break;
-                
-            case "/writeOk": // 글 등록 처리 (POST)
-                writeOk(request, response);
-                break;
-                
-            case "/edit": // 수정 화면 이동
-                editForm(request, response);
-                break;
-                
-            case "/editOk": // 수정 처리 (POST)
-                editOk(request, response);
-                break;
-                
-            case "/deleteOk": // 삭제 처리
-                deleteOk(request, response);
-                break;
-                
-            default:
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                break;
-        }
+    request.setCharacterEncoding("UTF-8");
+
+    String action = request.getPathInfo();
+    String command = null;
+
+    if ("/Notice.do".equals(action)) {
+        command = "/list";
+    } else if ("/NoticeDetail.do".equals(action)) {
+        command = "/detail";
+    } else if ("/NoticeWrite.do".equals(action)) {
+        command = "/write";
+    } else if ("/NoticeWriteOk.do".equals(action)) {
+        command = "/writeOk";
+    } else if ("/NoticeEdit.do".equals(action)) {
+        command = "/edit";
+    } else if ("/NoticeEditOk.do".equals(action)) {
+        command = "/editOk";
+    } else if ("/NoticeDeleteOk.do".equals(action)) {
+        command = "/deleteOk";
     }
+
+    System.out.println("요청 주소: " + action);
+    System.out.println("command: " + command);
+
+    if (command == null) {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return;
+    }
+
+    switch (command) {
+        case "/list":
+            listNotice(request, response);
+            break;
+            
+        case "/detail":
+            detailNotice(request, response);
+            break;
+            
+        case "/write":
+            writeForm(request, response);
+            break;
+            
+        case "/writeOk":
+            writeOk(request, response);
+            break;
+            
+        case "/edit":
+            editForm(request, response);
+            break;
+            
+        case "/editOk":
+            editOk(request, response);
+            break;
+            
+        case "/deleteOk":
+            deleteOk(request, response);
+            break;
+    }
+   }
 
     // 1. 목록 조회 로직 
     private void listNotice(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -126,7 +142,9 @@ public class NoticeController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        response.sendRedirect("list");
+        response.sendRedirect(
+        	    request.getContextPath() + "/notice/Notice.do"
+        	);
     }
 
     // 3. 글쓰기 폼 이동 로직
@@ -192,7 +210,9 @@ public class NoticeController extends HttpServlet {
             noticeService.registerNotice(notice);
 
             // 등록 후 목록으로 이동
-            response.sendRedirect(request.getContextPath() + "/notice/list");
+            response.sendRedirect(
+            	    request.getContextPath() + "/notice/Notice.do"
+            	);
 
         } catch (Exception e) {
             e.printStackTrace();}
@@ -217,7 +237,9 @@ public class NoticeController extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            response.sendRedirect("list");
+            response.sendRedirect(
+            	    request.getContextPath() + "/notice/Notice.do"
+            	);
         }
         
         // 글 수정 처리 로직
@@ -264,7 +286,9 @@ public class NoticeController extends HttpServlet {
                 noticeService.updateNotice(notice);
 
                 // 수정 완료 후 상세 페이지나 목록으로 이동
-                response.sendRedirect(request.getContextPath() + "/notice/detail?id=" + noticeId);
+                response.sendRedirect(
+                	    request.getContextPath() + "/notice/NoticeDetail.do?id=" + noticeId
+                	);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -288,6 +312,6 @@ public class NoticeController extends HttpServlet {
                 e.printStackTrace();
             }
             // 삭제 후 목록으로 리다이렉트
-            response.sendRedirect(request.getContextPath() + "/notice/list");
+            response.sendRedirect(request.getContextPath() + "/notice/Notice.do");
     }
 }

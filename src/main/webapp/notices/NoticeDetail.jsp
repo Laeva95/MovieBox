@@ -220,9 +220,9 @@
         <%-- 다음글이 있는 경우 --%>
         <% if (nextNotice != null) { %>
             <!-- ★ 여기를 NoticeDetail.jsp 대신 detail 로 변경 -->
-            <a href="detail?id=<%= nextNotice.getNoticeId() %>">
-                <%= nextNotice.getTitle() %>
-            </a>
+            <a href="<%=request.getContextPath()%>/notice/NoticeDetail.do?id=<%=nextNotice.getNoticeId()%>">
+			    <%= nextNotice.getTitle() %>
+			</a>
         <% } else { %>
             <span style="color: #999;">
                 다음글이 없습니다.
@@ -240,9 +240,9 @@
         <%-- 이전글이 있는 경우 --%>
         <% if (prevNotice != null) { %>
             <!-- ★ 여기를 NoticeDetail.jsp 대신 detail 로 변경 -->
-            <a href="detail?id=<%= prevNotice.getNoticeId() %>">
-                <%= prevNotice.getTitle() %>
-            </a>
+            <a href="<%=request.getContextPath()%>/notice/NoticeDetail.do?id=<%=prevNotice.getNoticeId()%>">
+			    <%= prevNotice.getTitle() %>
+			</a>
         <% } else { %>
             <span style="color: #999;">
                 이전글이 없습니다.
@@ -255,17 +255,25 @@
 <%-- 세션에 저장된 id가 admin인 경우에만 수정/삭제 버튼 노출 --%>
 <c:if test="${not empty sessionScope.id and sessionScope.id == 'admin'}">
     <div class="notice-detail-btn-area" style="margin-top: 20px; text-align: right;">
-        <a href="edit?id=<%= notice.getNoticeId() %>" class="notice-detail-btn notice-detail-btn-primary" style="padding: 6px 12px; background-color: #333; color: #fff; text-decoration: none; border-radius: 4px; margin-right: 5px;">수정</a>
+        <a href="<%=request.getContextPath()%>/notice/NoticeEdit.do?id=<%=notice.getNoticeId()%>"
+		   class="notice-detail-btn">
+		    수정
+		</a>
         
-        <a href="${pageContext.request.contextPath}/notice/deleteOk?id=${notice.noticeId}" 
-           onclick="return confirm('정말 이 공지사항을 삭제하시겠습니까?');"
-           style="padding: 6px 12px; background-color: #ff4757; color: #fff; text-decoration: none; border-radius: 4px; margin-right: 5px;">삭제</a>
+        <a href="<%=request.getContextPath()%>/notice/NoticeDeleteOk.do?id=<%=notice.getNoticeId()%>"
+		   onclick="return confirm('정말 이 공지사항을 삭제하시겠습니까?');"
+		   class="notice-detail-btn">
+		    삭제
+		</a>
     </div>
 </c:if>
 
 <!-- 목록 버튼은 항상 노출 -->
 <div class="notice-detail-button-area" style="margin-top: 20px; text-align: center;">
-    <a href="list" class="notice-detail-btn" style="padding: 8px 20px; background-color: #666; color: #fff; text-decoration: none; border-radius: 4px;">목록</a>
+    <a href="<%=request.getContextPath()%>/notice/Notice.do"
+	   class="notice-detail-btn">
+	    목록
+	</a>
 </div>
 
 </div>
