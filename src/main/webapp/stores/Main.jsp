@@ -363,34 +363,109 @@
         </div>
     </div>
 
+    
     <!-- 2. 카테고리 탭 영역 -->
-    <div class="store-nav-tabs">
-        <button type="button" class="tab-btn active" data-category="all">전체</button>
-        <button type="button" class="tab-btn" data-category="combo">콤보</button>
-        <button type="button" class="tab-btn" data-category="popcorn">팝콘</button>
-        <button type="button" class="tab-btn" data-category="drink">음료</button>
-        <button type="button" class="tab-btn" data-category="snack">스낵</button>
-        <button type="button" class="tab-btn" data-category="goods">캐릭터굿즈</button>
-    </div>
+    <form action="${pageContext.request.contextPath}/store/StoreList.do"
+          method="get"
+          class="store-nav-tabs">
 
-    <!-- 3. 필터 및 정렬 영역 -->
-    <div class="store-filter-bar">
-        <div class="sort-options">
-            <select name="sort" class="sort-select">
-                <option value="recommend">추천순</option>
-                <option value="popular">인기순</option>
-                <option value="low-price">낮은가격순</option>
-                <option value="high-price">높은가격순</option>
-            </select>
-        </div>
-        <div class="pickup-toggle">
-            <label>
-                <span>나중에 픽업 가능</span>
-                <input type="checkbox" id="pickupToggle">
-                <span class="slider"></span>
-            </label>
-        </div>
-    </div>
+        <button type="submit"
+                name="category"
+                value="전체"
+                class="tab-btn ${empty selectedCategory or selectedCategory eq '전체' ? 'active' : ''}">
+            전체
+        </button>
+
+        <button type="submit"
+                name="category"
+                value="콤보"
+                class="tab-btn ${selectedCategory eq '콤보' ? 'active' : ''}">
+            콤보
+        </button>
+
+        <button type="submit"
+                name="category"
+                value="팝콘"
+                class="tab-btn ${selectedCategory eq '팝콘' ? 'active' : ''}">
+            팝콘
+        </button>
+
+        <button type="submit"
+                name="category"
+                value="음료"
+                class="tab-btn ${selectedCategory eq '음료' ? 'active' : ''}">
+            음료
+        </button>
+
+        <button type="submit"
+                name="category"
+                value="스낵"
+                class="tab-btn ${selectedCategory eq '스낵' ? 'active' : ''}">
+            스낵
+        </button>
+
+        <button type="submit"
+                name="category"
+                value="캐릭터굿즈"
+                class="tab-btn ${selectedCategory eq '캐릭터굿즈' ? 'active' : ''}">
+            캐릭터굿즈
+        </button>
+
+    </form>
+
+
+    
+	<!-- 3. 필터 및 정렬 영역 -->
+	<div class="store-filter-bar">
+	
+	    <div class="sort-options">
+	        <form action="${pageContext.request.contextPath}/store/StoreList.do"
+	              method="get"
+	              id="sortForm">
+	
+	            <!-- 현재 선택한 카테고리 유지 -->
+	            <input type="hidden"
+	                   name="category"
+	                   value="${empty selectedCategory ? '전체' : selectedCategory}">
+	
+	            <select name="sort"
+	                    class="sort-select"
+	                    onchange="this.form.submit()">
+	
+	                <option value="recommend"
+	                    ${empty selectedSort or selectedSort eq 'recommend' ? 'selected' : ''}>
+	                    추천순
+	                </option>
+	
+	                <option value="popular"
+	                    ${selectedSort eq 'popular' ? 'selected' : ''}>
+	                    인기순
+	                </option>
+	
+	                <option value="low-price"
+	                    ${selectedSort eq 'low-price' ? 'selected' : ''}>
+	                    낮은가격순
+	                </option>
+	
+	                <option value="high-price"
+	                    ${selectedSort eq 'high-price' ? 'selected' : ''}>
+	                    높은가격순
+	                </option>
+	
+	            </select>
+	        </form>
+	    </div>
+	
+	    <div class="pickup-toggle">
+	        <label>
+	            <span>나중에 픽업 가능</span>
+	            <input type="checkbox" id="pickupToggle">
+	            <span class="slider"></span>
+	        </label>
+	    </div>
+	
+	</div>
+
 
     <!-- 4. 상품 목록 그리드 영역 -->
 	<div class="store-item-grid">

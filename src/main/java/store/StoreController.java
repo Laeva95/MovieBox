@@ -1,6 +1,6 @@
 package store;
 
-import java.io.IOException;
+import java.io.IOException; 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,22 +43,64 @@ public class StoreController extends HttpServlet {
 
         try {
 
-			// 1. 매점 상품 목록
+
+
+            // 매점 상품 목록 및 정렬
             if ("/Main.do".equals(action)
                     || "/StoreList.do".equals(action)) {
 
                 StoreDAO dao = new StoreDAO();
 
-                List<StoreDTO> storeList = dao.getStoreList();
+                String category = request.getParameter("category");
+                String sort = request.getParameter("sort");
+
+                // 기본값 설정
+                if (category == null || category.isEmpty()) {
+                    category = "전체";
+                }
+
+                if (sort == null || sort.isEmpty()) {
+                    sort = "recommend";
+                }
+
+                // 허용된 카테고리 확인
+                if (!"전체".equals(category)
+                        && !"콤보".equals(category)
+                        && !"팝콘".equals(category)
+                        && !"음료".equals(category)
+                        && !"스낵".equals(category)
+                        && !"캐릭터굿즈".equals(category)) {
+
+                    response.sendError(
+                            HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+
+                // 허용된 정렬 기준 확인
+                if (!"recommend".equals(sort)
+                        && !"popular".equals(sort)
+                        && !"low-price".equals(sort)
+                        && !"high-price".equals(sort)) {
+
+                    response.sendError(
+                            HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+
+                List<StoreDTO> storeList =
+                        dao.getSortedStoreList(category, sort);
 
                 request.setAttribute("storeList", storeList);
+                request.setAttribute("selectedCategory", category);
+                request.setAttribute("selectedSort", sort);
                 request.setAttribute("center", "/stores/Main.jsp");
 
                 request.getRequestDispatcher("/Index.jsp")
                        .forward(request, response);
-
                 return;
             }
+
+
 
             // 2. 장바구니에 상품 추가
             else if ("/CartAdd.do".equals(action)) {
