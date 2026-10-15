@@ -515,10 +515,42 @@
                             <% } %>
                         </div>
 
-                        <div class="home-movie-info">
+						<div class="home-movie-info">
+						<% 
+						    String grade = movie.getWatchGrade();
+						    if (grade == null || grade.trim().isEmpty()) {
+						        grade = "전체관람가";
+						    }
+						    
+						    String bg = "#6b7280";       // 기본 배경색 (회색)
+						    String shortGrade = "All";   // 기본 관람등급 텍스트
+						    
+						    if (grade.contains("12")) {
+						        bg = "#d97706";         // 12세: 주황
+						        shortGrade = "12";
+						    } else if (grade.contains("15")) {
+						        bg = "#b45309";         // 15세: 진한 주황
+						        shortGrade = "15";
+						    } else if (grade.contains("청소년") || grade.contains("19") || grade.contains("제한")) {
+						        bg = "#dc2626";         // 청불: 빨강
+						        shortGrade = "청불";
+						    } else if (grade.contains("전체")) {
+						        bg = "#059669";         // 전체: 초록
+						        shortGrade = "All";
+						    } else {
+						        shortGrade = grade;
+						    }
+						%>
+
+
+
+
                             <a href="${pageContext.request.contextPath}/movies/MovieDetail.do?movie_id=<%= movie.getMovieId() %>" style="text-decoration: none; color: inherit;">
-                                <h3 class="home-movie-title">
-                                    <%= movie.getTitle() %>
+                                <h3 class="home-movie-title" style="display: flex; align-items: center; gap: 6px; margin-bottom: 7px;">
+                                    <span style="background-color: <%= bg %>; color: white; padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 3px; flex-shrink: 0; line-height: 1.2;">
+                                        <%= grade %>
+                                    </span>
+                                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= movie.getTitle() %></span>
                                 </h3>
                             </a>
 

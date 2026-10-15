@@ -420,12 +420,36 @@
                     </div>
                     
                     <div class="card-info">
-                      <h3 class="movie-card-title"><%= movie.getTitle() %></h3>
-                      <div class="card-meta-line">
-                        <span><%= movie.getGenre() %> | <%= movie.getCountry() %> | <%= movie.getReleaseDate() %> 개봉</span>
-                      </div>
+<% 
+                            String grade = movie.getWatchGrade();
+                            if (grade == null || grade.isEmpty()) {
+                                grade = "전체관람가";
+                            }
+                            
+                            // 등급별 배지 색상 동적 설정
+                            String bg = "#6b7280"; // 기본 회색
+                            if (grade.contains("12")) {
+                                bg = "#d97706"; // 12세: 주황색
+                            } else if (grade.contains("15")) {
+                                bg = "#b45309"; // 15세: 진한 주황
+                            } else if (grade.contains("청소년") || grade.contains("19") || grade.contains("제한")) {
+                                bg = "#dc2626"; // 청불: 빨간색
+                            } else if (grade.contains("전체")) {
+                                bg = "#059669"; // 전체: 초록색
+                            }
+                        %>
+                        <div class="movie-title-grade-row">
+                            <h3 class="movie-card-title" style="margin: 0;"><%= movie.getTitle() %></h3>
+                            <span class="movie-grade-badge" style="background-color: <%= bg %>;">
+                                <%= grade %>
+                            </span>
+                        </div>
+                        
+                        <div class="card-meta-line">
+                          <span><%= movie.getGenre() %> | <%= movie.getCountry() %> | <%= movie.getReleaseDate() %> 개봉</span>
+                        </div>
                     </div>
-                  </div>
+                   </div>
               <% } %>
           <% } else { %>
               <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0; color: #666;">
@@ -506,7 +530,7 @@
         .then(data => {
             if (data.status === "unauthorized") {
                 alert("로그인 후 이용할 수 있습니다.");
-                location.href = contextPath + "/member/login.do";
+                location.href = contextPath + "/member/Login.do";
                 return;
             }
 
