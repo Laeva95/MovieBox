@@ -13,11 +13,12 @@
         max-width: 1000px;
         margin: 40px auto;
         padding: 20px;
-        color: #222;
+        color: #f1f1f1; /* 전체 기본 글자색을 밝은 색으로 변경 */
     }
 
     .cart-container h1 {
         margin-bottom: 30px;
+        color: #ffffff; /* 제목 글자색 흰색 */
     }
 
     .cart-item {
@@ -25,7 +26,7 @@
         align-items: center;
         gap: 20px;
         padding: 20px 0;
-        border-bottom: 1px solid #ddd;
+        border-bottom: 1px solid #444; /* 구분선도 어두운 배경에 맞게 조정 */
     }
 
     .cart-item img {
@@ -42,41 +43,45 @@
 
     .cart-item-info h3 {
         margin: 0 0 10px;
+        color: #ffffff; /* 상품명 흰색 */
     }
 
     .cart-item-info p {
         margin: 5px 0;
-        color: #666;
+        color: #b0b0b0; /* 상세 설명은 부드러운 회색 */
     }
 
     .cart-quantity {
         min-width: 70px;
         text-align: center;
+        color: #f1f1f1; /* 수량 글자색 밝게 */
     }
 
     .cart-price {
         min-width: 130px;
         text-align: right;
         font-weight: bold;
+        color: #ffffff; /* 가격 글자색 흰색 */
     }
 
     .cart-total {
         margin-top: 30px;
         padding: 25px;
         text-align: right;
-        background: #f7f7f7;
+        background: #2a2a2a; /* 총 주문 금액 박스 배경도 다크 모드에 어울리게 변경 */
         border-radius: 8px;
+        color: #ffffff;
     }
 
     .cart-total strong {
         font-size: 24px;
-        color: #e31837;
+        color: #ff334b; /* 총 금액 강조 컬러는 조금 더 선명한 빨간색으로 조정 */
     }
 
     .cart-empty {
         padding: 60px 20px;
         text-align: center;
-        color: #777;
+        color: #aaa;
     }
 
 	/* 장바구니 버튼 영역 */
@@ -134,7 +139,6 @@
 	    background: #fff1f0;
 	    border-color: #d93025;
 	}
-    
 </style>
 </head>
 
@@ -160,9 +164,11 @@
 
                 <div class="cart-item">
 
-                    <img
-                        src="${pageContext.request.contextPath}${item.product.image}"
-                        alt="${item.product.name}">
+                   
+				<img
+				    src="${pageContext.request.contextPath}/images/${item.product.image}"
+				    alt="${item.product.name}">
+
 
                     <div class="cart-item-info">
                         <h3>${item.product.name}</h3>
