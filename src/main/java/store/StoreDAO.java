@@ -162,48 +162,50 @@ public class StoreDAO {
         return list;
     }
 	
-	// 상품 ID로 상품 한 개 조회
-	public StoreDTO getStoreById(int id) {
-	    StoreDTO product = null;
+ // 상품 ID로 상품 한 개 조회
+ 	public StoreDTO getStoreById(int id) {
+ 	    StoreDTO product = null;
 
-	    String sql =
-	        "SELECT id, name, price, description, image " +
-	        "FROM store WHERE id = ?";
+ 	    // category 컬럼 추가
+ 	    String sql =
+ 	        "SELECT id, name, price, description, image, category " +
+ 	        "FROM store WHERE id = ?";
 
-	    if (ds == null) {
-	        System.err.println(
-	            "DB 연결 실패: DataSource(ds)가 null입니다."
-	        );
-	        return null;
-	    }
+ 	    if (ds == null) {
+ 	        System.err.println(
+ 	            "DB 연결 실패: DataSource(ds)가 null입니다."
+ 	        );
+ 	        return null;
+ 	    }
 
-	    try (
-	        Connection conn = ds.getConnection();
-	        PreparedStatement pstmt = conn.prepareStatement(sql)
-	    ) {
-	        pstmt.setInt(1, id);
+ 	    try (
+ 	        Connection conn = ds.getConnection();
+ 	        PreparedStatement pstmt = conn.prepareStatement(sql)
+ 	    ) {
+ 	        pstmt.setInt(1, id);
 
-	        try (ResultSet rs = pstmt.executeQuery()) {
-	            if (rs.next()) {
-	                product = new StoreDTO();
+ 	        try (ResultSet rs = pstmt.executeQuery()) {
+ 	            if (rs.next()) {
+ 	                product = new StoreDTO();
 
-	                product.setId(rs.getInt("id"));
-	                product.setName(rs.getString("name"));
-	                product.setPrice(rs.getInt("price"));
-	                product.setDescription(
-	                    rs.getString("description")
-	                );
-	                product.setImage(rs.getString("image"));
-	            }
-	        }
+ 	                product.setId(rs.getInt("id"));
+ 	                product.setName(rs.getString("name"));
+ 	                product.setPrice(rs.getInt("price"));
+ 	                product.setDescription(
+ 	                    rs.getString("description")
+ 	                );
+ 	                product.setImage(rs.getString("image"));
+ 	                product.setCategory(rs.getString("category")); // 카테고리 추가
+ 	            }
+ 	        }
 
-	    } catch (SQLException e) {
-	        System.err.println("상품 조회 중 DB 오류 발생");
-	        e.printStackTrace();
-	    }
+ 	    } catch (SQLException e) {
+ 	        System.err.println("상품 조회 중 DB 오류 발생");
+ 	        e.printStackTrace();
+ 	    }
 
-	    return product;
-	}
+ 	    return product;
+ 	}
 
 	// 주문 생성 처리
 	public int createOrder(String memberId, Map<Integer, Integer> cart)

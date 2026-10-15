@@ -340,11 +340,47 @@ public class StoreController extends HttpServlet {
 			    return;
 			}
 
-            // 3. 상품 상세
+         // 3. 상품 상세
             else if ("/StoreDetail.do".equals(action)) {
 
-                // 나중에 상세 기능 추가
+                int productId;
 
+                try {
+                    productId = Integer.parseInt(
+                        request.getParameter("productId")
+                    );
+
+                    if (productId <= 0) {
+                        response.sendError(
+                            HttpServletResponse.SC_BAD_REQUEST
+                        );
+                        return;
+                    }
+
+                } catch (NumberFormatException e) {
+                    response.sendError(
+                        HttpServletResponse.SC_BAD_REQUEST
+                    );
+                    return;
+                }
+
+                StoreDAO dao = new StoreDAO();
+                StoreDTO product = dao.getStoreById(productId);
+
+                if (product == null) {
+                    response.sendError(
+                        HttpServletResponse.SC_NOT_FOUND
+                    );
+                    return;
+                }
+
+                request.setAttribute("product", product);
+                request.setAttribute("center", "/stores/StoreDetail.jsp");
+
+                request.getRequestDispatcher("/Index.jsp")
+                       .forward(request, response);
+
+                return;
             }
 
             // 4. 등록되지 않은 요청
