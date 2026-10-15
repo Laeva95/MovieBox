@@ -89,7 +89,7 @@ public class StoreController extends HttpServlet {
 
                 List<StoreDTO> storeList =
                         dao.getSortedStoreList(category, sort);
-
+				
                 request.setAttribute("storeList", storeList);
                 request.setAttribute("selectedCategory", category);
                 request.setAttribute("selectedSort", sort);

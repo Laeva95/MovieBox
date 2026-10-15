@@ -378,13 +378,6 @@
 
         <button type="submit"
                 name="category"
-                value="콤보"
-                class="tab-btn ${selectedCategory eq '콤보' ? 'active' : ''}">
-            콤보
-        </button>
-
-        <button type="submit"
-                name="category"
                 value="팝콘"
                 class="tab-btn ${selectedCategory eq '팝콘' ? 'active' : ''}">
             팝콘
@@ -404,12 +397,6 @@
             스낵
         </button>
 
-        <button type="submit"
-                name="category"
-                value="캐릭터굿즈"
-                class="tab-btn ${selectedCategory eq '캐릭터굿즈' ? 'active' : ''}">
-            캐릭터굿즈
-        </button>
 
     </form>
 
@@ -471,15 +458,18 @@
 	<div class="store-item-grid">
 	
 	    <c:forEach var="product" items="${storeList}">
+	    
+	   
+			
+	
 	
 	        <div class="store-item-card">
-	
 	            <div class="item-image-box">
 	
 	                <img
-	                    src="${pageContext.request.contextPath}${product.image}"
+	                    src="${pageContext.request.contextPath}/images/${product.image}"
 	                    alt="${product.name}"
-	                    loading="lazy">
+	                    >
 	
 				                
 					<form action="${pageContext.request.contextPath}/store/CartAdd.do"

@@ -148,6 +148,8 @@ public class StoreDAO {
                             rs.getString("description"));
                     store.setImage(rs.getString("image"));
                     store.setCategory(rs.getString("category"));
+                    
+                   
 
                     list.add(store);
                 }
