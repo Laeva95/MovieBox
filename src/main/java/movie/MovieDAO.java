@@ -71,12 +71,11 @@ public class MovieDAO {
 
         try {
 
-            // -------------------------------------------------
-            // 오늘 날짜
+        	// -------------------------------------------------
+            // 오늘 날짜 및 3개월 전 날짜 계산
             // -------------------------------------------------
 
             LocalDate today = LocalDate.now();
-
             int currentYear = today.getYear();
 
             String todayStr =
@@ -84,15 +83,20 @@ public class MovieDAO {
                             DateTimeFormatter.ofPattern("yyyyMMdd")
                     );
 
+            // ✨ 1. 3개월 전 날짜 계산 후 yyyyMMdd 문자열(startDateStr)로 만들기
+            LocalDate threeMonthsAgo = today.minusMonths(3);
+            String startDateStr =
+                    threeMonthsAgo.format(
+                            DateTimeFormatter.ofPattern("yyyyMMdd")
+                    );
+
 
             // -------------------------------------------------
-            // 올해 1월 1일 ~ 오늘
+            // ✨ 2. API 개봉일 범위 (3개월 전 ~ 오늘)
             // -------------------------------------------------
 
             String releaseDtsParam =
-                    currentYear + "0101~" + todayStr;
-
-
+                    startDateStr + "~" + todayStr;
             // -------------------------------------------------
             // KMDb API 검색 조건
             // -------------------------------------------------
@@ -154,7 +158,6 @@ public class MovieDAO {
             );
 
             conn.setConnectTimeout(5000);
-
             conn.setReadTimeout(10000);
 
 
@@ -348,43 +351,16 @@ public class MovieDAO {
                     // 개봉일
                     // -------------------------------------------------
 
-                    String releaseDate =
-                            getReleaseDate(movie);
+                    String releaseDate = getReleaseDate(movie);
 
-
-                    if (releaseDate.isEmpty()) {
-
-                        continue;
-                    }
-
+                    if (releaseDate.isEmpty()) {continue;}
 
                     LocalDate movieDate;
+                    try {movieDate =LocalDate.parse(releaseDate);
+                    } catch (Exception e) {continue;}
 
-                    try {
-
-                        movieDate =
-                                LocalDate.parse(
-                                        releaseDate
-                                );
-
-                    } catch (Exception e) {
-
-                        continue;
-                    }
-
-
-                    LocalDate startDate =
-                            LocalDate.of(
-                                    currentYear,
-                                    1,
-                                    1
-                            );
-
-
-                    // 올해 영화만
-                    if (movieDate.isBefore(startDate)
-                            || movieDate.isAfter(today)) {
-
+                    // 3개월 전 ~ 오늘 영화만
+                    if (movieDate.isBefore(threeMonthsAgo) || movieDate.isAfter(today)) {
                         continue;
                     }
 
@@ -393,11 +369,7 @@ public class MovieDAO {
                     // 포스터
                     // -------------------------------------------------
 
-                    String poster =
-                            getString(
-                                    movie,
-                                    "posters"
-                            );
+                    String poster = getString( movie, "posters");
 
 
                     if (poster.isEmpty()) {
@@ -445,65 +417,74 @@ public class MovieDAO {
                     // 상세 정보
                     // -------------------------------------------------
   
-                    String summary =
-                            getPlot(movie);
+                    String summary = getPlot(movie);            
+                    String director = getDirector(movie);
+                    String actors = getActors(movie);
+                    String watchGrade = getWatchGrade(movie);
                     
-                    String director =
-                            getDirector(movie);
 
+                    // -------------------------------------------------
+                    // 예고편 (VOD) 파싱
+                    // -------------------------------------------------
+                    String vodUrl = "";
+                    if (movie.has("vodList") && movie.get("vodList").isJsonObject()) {
+                        try {
+                            JsonArray vodArray = movie.getAsJsonObject("vodList").getAsJsonArray("vod");
+                            if (vodArray != null && vodArray.size() > 0) {
+                                vodUrl = getString(vodArray.get(0).getAsJsonObject(), "vodUrl");
+                            }
+                        } catch (Exception e) {
+                            // VOD 구조 에러 예외처리
+                        }
+                    }
 
-                    String actors =
-                            getActors(movie);
+                    // 만약 API에서 VOD 링크가 없다면 유튜브 검색 링크로 대체
+                    if (vodUrl.isEmpty()) {
+                        vodUrl = "https://www.youtube.com/results?search_query=" + URLEncoder.encode(title + " 예고편", "UTF-8");
+                    }
 
+                    // -------------------------------------------------
+                    // 스틸컷 (Stills) 파싱 -> 실제 키 이름은 "stlls" 입니다!
+                    // -------------------------------------------------
+                    String stills = "";
+                    
+                    if (movie.has("stlls")) {
+                        stills = getString(movie, "stlls");
+                    } else if (movie.has("stillsList")) {
+                        // 혹시 모를 대체 키
+                        stills = getString(movie, "stillsList");
+                    }
+
+                    // 파이프 기호(|)로 구분된 스틸컷 주소들을 콤마(,)로 통일
+                    if (!stills.isEmpty()) {
+                        stills = stills.replace("|", ",").trim();
+                    }
+                    
                     // -------------------------------------------------
                     // 임시 객체
                     // -------------------------------------------------
 
-                    MovieData data =
-                            new MovieData();
-
-
-                    data.title =
-                            title;
-
-                    data.genre =
-                            genre;
-
-                    data.runningTime =
-                            runningTime;
-
-                    data.poster =
-                            poster;
-
-                    data.country =
-                            country;
-
-                    data.releaseDate =
-                            releaseDate;
- 
-                    data.summary =
-                            summary;
+                    MovieData data = new MovieData();
+                    data.title = title;
+                    data.genre = genre;
+                    data.runningTime = runningTime;
+                    data.poster = poster;
+                    data.country = country;
+                    data.releaseDate = releaseDate;
+                    data.summary = summary;  
+                    data.director = director;
+                    data.actors = actors;
+                    data.vodUrl = vodUrl;
+                    data.stills = stills;
+                    data.watchGrade = watchGrade;
                     
-                    data.director =
-                            director;
-
-                    data.actors =
-                            actors;
-
-
                     // -------------------------------------------------
                     // 중복 제거
                     // -------------------------------------------------
 
-                    String uniqueKey =
-                            title + "|" + releaseDate;
-
-
-                    movieMap.putIfAbsent(
-                            uniqueKey,
-                            data
-                    );
-
+                    String uniqueKey = title + "|" + releaseDate;
+                    
+                    movieMap.putIfAbsent( uniqueKey,data );
 
                 } catch (Exception e) {
 
@@ -550,28 +531,12 @@ public class MovieDAO {
 
                 MovieDTO dto =
                         new MovieDTO(
-
                                 movieId++,
-
-                                data.title,
-
-                                data.genre,
-
-                                data.runningTime,
-
-                                data.poster,
-
-                                data.country,
-
-                                data.releaseDate,
-                          
-                                data.summary,
-                               
-                                data.director,
-
-                                data.actors
-
-                        );
+                                data.title,data.genre, data.runningTime,
+                                data.poster,data.country,data.releaseDate,                    
+                                data.summary,data.director,data.actors,
+                                data.vodUrl,data.stills,data.watchGrade
+                                );
 
 
                 list.add(dto);
@@ -601,24 +566,10 @@ public class MovieDAO {
 
     private static class MovieData {
 
-        String title;
-
-        String genre;
-
-        String runningTime;
-
-        String poster;
-
-        String country;
-
-        String releaseDate;
-    
-        String summary;
-        
-        String director;
-
-        String actors;
-
+        String title;String genre;String runningTime;
+        String poster;String country;String releaseDate;
+        String summary;String director; String actors;
+        String vodUrl;String stills; String watchGrade;
 
     }
 
@@ -740,7 +691,62 @@ public class MovieDAO {
 
         return "";
     }
+ // =========================================================
+    // KMDb JSON에서 관람 등급 추출
+    // =========================================================
+    private String getWatchGrade(JsonObject movie) {
+        String title = "제목알수없음";
+        try {
+            // 영화 제목 로그용
+            if (movie.has("title")) {
+                title = movie.get("title").getAsString().trim();
+            }
 
+            // 1. KMDb API의 rating/ratings 구조 파싱 시도
+            JsonArray ratingArray = null;
+
+            if (movie.has("rating") && movie.get("rating").isJsonArray()) {
+                ratingArray = movie.getAsJsonArray("rating");
+            } else if (movie.has("ratings") && movie.get("ratings").isJsonObject()) {
+                JsonObject ratingsObj = movie.getAsJsonObject("ratings");
+                if (ratingsObj.has("rating") && ratingsObj.get("rating").isJsonArray()) {
+                    ratingArray = ratingsObj.getAsJsonArray("rating");
+                }
+            }
+
+            if (ratingArray != null && ratingArray.size() > 0) {
+                for (JsonElement elem : ratingArray) {
+                    if (!elem.isJsonObject()) continue;
+                    JsonObject ratingObj = elem.getAsJsonObject();
+
+                    if (ratingObj.has("ratingGrade")) {
+                        String grade = ratingObj.get("ratingGrade").getAsString().trim();
+
+                        // ✨ [수정 위치] '||'가 포함된 경우 첫 번째 등급만 깔끔하게 추출
+                        if (grade.contains("||")) {
+                            grade = grade.split("\\|\\|")[0].trim();
+                        }
+
+                        System.out.println("✅ [API 성공] 영화: [" + title + "] => 등급: [" + grade + "]");
+
+                        if (!grade.isEmpty()) {
+                            return grade; // 정상 추출 성공!
+                        }
+                    }
+                }
+            }
+
+            // 등급 키값이 비어있거나 찾지 못한 경우
+            System.out.println("⚠️ [API 경고] 영화: [" + title + "] => ratingGrade 항목을 찾을 수 없음 (기본값 설정)");
+            return "전체관람가";
+
+        } catch (Exception e) {
+            // 이클립스 콘솔창에 상세 에러 원인과 영화 제목을 출력
+            System.err.println("❌ [API 파싱 에러] 영화: [" + title + "] 파싱 중 예외 발생!");
+            e.printStackTrace(); // 콘솔에 빨간 줄로 에러 위치/원인 출력
+            return "전체관람가";   // DB에 '오류입니다.' 대신 전체관람가로 안전하게 저장
+        }
+    }
 
     // =========================================================
     // 7. 날짜 변환
@@ -1005,11 +1011,11 @@ public class MovieDAO {
             MovieDTO movie
     ) {
 
-        String sql =
+    	String sql =
                 "INSERT ignore INTO movie "
-                + "(title, genre, running_time, release_date, "
-                + "poster, summary, director, actors, country) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "(title, genre, running_time, release_date, poster, "
+                + "summary, director, actors, country, vod_url, stills, watch_grade) " 
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
         try (
@@ -1021,81 +1027,40 @@ public class MovieDAO {
 
 
             // 제목
-            pstmt.setString(
-                    1,
-                    movie.getTitle()
-            );
-
+            pstmt.setString(1,movie.getTitle());
 
             // 장르
-            pstmt.setString(
-                    2,
-                    movie.getGenre()
-            );
-
+            pstmt.setString(2,movie.getGenre());
 
             // ★ 러닝타임
-            pstmt.setString(
-                    3,
-                    movie.getRunningTime()
-            );
-
+            pstmt.setString(3,movie.getRunningTime());
 
             // ★ release_date는 MySQL DATE
             if (movie.getReleaseDate() != null
                     && !movie.getReleaseDate().isEmpty()) {
 
-                pstmt.setDate(
-                        4,
-                        Date.valueOf(
-                                movie.getReleaseDate()
-                        )
-                );
+                pstmt.setDate(4,Date.valueOf( movie.getReleaseDate() ) );
 
             } else {
 
-                pstmt.setNull(
-                        4,
-                        java.sql.Types.DATE
-                );
-            }
-
+                pstmt.setNull(4,java.sql.Types.DATE);}
 
             // 포스터
-            pstmt.setString(
-                    5,
-                    movie.getPoster()
-            );
-
-
+            pstmt.setString(5,movie.getPoster());
             // 줄거리
-            pstmt.setString(
-                    6,
-                    movie.getSummary()
-            );
-
-
+            pstmt.setString(6,movie.getSummary());
             // 감독
-            pstmt.setString(
-                    7,
-                    movie.getDirector()
-            );
-
-
+            pstmt.setString(7,movie.getDirector());
             // 배우
-            pstmt.setString(
-                    8,
-                    movie.getActors()
-            );
-
-
+            pstmt.setString(8,movie.getActors());
             // 국가
-            pstmt.setString(
-                    9,
-                    movie.getCountry()
-            );
-
-
+            pstmt.setString(9,movie.getCountry());
+            // 예고편 URL
+            pstmt.setString(10, movie.getVodUrl());
+            // 스틸컷 URL들
+            pstmt.setString(11, movie.getStills());
+            // 관람 등급
+            pstmt.setString(12, movie.getWatchGrade());
             return pstmt.executeUpdate();
 			/*
 			 * ㄴ> 역할: Java가 준비한 INSERT 쿼리문을 실제 MySQL DB 서버로 
@@ -1150,7 +1115,7 @@ public class MovieDAO {
         return successCount;
     }
 
-
+    
     // =========================================================
     // 13. ★ DB에서 영화 목록 가져오기
     // =========================================================
@@ -1189,7 +1154,10 @@ public class MovieDAO {
 	                                 rs.getString("release_date"),
 	                                 rs.getString("summary"),
 	                                 rs.getString("director"),
-	                                 rs.getString("actors")
+	                                 rs.getString("actors"),
+	                                 rs.getString("vod_url"),
+	                                 rs.getString("stills"),
+	                                 rs.getString("watch_grade")
                         );
 
                 list.add(movie);
@@ -1226,17 +1194,17 @@ public class MovieDAO {
                     movie.setCountry(rs.getString("country"));
                     movie.setReleaseDate(rs.getString("release_date"));
                     movie.setPoster(rs.getString("poster"));
-                    
-                    // =========================================================
-                    // ★ [이 부분을 추가해야 화면의 null이 해결됩니다!]
-                    // =========================================================
+                   
                     movie.setRunningTime(rs.getString("running_time"));
                     movie.setSummary(rs.getString("summary")); 
                     movie.setDirector(rs.getString("director"));
-                    movie.setActors(rs.getString("actors"));                
-                    // ※ 만약 MovieDTO에 정의된 메소드명이 setSummary가 아니라 setPlot 등 
-                    // 다른 이름이라면 본인의 DTO 메소드명에 맞게 변경해 주세요!
-                    // =========================================================
+                    movie.setActors(rs.getString("actors"));  
+                    movie.setVodUrl(rs.getString("vod_url"));
+                    movie.setStills(rs.getString("stills"));
+                    movie.setWatchGrade(rs.getString("watch_grade"));
+                    
+                
+             
                 }
             }
         } catch (SQLException e) {

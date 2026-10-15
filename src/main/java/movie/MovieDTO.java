@@ -15,7 +15,9 @@ public class MovieDTO { //
     private String summary;		// 영화 줄거리 (예: "이 영화는 ...")
     private String directors;	// 영화 감독 (예: "봉준호")
     private String actors;		// 영화 배우 (예: "송강호, 이선균")
-   
+    private String vodUrl;      // VOD URL (예: "https://vod.example.com/movie123")
+    private String stills;		// 스틸컷 이미지 URL (예: "https://stills.example.com/movie123")
+    private String watchGrade; // 관람 등급 (예: "전체 관람가", "15세 이상 관람가");
     
     public MovieDTO() {}  
 	/*
@@ -37,7 +39,8 @@ public class MovieDTO { //
     public MovieDTO(int movieId, String title, String genre,
 			    		String runningTime, String poster,
 			    		String country, String releaseDate,
-			    		String summary, String director, String actors)	
+			    		String summary, String director, String actors,
+			    		String vodUrl, String stills, String watchGrade)	
     {		       
     	this.movieId = movieId;			// 1번째가 영화 고유 ID!
         this.title = title;				// 2번째가 제목!
@@ -49,6 +52,9 @@ public class MovieDTO { //
         this.summary = summary;			// 8번째가 줄거리!
         this.directors = director;		// 9번째가 감독!
         this.actors = actors;			// 10번째가 배우!
+        this.vodUrl = vodUrl;			// 11번째가 VOD URL!	
+        this.stills = stills;			// 12번째가 스틸컷 URL!	
+        this.watchGrade = watchGrade;	// 13번째가 관람 등급!
     }
 
    
@@ -77,8 +83,12 @@ public class MovieDTO { //
 	public String getDirector() {return directors;}	
 	// 영화 배우를 반환
 	public String getActors() {return actors;}	
-
-
+	// 영화 VOD URL을 반환
+	public String getVodUrl() {return vodUrl;}
+	// 영화 스틸컷 이미지 URL을 반환
+	public String getStills() {return stills;}
+	// 영화 관람 등급을 반환
+	public String getWatchGrade() {return watchGrade;}
 	
 	
 	// 영화 고유 ID를 설정
@@ -102,8 +112,13 @@ public class MovieDTO { //
 	public void setDirector(String director) {this.directors = director;}
 	// 영화 배우를 설정
 	public void setActors(String actors) {this.actors = actors;}
-
-
+	// 영화 VOD URL을 설정
+	public void setVodUrl(String vodUrl) {this.vodUrl = vodUrl;}
+	// 영화 스틸컷 이미지 URL을 설정
+	public void setStills(String stills) {this.stills = stills;}
+	// 영화 관람 등급을 설정
+	public void setWatchGrade(String watchGrade) {this.watchGrade = watchGrade;}
+	
 	// ▼ 개봉일(releaseDate)을 기준으로 오늘 기준 3일 이내 개봉작인지 판별하는 메서드
     public boolean isNew() {
         if (this.releaseDate == null || this.releaseDate.trim().isEmpty()) {
