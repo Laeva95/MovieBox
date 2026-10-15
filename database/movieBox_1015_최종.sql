@@ -52,6 +52,7 @@ CREATE TABLE movie (
  );  
 ALTER TABLE movie ADD COLUMN vod_url VARCHAR(500) DEFAULT NULL;
 ALTER TABLE movie ADD COLUMN stills TEXT DEFAULT NULL;
+ALTER TABLE movie ADD COLUMN watch_grade VARCHAR(50);
 
 /* =========================================================
 	리뷰
@@ -153,7 +154,8 @@ CREATE TABLE store (
     name VARCHAR(100),
     price INT,
     description VARCHAR(500),
-    image VARCHAR(255)
+    image VARCHAR(255),
+    category VARCHAR(30)
 );
 
 ALTER TABLE notice ADD COLUMN is_pinned INT DEFAULT 0;
@@ -190,3 +192,4 @@ REFERENCES store_orders(order_id),
 FOREIGN KEY (product_id)
 REFERENCES store(id)
 );
+ALTER TABLE review ADD CONSTRAINT uk_movie_member UNIQUE (movie_id, member_id);
