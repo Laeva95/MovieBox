@@ -695,13 +695,7 @@ public class MovieDAO {
     // KMDb JSON에서 관람 등급 추출
     // =========================================================
     private String getWatchGrade(JsonObject movie) {
-        String title = "제목알수없음";
         try {
-            // 영화 제목 로그용
-            if (movie.has("title")) {
-                title = movie.get("title").getAsString().trim();
-            }
-
             // 1. KMDb API의 rating/ratings 구조 파싱 시도
             JsonArray ratingArray = null;
 
@@ -722,12 +716,10 @@ public class MovieDAO {
                     if (ratingObj.has("ratingGrade")) {
                         String grade = ratingObj.get("ratingGrade").getAsString().trim();
 
-                        // ✨ [수정 위치] '||'가 포함된 경우 첫 번째 등급만 깔끔하게 추출
+                        // '||'가 포함된 경우 첫 번째 등급만 깔끔하게 추출
                         if (grade.contains("||")) {
                             grade = grade.split("\\|\\|")[0].trim();
                         }
-
-                        System.out.println("✅ [API 성공] 영화: [" + title + "] => 등급: [" + grade + "]");
 
                         if (!grade.isEmpty()) {
                             return grade; // 정상 추출 성공!
@@ -736,15 +728,12 @@ public class MovieDAO {
                 }
             }
 
-            // 등급 키값이 비어있거나 찾지 못한 경우
-            System.out.println("⚠️ [API 경고] 영화: [" + title + "] => ratingGrade 항목을 찾을 수 없음 (기본값 설정)");
+            // 등급 키값이 비어있거나 찾지 못한 경우 기본값 반환
             return "전체관람가";
 
         } catch (Exception e) {
-            // 이클립스 콘솔창에 상세 에러 원인과 영화 제목을 출력
-            System.err.println("❌ [API 파싱 에러] 영화: [" + title + "] 파싱 중 예외 발생!");
-            e.printStackTrace(); // 콘솔에 빨간 줄로 에러 위치/원인 출력
-            return "전체관람가";   // DB에 '오류입니다.' 대신 전체관람가로 안전하게 저장
+            e.printStackTrace();
+            return "전체관람가";   // 예외 발생 시 안전하게 기본값 반환
         }
     }
 
