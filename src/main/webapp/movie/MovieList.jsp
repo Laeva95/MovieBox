@@ -27,6 +27,12 @@
     }
     int pageSize = 8;
 %>
+
+<!-- 구글 Montserrat 폰트 불러오기 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+
   <style>
     /* 필터 전체 영역 */
     .filter-container {
@@ -241,8 +247,42 @@
         font-weight: bold;
         border-radius: 4px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }    
-	    
+    }
+
+    /* 카드 내부 제목 및 원형 등급 배치용 스타일 */
+    .movie-card-title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+    .movie-card-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    /* 목록 카드용 원형 연령 등급 뱃지 */
+    .card-age-badge {
+	width: 23px;
+	    height: 23px;
+	    border-radius: 50%;
+	    display: inline-flex;
+	    align-items: center;
+	    justify-content: center;
+	    font-family: 'Montserrat', 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+	    font-size: 11px;
+	    font-weight: 900;
+	    color: #ffffff;
+	    letter-spacing: -0.5px;
+	    line-height: 1;
+	    flex-shrink: 0;
+	    box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+	}
+		    
     .pagination {
         display: flex;
         justify-content: center;
@@ -308,7 +348,6 @@
               <input type="hidden" name="searchKeyword" value="<%= searchKeyword %>">
 
               <div class="filter-select-group">
-                  
                   <!-- 1. 국가 커스텀 드롭다운 -->
                   <div class="custom-dropdown" id="countryDropdown">
                       <%
@@ -414,34 +453,25 @@
                                               style="width: 100%; height: auto; object-fit: contain; border-radius: 4px; margin-bottom: 10px;"
                           onerror="this.src='${pageContext.request.contextPath}/images/no_image.jpg';">
                       
-                      	<div class="rank-overlay">
-    						<span class="rank-number"><%= ((currentPage - 1) * pageSize) + (i + 1) %></span>
-						</div>
+                      <div class="rank-overlay">
+                          <span class="rank-number"><%= ((currentPage - 1) * pageSize) + (i + 1) %></span>
+                      </div>
                     </div>
                     
                     <div class="card-info">
-<% 
-                            String grade = movie.getWatchGrade();
-                            if (grade == null || grade.isEmpty()) {
-                                grade = "전체관람가";
-                            }
-                            
-                            // 등급별 배지 색상 동적 설정
-                            String bg = "#6b7280"; // 기본 회색
-                            if (grade.contains("12")) {
-                                bg = "#d97706"; // 12세: 주황색
-                            } else if (grade.contains("15")) {
-                                bg = "#b45309"; // 15세: 진한 주황
-                            } else if (grade.contains("청소년") || grade.contains("19") || grade.contains("제한")) {
-                                bg = "#dc2626"; // 청불: 빨간색
-                            } else if (grade.contains("전체")) {
-                                bg = "#059669"; // 전체: 초록색
-                            }
+                        <% 
+                            String watchGrade = (movie.getWatchGrade() == null) ? "" : movie.getWatchGrade().trim();
+                            String shortGrade = "All";
+                            String badgeBg = "#059669";
+                            if (watchGrade.contains("12")) { shortGrade = "12"; badgeBg = "#d97706"; }
+                            else if (watchGrade.contains("15")) { shortGrade = "15"; badgeBg = "#b45309"; }
+                            else if (watchGrade.contains("청소년") || watchGrade.contains("19") || watchGrade.contains("제한")) { shortGrade = "청불"; badgeBg = "#dc2626"; }
+                            else if (!watchGrade.isEmpty() && !watchGrade.contains("전체")) { shortGrade = watchGrade; }
                         %>
-                        <div class="movie-title-grade-row">
-                            <h3 class="movie-card-title" style="margin: 0;"><%= movie.getTitle() %></h3>
-                            <span class="movie-grade-badge" style="background-color: <%= bg %>;">
-                                <%= grade %>
+                        <div class="movie-card-title-row">
+                            <h3 class="movie-card-title"><%= movie.getTitle() %></h3>
+                            <span class="card-age-badge" style="background-color: <%= badgeBg %>;">
+                                <%= shortGrade %>
                             </span>
                         </div>
                         

@@ -3,6 +3,11 @@
 <%@ page import="movie.MovieDAO" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
 <%
     // 1. MovieController가 request에 담아준 movie 객체를 최우선으로 가져옵니다.
     MovieDTO movie = (MovieDTO) request.getAttribute("movie");
@@ -61,6 +66,14 @@
           flex-direction: column;
           justify-content: space-between;
       }
+
+      /* 제목과 연령 등급 배치 영역 */
+      .movie-title-grade-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+      }
       .movie-title-ko {
           font-size: 36px;
           font-weight: 800;
@@ -68,6 +81,24 @@
           margin: 0;
           letter-spacing: -0.5px;
       }
+      
+      /* 동그란 연령등급 뱃지 스타일 */
+      .age-badge {
+		    width: 28px;
+		    height: 28px;
+		    border-radius: 50%;
+		    display: inline-flex;
+		    align-items: center;
+		    justify-content: center;
+		    font-family: 'Montserrat', 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+		    font-size: 14px;
+		    font-weight: 900;
+		    color: #ffffff;
+		    letter-spacing: -0.5px;
+		    line-height: 1;
+		    flex-shrink: 0;
+		    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+		}
       
       /* 태그 (Pill Badges) 스타일 */
       .movie-tags-group {
@@ -288,19 +319,19 @@
               <!-- 우측: 영화 정보 및 줄거리 영역 -->
               <div class="detail-info-area">
                   <div>
-                      <!-- 영화 제목과 관람 등급을 같은 줄에 배치 -->
+                      <!-- 영화 제목 및 원형 관람 등급 배치 -->
                       <%
                           String watchGrade = (movie.getWatchGrade() == null) ? "" : movie.getWatchGrade().trim();
-                          String shortGrade = "전체";
+                          String shortGrade = "All";
                           String badgeBg = "#059669";
-                          if (watchGrade.contains("12")) { shortGrade = "12세"; badgeBg = "#d97706"; }
-                          else if (watchGrade.contains("15")) { shortGrade = "15세"; badgeBg = "#b45309"; }
+                          if (watchGrade.contains("12")) { shortGrade = "12"; badgeBg = "#d97706"; }
+                          else if (watchGrade.contains("15")) { shortGrade = "15"; badgeBg = "#b45309"; }
                           else if (watchGrade.contains("청소년") || watchGrade.contains("19") || watchGrade.contains("제한")) { shortGrade = "청불"; badgeBg = "#dc2626"; }
                           else if (!watchGrade.isEmpty() && !watchGrade.contains("전체")) { shortGrade = watchGrade; }
                       %>
                       <div class="movie-title-grade-row">
                           <h1 class="movie-title-ko"><%= movie.getTitle() %></h1>
-                          <span style="background-color:<%= badgeBg %>; color:#fff; padding:5px 8px; font-size:12px; font-weight:800; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; white-space:nowrap;"><%= shortGrade %></span>
+                          <span class="age-badge" style="background-color:<%= badgeBg %>;"><%= shortGrade %></span>
                       </div>
                       
                       <!-- 태그 영역 -->
@@ -398,7 +429,7 @@
   </div>
 
   <script>
-  // 스틸컷 좌우 슬라이드 함수 (오타 수정 반영 완료)
+  // 스틸컷 좌우 슬라이드 함수 (오류 수정 완료)
   function scrollStills(direction) {
       var gallery = document.getElementById('stillsGallery');
       if (gallery) {

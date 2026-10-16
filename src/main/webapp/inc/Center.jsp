@@ -11,10 +11,16 @@
 <%@ page import="review.ReviewDAO" %>
 <%@ page import="review.ReviewDTO" %>
 
-<%
-    /*
-     * 메인 화면에서 MovieDAO에 직접 접근하여
-     * 현재 DB에 등록된 영화 목록 중 5개를 무작위로 출력
+
+<!-- 구글 Montserrat 폰트 불러오기 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+  <%
+
+/*
+- 메인 화면에서 MovieDAO에 직접 접근하여
+- 현재 DB에 등록된 영화 목록 중 5개를 무작위로 출력
      */
     MovieDAO movieDAO = new MovieDAO();
     List<MovieDTO> movieList = movieDAO.getMovieList();
@@ -189,36 +195,6 @@
         transform: scale(1.05);
     }
 
-    .home-random-badge {
-        position: absolute;
-        left: 10px;
-        top: 10px;
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 9px;
-        border-radius: 999px;
-        background: rgba(13, 14, 19, 0.80);
-        color: var(--accent-gold);
-        font-size: 11px;
-        font-weight: 800;
-        backdrop-filter: blur(8px);
-    }
-
-	/* 좌하단 NEW 뱃지 스타일 (빨간 바탕 + 노란 글씨) */
-	.badge-new {
-	    position: absolute;
-	    bottom: 10px;
-	    left: 10px;
-	    z-index: 5;
-	    background-color: #e50914; 
-	    color: #f1c40f;            
-	    padding: 4px 8px;
-	    font-size: 11px;
-	    font-weight: 800;
-	    border-radius: 4px;
-	    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-	}
-	
 	/* 우상단 찜(하트) 버튼 스타일 */
 	.home-like-btn {
 	    position: absolute;
@@ -258,15 +234,39 @@
         padding: 16px;
     }
 
+    /* 메인 카드 제목 및 원형 등급 배치 영역 */
+    .home-movie-title-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 7px;
+    }
     .home-movie-title {
         overflow: hidden;
-        margin: 0 0 7px;
+        margin: 0;
         color: #fff;
-        font-size: 17px;
+        font-size: 25px;
         font-weight: 800;
         white-space: nowrap;
         text-overflow: ellipsis;
     }
+    /* 메인 홈 카드용 원형 연령 등급 뱃지 */
+    .home-card-age-badge {
+		width: 25px;
+		    height: 25px;
+		    border-radius: 50%;
+		    display: inline-flex;
+		    align-items: center;
+		    justify-content: center;
+		    font-family: 'Montserrat', 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+		    font-size: 13px;
+		    font-weight: 900;
+		    color: #ffffff;
+		    letter-spacing: -0.5px;
+		    line-height: 1;
+		    flex-shrink: 0;
+		    box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+		    }
 
     .home-movie-meta {
         overflow: hidden;
@@ -517,41 +517,34 @@
 
 						<div class="home-movie-info">
 						<% 
-						    String grade = movie.getWatchGrade();
-						    if (grade == null || grade.trim().isEmpty()) {
-						        grade = "전체관람가";
-						    }
+						    String watchGrade = (movie.getWatchGrade() == null) ? "" : movie.getWatchGrade().trim();
+						    String shortGrade = "All";
+						    String badgeBg = "#059669"; // 기본 초록 (전체)
 						    
-						    String bg = "#6b7280";       // 기본 배경색 (회색)
-						    String shortGrade = "All";   // 기본 관람등급 텍스트
-						    
-						    if (grade.contains("12")) {
-						        bg = "#d97706";         // 12세: 주황
+						    if (watchGrade.contains("12")) {
 						        shortGrade = "12";
-						    } else if (grade.contains("15")) {
-						        bg = "#b45309";         // 15세: 진한 주황
+						        badgeBg = "#d97706"; // 12세: 주황
+						    } else if (watchGrade.contains("15")) {
 						        shortGrade = "15";
-						    } else if (grade.contains("청소년") || grade.contains("19") || grade.contains("제한")) {
-						        bg = "#dc2626";         // 청불: 빨강
-						        shortGrade = "청불";
-						    } else if (grade.contains("전체")) {
-						        bg = "#059669";         // 전체: 초록
+						        badgeBg = "#b45309"; // 15세: 진한 주황
+						    } else if (watchGrade.contains("청소년") || watchGrade.contains("19") || watchGrade.contains("제한")) {
+						        shortGrade = "청불"; // 19세 대신 '청불' 표시
+						        badgeBg = "#dc2626"; // 청불: 빨강
+						    } else if (watchGrade.contains("전체")) {
 						        shortGrade = "All";
-						    } else {
-						        shortGrade = grade;
+						        badgeBg = "#059669";
+						    } else if (!watchGrade.isEmpty()) {
+						        shortGrade = watchGrade;
 						    }
 						%>
 
-
-
-
                             <a href="${pageContext.request.contextPath}/movies/MovieDetail.do?movie_id=<%= movie.getMovieId() %>" style="text-decoration: none; color: inherit;">
-                                <h3 class="home-movie-title" style="display: flex; align-items: center; gap: 6px; margin-bottom: 7px;">
-                                    <span style="background-color: <%= bg %>; color: white; padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 3px; flex-shrink: 0; line-height: 1.2;">
-                                        <%= grade %>
+                                <div class="home-movie-title-row">
+                                    <h3 class="home-movie-title"><%= movie.getTitle() %></h3>
+                                    <span class="home-card-age-badge" style="background-color: <%= badgeBg %>;">
+                                        <%= shortGrade %>
                                     </span>
-                                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= movie.getTitle() %></span>
-                                </h3>
+                                </div>
                             </a>
 
                             <p class="home-movie-meta">
