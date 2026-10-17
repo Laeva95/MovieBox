@@ -464,9 +464,6 @@
         <div class="home-section-head">
             <div class="home-section-title-wrap">
                 <h2 class="home-section-title">오늘의 영화</h2>
-                <p class="home-section-subtitle">
-                    DB에 등록된 영화 중 무작위로 5편을 보여드립니다.
-                </p>
             </div>
 
             <a href="${pageContext.request.contextPath}/movies/MovieList.do"
@@ -568,9 +565,6 @@
         <div class="home-section-head">
             <div class="home-section-title-wrap">
                 <h2 class="home-section-title">최신 리뷰</h2>
-                <p class="home-section-subtitle">
-                    리뷰 기능 연결 전까지 임시 더미 데이터를 표시합니다.
-                </p>
             </div>
 
             <a href="${pageContext.request.contextPath}/review/main.do"
