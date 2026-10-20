@@ -1,4 +1,4 @@
-# 🎬 MovieBox
+# [🎬 MovieBox](http://3.34.63.9:8080/MovieBox/Index.jsp)
 
 **영화 탐색부터 좌석 선택, 예매 관리까지 경험할 수 있는 영화 예매 웹 서비스**
 
