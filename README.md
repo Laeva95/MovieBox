@@ -129,7 +129,7 @@ MovieBox
 4. **웹 애플리케이션 실행**
    - 프로젝트를 Eclipse의 Dynamic Web Project 등 적절한 Java 웹 프로젝트로 구성합니다.
    - Java 소스와 웹 리소스 경로를 프로젝트 설정에 맞게 지정한 후 Tomcat에 배포합니다.
-   - 실행 URL 예시: `http://localhost:8080/MovieBox/Index.jsp` (Tomcat 포트 및 컨텍스트 경로에 따라 달라질 수 있습니다.)
+   - 실행 URL 예시: `http://MovieBox.kro.kr` (Tomcat 포트 및 컨텍스트 경로에 따라 달라질 수 있습니다.)
 
 5. **외부 서비스 설정**
    - KMDb API 키를 발급받아 설정합니다.
